@@ -1,81 +1,68 @@
 import {
+  BandwidthLimit,
   Callbacks,
   MembraneWebRTC,
   Peer,
   SerializedMediaEvent,
+  SimulcastConfig,
+  TrackBandwidthLimit,
   TrackContext,
+  TrackEncoding,
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 
 /**
- * Events emitted by the client with their arguments.
- * OnSendMediaEvent is omitted because it is handled internally.
+ * Events emitted by the client with their arguments. OnSendMediaEvent is omitted because it is handled internally.
  * Other events come from {@link Callbacks} defined in MembraneWebRTC.
  */
-export interface MessageEvents
-  extends Omit<Required<Callbacks>, "onSendMediaEvent"> {
+export interface MessageEvents extends Omit<Required<Callbacks>, "onSendMediaEvent"> {
   /**
    * Emitted when the websocket connection is closed
+   *
    * @param {CloseEvent} event - Close event object from the websocket
    */
   onSocketClose: (event: CloseEvent) => void;
 
   /**
    * Emitted when occurs an error in the websocket connection
+   *
    * @param {Event} event - Event object from the websocket
    */
   onSocketError: (event: Event) => void;
 
   /**
    * Emitted when the websocket connection is opened
+   *
    * @param {Event} event - Event object from the websocket
    */
   onSocketOpen: (event: Event) => void;
 
-  /**
-   * Emitted when authentication is requested via websocket
-   */
+  /** Emitted when authentication is requested via websocket */
   onAuthRequest: () => void;
 
-  /**
-   * Emitted when authentication is successful
-   */
+  /** Emitted when authentication is successful */
   onAuthSuccess: () => void;
 
-  /**
-   * Emitted when authentication fails
-   */
+  /** Emitted when authentication fails */
   onAuthError: () => void;
 
-  /**
-   * Emitted when the connection is closed
-   */
+  /** Emitted when the connection is closed */
   onDisconnected: () => void;
 }
 
-/**
- * Configuration object for the client
- */
+/** Configuration object for the client */
 export interface Config<PeerMetadata> {
-  /**
-   * Metadata for the peer
-   */
+  /** Metadata for the peer */
   peerMetadata: PeerMetadata;
 
-  /**
-   * Whether to enable simulcast or not
-   */
+  /** Whether to enable simulcast or not */
   isSimulcastOn: boolean;
 
-  /**
-   * URL of the websocket server
-   */
+  /** URL of the websocket server */
   websocketUrl?: string;
 
-  /**
-   * Token for authentication
-   */
+  /** Token for authentication */
   token: string;
 }
 
@@ -83,62 +70,67 @@ export interface Config<PeerMetadata> {
  * JellyfishClient is the main class to interact with Jellyfish.
  *
  * @example
- * ```typescript
- * const client = new JellyfishClient();
- * const peerToken = "YOUR_PEER_TOKEN";
+ *   ```typescript
+ *   const client = new JellyfishClient();
+ *   const peerToken = "YOUR_PEER_TOKEN";
  *
- * // Start the peer connection
- * client.connect({
- *    peerMetadata: {},
- *    isSimulcastOn: false,
- *    token: peerToken,
- * });
+ *   // Start the peer connection
+ *   client.connect({
+ *   peerMetadata: {},
+ *   isSimulcastOn: false,
+ *   token: peerToken,
+ *   });
  *
- * // You can listen to events emitted by the client
- * client.on("onJoinSuccess", (peerId, peersInRoom) => {
+ *   // You can listen to events emitted by the client
+ *   client.on("onJoinSuccess", (peerId, peersInRoom) => {
  *   console.log("join success");
- * });
+ *   });
  *
- * // Close the peer connection
- * client.cleanUp();
- * ```
+ *   // Close the peer connection
+ *   client.cleanUp();
+ *   ```
+ *
+ *   You can register callbacks to handle the events emitted by the Client.
+ *
+ * @example
+ *   ```typescript
+ *
+ *   client.on("onTrackReady", (ctx) => {
+ *    console.log("On track ready");
+ *   });
+ *   ```;
  */
 export class JellyfishClient<
-  PeerMetadata,
-  TrackMetadata
+  PeerMetadata extends Record<string, unknown>,
+  TrackMetadata extends Record<string, unknown>
 > extends (EventEmitter as new () => TypedEmitter<Required<MessageEvents>>) {
   private websocket: WebSocket | null = null;
-  // todo make this object private and expose all public methods
-  webrtc: MembraneWebRTC | null = null;
+  private webrtc: MembraneWebRTC | null = null;
 
   constructor() {
     super();
   }
 
   /**
-   * Uses the {@link WebSocket} connection and {@link MembraneWebRTC} to join to the room.
-   * Registers the callbacks to handle the events emitted by the {@link MembraneWebRTC}.
-   *
-   * @param {ConnectConfig} config - Configuration object for the client
-   * @param {string} [config.websocketUrl="ws://localhost:4000/socket/websocket"] - URL of the websocket server defaults to `ws://localhost:4000/socket/websocket`
+   * Uses the {@link WebSocket} connection and {@link MembraneWebRTC} to join to the room. Registers the callbacks to
+   * handle the events emitted by the {@link MembraneWebRTC}. Make sure that peer metadata is serializable.
    *
    * @example
-   * ```typescript
-   * const client = new JellyfishClient();
+   *   ```typescript
+   *   const client = new JellyfishClient();
    *
-   * client.connect({
-   *  peerMetadata: {},
-   *  isSimulcastOn: false,
-   *  token: peerToken,
-   * });
-   * ```
+   *   client.connect({
+   *    peerMetadata: {}
+   *    token: peerToken,
+   *   });
+   *   ```;
+   *
+   * @param {ConnectConfig} config - Configuration object for the client
+   * @param {string} [config.websocketUrl="ws://localhost:4000/socket/websocket"] - URL of the websocket server defaults
+   *   to `ws://localhost:4000/socket/websocket`. Default is `"ws://localhost:4000/socket/websocket"`
    */
   connect(config: Config<PeerMetadata>): void {
-    const {
-      peerMetadata,
-      isSimulcastOn,
-      websocketUrl = "ws://localhost:4000/socket/websocket",
-    } = config;
+    const { peerMetadata, websocketUrl = "ws://localhost:4000/socket/websocket" } = config;
 
     if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
       console.warn("Closing existing websocket connection");
@@ -178,8 +170,6 @@ export class JellyfishClient<
     this.webrtc = new MembraneWebRTC();
 
     this.setupCallbacks();
-    // TODO remove after discussion
-    // this.setupCallbacks2();
 
     this.websocket.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
@@ -214,9 +204,7 @@ export class JellyfishClient<
       this.websocket?.send(message);
     });
 
-    this.webrtc?.on("onConnectionError", (message) =>
-      this.emit("onConnectionError", message)
-    );
+    this.webrtc?.on("onConnectionError", (message) => this.emit("onConnectionError", message));
     this.webrtc?.on("onJoinSuccess", (peerId, peersInRoom: [Peer]) => {
       this.emit("onJoinSuccess", peerId, peersInRoom);
     });
@@ -244,12 +232,9 @@ export class JellyfishClient<
     this.webrtc?.on("onTrackUpdated", (ctx: TrackContext) => {
       this.emit("onTrackUpdated", ctx);
     });
-    this.webrtc?.on(
-      "onTracksPriorityChanged",
-      (enabledTracks: TrackContext[], disabledTracks: TrackContext[]) => {
-        this.emit("onTracksPriorityChanged", enabledTracks, disabledTracks);
-      }
-    );
+    this.webrtc?.on("onTracksPriorityChanged", (enabledTracks: TrackContext[], disabledTracks: TrackContext[]) => {
+      this.emit("onTracksPriorityChanged", enabledTracks, disabledTracks);
+    });
     this.webrtc?.on("onJoinError", (metadata) => {
       this.emit("onJoinError", metadata);
     });
@@ -258,22 +243,354 @@ export class JellyfishClient<
     });
   }
 
+  private handleWebRTCNotInitialized() {
+    return new Error("WebRTC is not initialized");
+  }
+
   /**
-   * Disconnect from the room, and close the websocket connection.
-   * Tries to leave the room gracefully, but if it fails, it will close the websocket anyway.
+   * Adds track that will be sent to the RTC Engine.
    *
    * @example
-   * ```typescript
-   * const client = new JellyfishClient();
+   *   ```ts
+   *   const localStream: MediaStream = new MediaStream();
+   *   try {
+   *     const localAudioStream = await navigator.mediaDevices.getUserMedia(
+   *       { audio: true }
+   *     );
+   *     localAudioStream
+   *       .getTracks()
+   *       .forEach((track) => localStream.addTrack(track));
+   *   } catch (error) {
+   *     console.error("Couldn't get microphone permission:", error);
+   *   }
    *
-   * client.connect({ ... });
+   *   try {
+   *     const localVideoStream = await navigator.mediaDevices.getUserMedia(
+   *       { video: true }
+   *     );
+   *     localVideoStream
+   *       .getTracks()
+   *       .forEach((track) => localStream.addTrack(track));
+   *   } catch (error) {
+   *    console.error("Couldn't get camera permission:", error);
+   *   }
    *
-   * client.cleanUp();
-   * ```
+   *   localStream
+   *    .getTracks()
+   *    .forEach((track) => client.addTrack(track, localStream));
+   *   ```;
+   *
+   * @param track - Audio or video track e.g. from your microphone or camera.
+   * @param stream - Stream that this track belongs to.
+   * @param trackMetadata - Any information about this track that other peers will receive in
+   *   {@link Callbacks.onPeerJoined}. E.g. this can source of the track - wheather it's screensharing, webcam or some
+   *   other media device.
+   * @param simulcastConfig - Simulcast configuration. By default simulcast is disabled. For more information refer to
+   *   {@link SimulcastConfig}.
+   * @param maxBandwidth - Maximal bandwidth this track can use. Defaults to 0 which is unlimited. This option has no
+   *   effect for simulcast and audio tracks. For simulcast tracks use `{@link MembraneWebRTC.setTrackBandwidth}.
+   * @returns {string} Returns id of added track
+   */
+  public addTrack(
+    track: MediaStreamTrack,
+    stream: MediaStream,
+    trackMetadata?: TrackMetadata,
+    simulcastConfig: SimulcastConfig = { enabled: false, active_encodings: [] },
+    maxBandwidth: TrackBandwidthLimit = 0 // unlimited bandwidth
+  ): string {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.addTrack(track, stream, trackMetadata, simulcastConfig, maxBandwidth);
+  }
+
+  /**
+   * Replaces a track that is being sent to the RTC Engine.
+   *
+   * @example
+   *   ```ts
+   *   // setup camera
+   *   let localStream: MediaStream = new MediaStream();
+   *   try {
+   *     localVideoStream = await navigator.mediaDevices.getUserMedia(
+   *       VIDEO_CONSTRAINTS
+   *     );
+   *     localVideoStream
+   *       .getTracks()
+   *       .forEach((track) => localStream.addTrack(track));
+   *   } catch (error) {
+   *     console.error("Couldn't get camera permission:", error);
+   *   }
+   *   let oldTrackId;
+   *   localStream
+   *    .getTracks()
+   *    .forEach((track) => trackId = webrtc.addTrack(track, localStream));
+   *
+   *   // change camera
+   *   const oldTrack = localStream.getVideoTracks()[0];
+   *   let videoDeviceId = "abcd-1234";
+   *   navigator.mediaDevices.getUserMedia({
+   *        video: {
+   *          ...(VIDEO_CONSTRAINTS as {}),
+   *          deviceId: {
+   *            exact: videoDeviceId,
+   *          },
+   *        }
+   *     })
+   *     .then((stream) => {
+   *       let videoTrack = stream.getVideoTracks()[0];
+   *       webrtc.replaceTrack(oldTrackId, videoTrack);
+   *     })
+   *     .catch((error) => {
+   *       console.error('Error switching camera', error);
+   *     })
+   *   ```;
+   *
+   * @param track - Audio or video track.
+   * @param {string} trackId - Id of audio or video track to replace.
+   * @param {MediaStreamTrack} newTrack
+   * @param {any} [newMetadata] - Optional track metadata to apply to the new track. If no track metadata is passed, the
+   *   old track metadata is retained.
+   * @returns {Promise<boolean>} Success
+   */
+  public async replaceTrack(
+    trackId: string,
+    newTrack: MediaStreamTrack,
+    newTrackMetadata?: TrackMetadata
+  ): Promise<boolean> {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.replaceTrack(trackId, newTrack, newTrackMetadata);
+  }
+
+  /**
+   * Updates maximum bandwidth for the track identified by trackId. This value directly translates to quality of the
+   * stream and, in case of video, to the amount of RTP packets being sent. In case trackId points at the simulcast
+   * track bandwidth is split between all of the variant streams proportionally to their resolution.
+   *
+   * @param {string} trackId
+   * @param {BandwidthLimit} bandwidth In kbps
+   * @returns {Promise<boolean>} Success
+   */
+  public setTrackBandwidth(trackId: string, bandwidth: BandwidthLimit): Promise<boolean> {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.setTrackBandwidth(trackId, bandwidth);
+  }
+
+  /**
+   * Updates maximum bandwidth for the given simulcast encoding of the given track.
+   *
+   * @param {string} trackId - Id of the track
+   * @param {string} rid - Rid of the encoding
+   * @param {BandwidthLimit} bandwidth - Desired max bandwidth used by the encoding (in kbps)
+   * @returns
+   */
+  public setEncodingBandwidth(trackId: string, rid: string, bandwidth: BandwidthLimit): Promise<boolean> {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.setEncodingBandwidth(trackId, rid, bandwidth);
+  }
+
+  /**
+   * Removes a track from connection that was being sent to the RTC Engine.
+   *
+   * @example
+   *   ```ts
+   *   // setup camera
+   *   let localStream: MediaStream = new MediaStream();
+   *   try {
+   *     localVideoStream = await navigator.mediaDevices.getUserMedia(
+   *       VIDEO_CONSTRAINTS
+   *     );
+   *     localVideoStream
+   *       .getTracks()
+   *       .forEach((track) => localStream.addTrack(track));
+   *   } catch (error) {
+   *     console.error("Couldn't get camera permission:", error);
+   *   }
+   *
+   *   let trackId
+   *   localStream
+   *    .getTracks()
+   *    .forEach((track) => trackId = webrtc.addTrack(track, localStream));
+   *
+   *   // remove track
+   *   webrtc.removeTrack(trackId)
+   *   ```;
+   *
+   * @param {string} trackId - Id of audio or video track to remove.
+   */
+  public removeTrack(trackId: string) {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.removeTrack(trackId);
+  }
+
+  /**
+   * Currently, this function only works when DisplayManager in RTC Engine is enabled and simulcast is disabled.
+   *
+   * Prioritizes a track in connection to be always sent to browser.
+   *
+   * @param {string} trackId - Id of video track to prioritize.
+   */
+  public prioritizeTrack(trackId: string) {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.prioritizeTrack(trackId);
+  }
+
+  /**
+   * Currently, this function only works when DisplayManager in RTC Engine is enabled and simulcast is disabled.
+   *
+   * Unprioritizes a track.
+   *
+   * @param {string} trackId - Id of video track to unprioritize.
+   */
+  public unprioritizeTrack(trackId: string) {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.unprioritizeTrack(trackId);
+  }
+
+  /**
+   * Currently this function has no effect.
+   *
+   * This function allows to adjust resolution and number of video tracks sent by an SFU to a client.
+   *
+   * @param {number} bigScreens - Number of screens with big size (if simulcast is used this will limit number of tracks
+   *   sent with highest quality).
+   * @param {number} smallScreens - Number of screens with small size (if simulcast is used this will limit number of
+   *   tracks sent with lowest quality).
+   * @param {number} mediumScreens - Number of screens with medium size (if simulcast is used this will limit number of
+   *   tracks sent with medium quality).
+   * @param {boolean} allSameSize - Flag that indicates whether all screens should use the same quality
+   */
+  public setPreferedVideoSizes(
+    bigScreens: number,
+    smallScreens: number,
+    mediumScreens: number = 0,
+    allSameSize: boolean = false
+  ) {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.setPreferedVideoSizes(bigScreens, smallScreens, mediumScreens, allSameSize);
+  }
+
+  /**
+   * Sets track encoding that server should send to the client library.
+   *
+   * The encoding will be sent whenever it is available. If choosen encoding is temporarily unavailable, some other
+   * encoding will be sent until choosen encoding becomes active again.
+   *
+   * @example
+   *   ```ts
+   *   webrtc.setTargetTrackEncoding(incomingTrackCtx.trackId, "l")
+   *   ```;
+   *
+   * @param {string} trackId - Id of track
+   * @param {TrackEncoding} encoding - Encoding to receive
+   */
+  public setTargetTrackEncoding(trackId: string, encoding: TrackEncoding) {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.setTargetTrackEncoding(trackId, encoding);
+  }
+
+  /**
+   * Enables track encoding so that it will be sent to the server.
+   *
+   * @example
+   *   ```ts
+   *   const trackId = webrtc.addTrack(track, stream, {}, {enabled: true, active_encodings: ["l", "m", "h"]});
+   *   webrtc.disableTrackEncoding(trackId, "l");
+   *   // wait some time
+   *   webrtc.enableTrackEncoding(trackId, "l");
+   *   ```;
+   *
+   * @param {string} trackId - Id of track
+   * @param {TrackEncoding} encoding - Encoding that will be enabled
+   */
+  public enableTrackEncoding(trackId: string, encoding: TrackEncoding) {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.enableTrackEncoding(trackId, encoding);
+  }
+
+  /**
+   * Disables track encoding so that it will be no longer sent to the server.
+   *
+   * @example
+   *   ```ts
+   *   const trackId = webrtc.addTrack(track, stream, {}, {enabled: true, active_encodings: ["l", "m", "h"]});
+   *   webrtc.disableTrackEncoding(trackId, "l");
+   *   ```;
+   *
+   * @param {string} trackId - Id of track
+   * @param {rackEncoding} encoding - Encoding that will be disabled
+   */
+  public disableTrackEncoding(trackId: string, encoding: TrackEncoding) {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    return this.webrtc.disableTrackEncoding(trackId, encoding);
+  }
+
+  /**
+   * Updates the metadata for the current peer.
+   *
+   * @param peerMetadata - Data about this peer that other peers will receive upon joining.
+   *
+   *   If the metadata is different from what is already tracked in the room, the optional callback `onPeerUpdated` will
+   *   be triggered for other peers in the room.
+   */
+  public updatePeerMetadata = (peerMetadata: PeerMetadata): void => {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    this.webrtc.updatePeerMetadata(peerMetadata);
+  };
+
+  /**
+   * Updates the metadata for a specific track.
+   *
+   * @param trackId - TrackId (generated in addTrack) of audio or video track.
+   * @param trackMetadata - Data about this track that other peers will receive upon joining.
+   *
+   *   If the metadata is different from what is already tracked in the room, the optional callback `onTrackUpdated` will
+   *   be triggered for other peers in the room.
+   */
+  public updateTrackMetadata = (trackId: string, trackMetadata: TrackMetadata): void => {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    this.webrtc.updateTrackMetadata(trackId, trackMetadata);
+  };
+
+  /**
+   * Leaves the room. This function should be called when user leaves the room in a clean way e.g. by clicking a
+   * dedicated, custom button `disconnect`. As a result there will be generated one more media event that should be sent
+   * to the RTC Engine. Thanks to it each other peer will be notified that peer left in {@link Callbacks.onPeerLeft},
+   */
+  public leave = () => {
+    if (!this.webrtc) throw this.handleWebRTCNotInitialized();
+
+    this.webrtc.leave();
+  };
+
+  /**
+   * Disconnect from the room, and close the websocket connection. Tries to leave the room gracefully, but if it fails,
+   * it will close the websocket anyway.
+   *
+   * @example
+   *   ```typescript
+   *   const client = new JellyfishClient();
+   *
+   *   client.connect({ ... });
+   *
+   *   client.cleanUp();
+   *   ```;
    */
   cleanUp() {
     try {
       this.webrtc?.leave();
+      this.webrtc?.cleanUp();
     } catch (e) {
       console.warn(e);
     }
