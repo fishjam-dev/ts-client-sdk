@@ -36,7 +36,6 @@ export interface MessageEvents {
    */
   onSocketOpen: (event: Event) => void;
 
-
   /** Emitted when authentication is successful */
   onAuthSuccess: () => void;
 
@@ -47,7 +46,7 @@ export interface MessageEvents {
   onDisconnected: () => void;
 
   /**
-   * Called when peer was accepted. 
+   * Called when peer was accepted.
    */
   onJoinSuccess: (peerId: string, peersInRoom: [Peer]) => void;
 
@@ -172,7 +171,7 @@ export interface Config<PeerMetadata> {
  * client.on("onJoinSuccess", (peerId, peersInRoom) => {
  *  console.log("join success");
  * });
- * 
+ *
  * // Start the peer connection
  * client.connect({
  *  peerMetadata: {},
