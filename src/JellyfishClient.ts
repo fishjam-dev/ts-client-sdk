@@ -609,8 +609,8 @@ export class JellyfishClient<
   /**
    * Sets track encoding that server should send to the client library.
    *
-   * The encoding will be sent whenever it is available. If choosen encoding is temporarily unavailable, some other
-   * encoding will be sent until choosen encoding becomes active again.
+   * The encoding will be sent whenever it is available. If chosen encoding is temporarily unavailable, some other
+   * encoding will be sent until chosen encoding becomes active again.
    *
    * @example
    * ```ts
@@ -669,8 +669,8 @@ export class JellyfishClient<
    *
    * @param peerMetadata - Data about this peer that other peers will receive upon joining.
    *
-   * If the metadata is different from what is already tracked in the room, the optional callback `onPeerUpdated` will
-   * be triggered for other peers in the room.
+   * If the metadata is different from what is already tracked in the room, the event {@link MessageEvents.onPeerUpdated} will
+   * be emitted for other peers in the room.
    */
   public updatePeerMetadata = (peerMetadata: PeerMetadata): void => {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
@@ -684,8 +684,8 @@ export class JellyfishClient<
    * @param trackId - TrackId (generated in addTrack) of audio or video track.
    * @param trackMetadata - Data about this track that other peers will receive upon joining.
    *
-   * If the metadata is different from what is already tracked in the room, the optional callback `onTrackUpdated` will
-   * be triggered for other peers in the room.
+   * If the metadata is different from what is already tracked in the room, the event {@link MessageEvents.onTrackUpdated} will
+   * be emitted for other peers in the room.
    */
   public updateTrackMetadata = (trackId: string, trackMetadata: TrackMetadata): void => {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
