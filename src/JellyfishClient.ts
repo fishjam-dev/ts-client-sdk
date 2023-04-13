@@ -1,6 +1,5 @@
 import {
   BandwidthLimit,
-  Callbacks,
   MembraneWebRTC,
   Peer,
   SerializedMediaEvent,
@@ -13,10 +12,9 @@ import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 
 /**
- * Events emitted by the client with their arguments. OnSendMediaEvent is omitted because it is handled internally.
- * Other events come from {@link Callbacks} defined in MembraneWebRTC.
+ * Events emitted by the client with their arguments.
  */
-export interface MessageEvents extends Omit<Required<Callbacks>, "onSendMediaEvent"> {
+export interface MessageEvents {
   /**
    * Emitted when the websocket connection is closed
    *
@@ -38,8 +36,6 @@ export interface MessageEvents extends Omit<Required<Callbacks>, "onSendMediaEve
    */
   onSocketOpen: (event: Event) => void;
 
-  /** Emitted when authentication is requested via websocket */
-  onAuthRequest: () => void;
 
   /** Emitted when authentication is successful */
   onAuthSuccess: () => void;
@@ -49,6 +45,104 @@ export interface MessageEvents extends Omit<Required<Callbacks>, "onSendMediaEve
 
   /** Emitted when the connection is closed */
   onDisconnected: () => void;
+
+  /**
+   * Called when peer was accepted. 
+   */
+  onJoinSuccess: (peerId: string, peersInRoom: [Peer]) => void;
+
+  /**
+   * Called when peer was not accepted
+   * @param metadata - Pass thru for client application to communicate further actions to frontend
+   */
+  onJoinError: (metadata: any) => void;
+
+  /**
+   * Called every time a local peer is removed by the server.
+   */
+  onRemoved: (reason: string) => void;
+
+  /**
+   * Called when data in a new track arrives.
+   *
+   * This callback is always called after {@link MessageEvents.onTrackAdded}.
+   * It informs user that data related to the given track arrives and can be played or displayed.
+   */
+  onTrackReady: (ctx: TrackContext) => void;
+
+  /**
+   * Called each time the peer which was already in the room, adds new track. Fields track and stream will be set to null.
+   * These fields will be set to non-null value in {@link MessageEvents.onTrackReady}
+   */
+  onTrackAdded: (ctx: TrackContext) => void;
+
+  /**
+   * Called when some track will no longer be sent.
+   *
+   * It will also be called before {@link MessageEvents.onPeerLeft} for each track of this peer.
+   */
+  onTrackRemoved: (ctx: TrackContext) => void;
+
+  /**
+   * Called each time peer has its track metadata updated.
+   */
+  onTrackUpdated: (ctx: TrackContext) => void;
+
+  /**
+   * Called each time new peer joins the room.
+   */
+  onPeerJoined: (peer: Peer) => void;
+
+  /**
+   * Called each time peer leaves the room.
+   */
+  onPeerLeft: (peer: Peer) => void;
+
+  /**
+   * Called each time peer has its metadata updated.
+   */
+  onPeerUpdated: (peer: Peer) => void;
+
+  /**
+   * Called in case of errors related to multimedia session e.g. ICE connection.
+   */
+  onConnectionError: (message: string) => void;
+
+  /**
+   * Currently, this callback is only invoked when DisplayManager in RTC Engine is
+   * enabled and simulcast is disabled.
+   *
+   * Called when priority of video tracks have changed.
+   * @param enabledTracks - list of tracks which will be sent to client from SFU
+   * @param disabledTracks - list of tracks which will not be sent to client from SFU
+   */
+  onTracksPriorityChanged: (enabledTracks: TrackContext[], disabledTracks: TrackContext[]) => void;
+
+  /**
+   * @deprecated Use {@link TrackContext.onEncodingChanged} instead.
+   *
+   * Called each time track encoding has changed.
+   *
+   * Track encoding can change in the following cases:
+   * * when user requested a change
+   * * when sender stopped sending some encoding (because of bandwidth change)
+   * * when receiver doesn't have enough bandwidth
+   *
+   * Some of those reasons are indicated in {@link TrackContext.encodingReason}.
+   *
+   * @param {string} peerId - id of peer that owns track
+   * @param {string} trackId - id of track that changed encoding
+   * @param {TrackEncoding} encoding - new encoding
+   */
+  onTrackEncodingChanged: (peerId: string, trackId: string, encoding: TrackEncoding) => void;
+
+  /**
+   * Called every time the server estimates client's bandiwdth.
+   *
+   * @param {bigint} estimation - client's available incoming bitrate estimated
+   * by the server. It's measured in bits per second.
+   */
+  onBandwidthEstimationChanged: (estimation: bigint) => void;
 }
 
 /** Configuration object for the client */
@@ -70,35 +164,35 @@ export interface Config<PeerMetadata> {
  * JellyfishClient is the main class to interact with Jellyfish.
  *
  * @example
- *   ```typescript
- *   const client = new JellyfishClient();
- *   const peerToken = "YOUR_PEER_TOKEN";
+ * ```typescript
+ * const client = new JellyfishClient();
+ * const peerToken = "YOUR_PEER_TOKEN";
  *
- *   // Start the peer connection
- *   client.connect({
- *   peerMetadata: {},
- *   isSimulcastOn: false,
- *   token: peerToken,
- *   });
+ * // Start the peer connection
+ * client.connect({
+ * peerMetadata: {},
+ * isSimulcastOn: false,
+ * token: peerToken,
+ * });
  *
- *   // You can listen to events emitted by the client
- *   client.on("onJoinSuccess", (peerId, peersInRoom) => {
- *   console.log("join success");
- *   });
+ * // You can listen to events emitted by the client
+ * client.on("onJoinSuccess", (peerId, peersInRoom) => {
+ * console.log("join success");
+ * });
  *
- *   // Close the peer connection
- *   client.cleanUp();
- *   ```
+ * // Close the peer connection
+ * client.cleanUp();
+ * ```
  *
- *   You can register callbacks to handle the events emitted by the Client.
+ * You can register callbacks to handle the events emitted by the Client.
  *
  * @example
- *   ```typescript
+ * ```typescript
  *
- *   client.on("onTrackReady", (ctx) => {
- *    console.log("On track ready");
- *   });
- *   ```;
+ * client.on("onTrackReady", (ctx) => {
+ *  console.log("On track ready");
+ * });
+ * ```
  */
 export class JellyfishClient<
   PeerMetadata extends Record<string, unknown>,
@@ -112,22 +206,22 @@ export class JellyfishClient<
   }
 
   /**
-   * Uses the {@link WebSocket} connection and {@link MembraneWebRTC} to join to the room. Registers the callbacks to
-   * handle the events emitted by the {@link MembraneWebRTC}. Make sure that peer metadata is serializable.
+   * Uses the {@link !WebSocket} connection and {@link @jellyfish-dev/membrane-webrtc-js!MembraneWebRTC | MembraneWebRTC} to join to the room. Registers the callbacks to
+   * handle the events emitted by the {@link @jellyfish-dev/membrane-webrtc-js!MembraneWebRTC | MembraneWebRTC}. Make sure that peer metadata is serializable.
    *
    * @example
-   *   ```typescript
-   *   const client = new JellyfishClient();
+   * ```typescript
+   * const client = new JellyfishClient();
    *
-   *   client.connect({
-   *    peerMetadata: {}
-   *    token: peerToken,
-   *   });
-   *   ```;
+   * client.connect({
+   *  peerMetadata: {}
+   *  token: peerToken,
+   * });
+   * ```
    *
    * @param {ConnectConfig} config - Configuration object for the client
    * @param {string} [config.websocketUrl="ws://localhost:4000/socket/websocket"] - URL of the websocket server defaults
-   *   to `ws://localhost:4000/socket/websocket`. Default is `"ws://localhost:4000/socket/websocket"`
+   * to `ws://localhost:4000/socket/websocket`. Default is `"ws://localhost:4000/socket/websocket"`
    */
   connect(config: Config<PeerMetadata>): void {
     const { peerMetadata, websocketUrl = "ws://localhost:4000/socket/websocket" } = config;
@@ -163,8 +257,6 @@ export class JellyfishClient<
           },
         })
       );
-
-      this.emit("onAuthRequest");
     });
 
     this.webrtc = new MembraneWebRTC();
@@ -243,6 +335,44 @@ export class JellyfishClient<
     });
   }
 
+  /**
+   * Register a callback to be called when the event is emitted.
+   *
+   * @example
+   * ```ts
+   * const callback = ()=>{  };
+   *
+   * client.on("onJoinSuccess", callback);
+   * ```
+   *
+   * @param event - Event name from {@link MessageEvents}
+   * @param listener - Callback function to be called when the event is emitted
+   * @returns This
+   */
+  public on<E extends keyof MessageEvents>(event: E, listener: Required<MessageEvents>[E]): this {
+    return super.on(event, listener);
+  }
+
+  /**
+   * Remove a callback from the list of callbacks to be called when the event is emitted.
+   *
+   * @example
+   * ```ts
+   * const callback = ()=>{  };
+   *
+   * client.on("onJoinSuccess", callback);
+   *
+   * client.off("onJoinSuccess", callback);
+   * ```
+   *
+   * @param event - Event name from {@link MessageEvents}
+   * @param listener - Reference to function to be removed from called callbacks
+   * @returns This
+   */
+  public off<E extends keyof MessageEvents>(event: E, listener: Required<MessageEvents>[E]): this {
+    return super.off(event, listener);
+  }
+
   private handleWebRTCNotInitialized() {
     return new Error("WebRTC is not initialized");
   }
@@ -251,44 +381,44 @@ export class JellyfishClient<
    * Adds track that will be sent to the RTC Engine.
    *
    * @example
-   *   ```ts
-   *   const localStream: MediaStream = new MediaStream();
-   *   try {
-   *     const localAudioStream = await navigator.mediaDevices.getUserMedia(
-   *       { audio: true }
-   *     );
-   *     localAudioStream
-   *       .getTracks()
-   *       .forEach((track) => localStream.addTrack(track));
-   *   } catch (error) {
-   *     console.error("Couldn't get microphone permission:", error);
-   *   }
+   * ```ts
+   * const localStream: MediaStream = new MediaStream();
+   * try {
+   *   const localAudioStream = await navigator.mediaDevices.getUserMedia(
+   *     { audio: true }
+   *   );
+   *   localAudioStream
+   *     .getTracks()
+   *     .forEach((track) => localStream.addTrack(track));
+   * } catch (error) {
+   *   console.error("Couldn't get microphone permission:", error);
+   * }
    *
-   *   try {
-   *     const localVideoStream = await navigator.mediaDevices.getUserMedia(
-   *       { video: true }
-   *     );
-   *     localVideoStream
-   *       .getTracks()
-   *       .forEach((track) => localStream.addTrack(track));
-   *   } catch (error) {
-   *    console.error("Couldn't get camera permission:", error);
-   *   }
+   * try {
+   *   const localVideoStream = await navigator.mediaDevices.getUserMedia(
+   *     { video: true }
+   *   );
+   *   localVideoStream
+   *     .getTracks()
+   *     .forEach((track) => localStream.addTrack(track));
+   * } catch (error) {
+   *  console.error("Couldn't get camera permission:", error);
+   * }
    *
-   *   localStream
-   *    .getTracks()
-   *    .forEach((track) => client.addTrack(track, localStream));
-   *   ```;
+   * localStream
+   *  .getTracks()
+   *  .forEach((track) => client.addTrack(track, localStream));
+   * ```
    *
    * @param track - Audio or video track e.g. from your microphone or camera.
    * @param stream - Stream that this track belongs to.
    * @param trackMetadata - Any information about this track that other peers will receive in
-   *   {@link Callbacks.onPeerJoined}. E.g. this can source of the track - wheather it's screensharing, webcam or some
-   *   other media device.
+   * {@link MessageEvents.onPeerJoined}. E.g. this can source of the track - wheather it's screensharing, webcam or some
+   * other media device.
    * @param simulcastConfig - Simulcast configuration. By default simulcast is disabled. For more information refer to
-   *   {@link SimulcastConfig}.
+   * {@link @jellyfish-dev/membrane-webrtc-js!SimulcastConfig | SimulcastConfig}.
    * @param maxBandwidth - Maximal bandwidth this track can use. Defaults to 0 which is unlimited. This option has no
-   *   effect for simulcast and audio tracks. For simulcast tracks use `{@link MembraneWebRTC.setTrackBandwidth}.
+   * effect for simulcast and audio tracks. For simulcast tracks use {@link JellyfishClient.setTrackBandwidth}.
    * @returns {string} Returns id of added track
    */
   public addTrack(
@@ -307,49 +437,49 @@ export class JellyfishClient<
    * Replaces a track that is being sent to the RTC Engine.
    *
    * @example
-   *   ```ts
-   *   // setup camera
-   *   let localStream: MediaStream = new MediaStream();
-   *   try {
-   *     localVideoStream = await navigator.mediaDevices.getUserMedia(
-   *       VIDEO_CONSTRAINTS
-   *     );
-   *     localVideoStream
-   *       .getTracks()
-   *       .forEach((track) => localStream.addTrack(track));
-   *   } catch (error) {
-   *     console.error("Couldn't get camera permission:", error);
-   *   }
-   *   let oldTrackId;
-   *   localStream
-   *    .getTracks()
-   *    .forEach((track) => trackId = webrtc.addTrack(track, localStream));
+   * ```ts
+   * // setup camera
+   * let localStream: MediaStream = new MediaStream();
+   * try {
+   *   localVideoStream = await navigator.mediaDevices.getUserMedia(
+   *     VIDEO_CONSTRAINTS
+   *   );
+   *   localVideoStream
+   *     .getTracks()
+   *     .forEach((track) => localStream.addTrack(track));
+   * } catch (error) {
+   *   console.error("Couldn't get camera permission:", error);
+   * }
+   * let oldTrackId;
+   * localStream
+   *  .getTracks()
+   *  .forEach((track) => trackId = webrtc.addTrack(track, localStream));
    *
-   *   // change camera
-   *   const oldTrack = localStream.getVideoTracks()[0];
-   *   let videoDeviceId = "abcd-1234";
-   *   navigator.mediaDevices.getUserMedia({
-   *        video: {
-   *          ...(VIDEO_CONSTRAINTS as {}),
-   *          deviceId: {
-   *            exact: videoDeviceId,
-   *          },
-   *        }
-   *     })
-   *     .then((stream) => {
-   *       let videoTrack = stream.getVideoTracks()[0];
-   *       webrtc.replaceTrack(oldTrackId, videoTrack);
-   *     })
-   *     .catch((error) => {
-   *       console.error('Error switching camera', error);
-   *     })
-   *   ```;
+   * // change camera
+   * const oldTrack = localStream.getVideoTracks()[0];
+   * let videoDeviceId = "abcd-1234";
+   * navigator.mediaDevices.getUserMedia({
+   *      video: {
+   *        ...(VIDEO_CONSTRAINTS as {}),
+   *        deviceId: {
+   *          exact: videoDeviceId,
+   *        },
+   *      }
+   *   })
+   *   .then((stream) => {
+   *     let videoTrack = stream.getVideoTracks()[0];
+   *     webrtc.replaceTrack(oldTrackId, videoTrack);
+   *   })
+   *   .catch((error) => {
+   *     console.error('Error switching camera', error);
+   *   })
+   * ```
    *
    * @param track - Audio or video track.
    * @param {string} trackId - Id of audio or video track to replace.
-   * @param {MediaStreamTrack} newTrack
-   * @param {any} [newMetadata] - Optional track metadata to apply to the new track. If no track metadata is passed, the
-   *   old track metadata is retained.
+   * @param {MediaStreamTrack} newTrack - New audio or video track.
+   * @param {TrackMetadata} [newMetadata] - Optional track metadata to apply to the new track. If no track metadata is passed, the
+   * old track metadata is retained.
    * @returns {Promise<boolean>} Success
    */
   public async replaceTrack(
@@ -395,28 +525,28 @@ export class JellyfishClient<
    * Removes a track from connection that was being sent to the RTC Engine.
    *
    * @example
-   *   ```ts
-   *   // setup camera
-   *   let localStream: MediaStream = new MediaStream();
-   *   try {
-   *     localVideoStream = await navigator.mediaDevices.getUserMedia(
-   *       VIDEO_CONSTRAINTS
-   *     );
-   *     localVideoStream
-   *       .getTracks()
-   *       .forEach((track) => localStream.addTrack(track));
-   *   } catch (error) {
-   *     console.error("Couldn't get camera permission:", error);
-   *   }
+   * ```ts
+   * // setup camera
+   * let localStream: MediaStream = new MediaStream();
+   * try {
+   *   localVideoStream = await navigator.mediaDevices.getUserMedia(
+   *     VIDEO_CONSTRAINTS
+   *   );
+   *   localVideoStream
+   *     .getTracks()
+   *     .forEach((track) => localStream.addTrack(track));
+   * } catch (error) {
+   *   console.error("Couldn't get camera permission:", error);
+   * }
    *
-   *   let trackId
-   *   localStream
-   *    .getTracks()
-   *    .forEach((track) => trackId = webrtc.addTrack(track, localStream));
+   * let trackId
+   * localStream
+   *  .getTracks()
+   *  .forEach((track) => trackId = webrtc.addTrack(track, localStream));
    *
-   *   // remove track
-   *   webrtc.removeTrack(trackId)
-   *   ```;
+   * // remove track
+   * webrtc.removeTrack(trackId)
+   * ```
    *
    * @param {string} trackId - Id of audio or video track to remove.
    */
@@ -458,11 +588,11 @@ export class JellyfishClient<
    * This function allows to adjust resolution and number of video tracks sent by an SFU to a client.
    *
    * @param {number} bigScreens - Number of screens with big size (if simulcast is used this will limit number of tracks
-   *   sent with highest quality).
+   * sent with highest quality).
    * @param {number} smallScreens - Number of screens with small size (if simulcast is used this will limit number of
-   *   tracks sent with lowest quality).
+   * tracks sent with lowest quality).
    * @param {number} mediumScreens - Number of screens with medium size (if simulcast is used this will limit number of
-   *   tracks sent with medium quality).
+   * tracks sent with medium quality).
    * @param {boolean} allSameSize - Flag that indicates whether all screens should use the same quality
    */
   public setPreferedVideoSizes(
@@ -483,9 +613,9 @@ export class JellyfishClient<
    * encoding will be sent until choosen encoding becomes active again.
    *
    * @example
-   *   ```ts
-   *   webrtc.setTargetTrackEncoding(incomingTrackCtx.trackId, "l")
-   *   ```;
+   * ```ts
+   * webrtc.setTargetTrackEncoding(incomingTrackCtx.trackId, "l")
+   * ```
    *
    * @param {string} trackId - Id of track
    * @param {TrackEncoding} encoding - Encoding to receive
@@ -500,12 +630,12 @@ export class JellyfishClient<
    * Enables track encoding so that it will be sent to the server.
    *
    * @example
-   *   ```ts
-   *   const trackId = webrtc.addTrack(track, stream, {}, {enabled: true, active_encodings: ["l", "m", "h"]});
-   *   webrtc.disableTrackEncoding(trackId, "l");
-   *   // wait some time
-   *   webrtc.enableTrackEncoding(trackId, "l");
-   *   ```;
+   * ```ts
+   * const trackId = webrtc.addTrack(track, stream, {}, {enabled: true, active_encodings: ["l", "m", "h"]});
+   * webrtc.disableTrackEncoding(trackId, "l");
+   * // wait some time
+   * webrtc.enableTrackEncoding(trackId, "l");
+   * ```
    *
    * @param {string} trackId - Id of track
    * @param {TrackEncoding} encoding - Encoding that will be enabled
@@ -520,10 +650,10 @@ export class JellyfishClient<
    * Disables track encoding so that it will be no longer sent to the server.
    *
    * @example
-   *   ```ts
-   *   const trackId = webrtc.addTrack(track, stream, {}, {enabled: true, active_encodings: ["l", "m", "h"]});
-   *   webrtc.disableTrackEncoding(trackId, "l");
-   *   ```;
+   * ```ts
+   * const trackId = webrtc.addTrack(track, stream, {}, {enabled: true, active_encodings: ["l", "m", "h"]});
+   * webrtc.disableTrackEncoding(trackId, "l");
+   * ```
    *
    * @param {string} trackId - Id of track
    * @param {rackEncoding} encoding - Encoding that will be disabled
@@ -539,8 +669,8 @@ export class JellyfishClient<
    *
    * @param peerMetadata - Data about this peer that other peers will receive upon joining.
    *
-   *   If the metadata is different from what is already tracked in the room, the optional callback `onPeerUpdated` will
-   *   be triggered for other peers in the room.
+   * If the metadata is different from what is already tracked in the room, the optional callback `onPeerUpdated` will
+   * be triggered for other peers in the room.
    */
   public updatePeerMetadata = (peerMetadata: PeerMetadata): void => {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
@@ -554,8 +684,8 @@ export class JellyfishClient<
    * @param trackId - TrackId (generated in addTrack) of audio or video track.
    * @param trackMetadata - Data about this track that other peers will receive upon joining.
    *
-   *   If the metadata is different from what is already tracked in the room, the optional callback `onTrackUpdated` will
-   *   be triggered for other peers in the room.
+   * If the metadata is different from what is already tracked in the room, the optional callback `onTrackUpdated` will
+   * be triggered for other peers in the room.
    */
   public updateTrackMetadata = (trackId: string, trackMetadata: TrackMetadata): void => {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
@@ -566,7 +696,7 @@ export class JellyfishClient<
   /**
    * Leaves the room. This function should be called when user leaves the room in a clean way e.g. by clicking a
    * dedicated, custom button `disconnect`. As a result there will be generated one more media event that should be sent
-   * to the RTC Engine. Thanks to it each other peer will be notified that peer left in {@link Callbacks.onPeerLeft},
+   * to the RTC Engine. Thanks to it each other peer will be notified that peer left in {@link MessageEvents.onPeerLeft},
    */
   public leave = () => {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
@@ -579,13 +709,13 @@ export class JellyfishClient<
    * it will close the websocket anyway.
    *
    * @example
-   *   ```typescript
-   *   const client = new JellyfishClient();
+   * ```typescript
+   * const client = new JellyfishClient();
    *
-   *   client.connect({ ... });
+   * client.connect({ ... });
    *
-   *   client.cleanUp();
-   *   ```;
+   * client.cleanUp();
+   * ```
    */
   cleanUp() {
     try {

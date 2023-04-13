@@ -1,6 +1,5 @@
 {
   "semi": true,
   "tabWidth": 2,
-  "printWidth": 120,
-  "plugins": ["prettier-plugin-jsdoc"]
+  "printWidth": 120
 }
