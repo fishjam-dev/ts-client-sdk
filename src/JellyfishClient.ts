@@ -194,8 +194,8 @@ export interface Config<PeerMetadata> {
  * ```
  */
 export class JellyfishClient<
-  PeerMetadata extends Record<string, unknown>,
-  TrackMetadata extends Record<string, unknown>
+  PeerMetadata,
+  TrackMetadata
 > extends (EventEmitter as new () => TypedEmitter<Required<MessageEvents>>) {
   private websocket: WebSocket | null = null;
   private webrtc: MembraneWebRTC | null = null;
