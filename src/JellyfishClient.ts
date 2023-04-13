@@ -149,9 +149,6 @@ export interface Config<PeerMetadata> {
   /** Metadata for the peer */
   peerMetadata: PeerMetadata;
 
-  /** Whether to enable simulcast or not */
-  isSimulcastOn: boolean;
-
   /** URL of the websocket server */
   websocketUrl?: string;
 
@@ -175,7 +172,6 @@ export interface Config<PeerMetadata> {
  * // Start the peer connection
  * client.connect({
  *  peerMetadata: {},
- *  isSimulcastOn: false,
  *  token: peerToken,
  * });
  *
