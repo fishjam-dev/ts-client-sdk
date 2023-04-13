@@ -168,16 +168,16 @@ export interface Config<PeerMetadata> {
  * const client = new JellyfishClient();
  * const peerToken = "YOUR_PEER_TOKEN";
  *
- * // Start the peer connection
- * client.connect({
- * peerMetadata: {},
- * isSimulcastOn: false,
- * token: peerToken,
- * });
- *
  * // You can listen to events emitted by the client
  * client.on("onJoinSuccess", (peerId, peersInRoom) => {
- * console.log("join success");
+ *  console.log("join success");
+ * });
+ * 
+ * // Start the peer connection
+ * client.connect({
+ *  peerMetadata: {},
+ *  isSimulcastOn: false,
+ *  token: peerToken,
  * });
  *
  * // Close the peer connection
