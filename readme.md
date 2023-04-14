@@ -95,6 +95,3 @@ async function startScreenSharing(webrtc: MembraneWebRTC) {
 ```
 
 For more examples, see [examples](https://github.com/jellyfish-dev/ts-client-sdk/tree/main/examples) folder.
-
-[//]: # (TODO Rethink this)
-More information about usage of webrtc can be found in [MembraneWebRTC documentation](https://jellyfish-dev.github.io/membrane-webrtc-js/).
