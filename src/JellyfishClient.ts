@@ -149,7 +149,9 @@ export interface Config<PeerMetadata> {
   /** Metadata for the peer */
   peerMetadata: PeerMetadata;
 
-  /** URL of the websocket server */
+  /** URL of the websocket server
+   * Default is `"ws://localhost:4000/socket/peer/websocket"`
+   */
   websocketUrl?: string;
 
   /** Token for authentication */
@@ -215,8 +217,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * ```
    *
    * @param {ConnectConfig} config - Configuration object for the client
-   * @param {string} [config.websocketUrl="ws://localhost:4000/socket/peer/websocket"] - URL of the websocket server defaults
-   * to `ws://localhost:4000/socket/peer/websocket`. Default is `"ws://localhost:4000/socket/peer/websocket"`
    */
   connect(config: Config<PeerMetadata>): void {
     const { peerMetadata, websocketUrl = "ws://localhost:4000/socket/peer/websocket" } = config;
