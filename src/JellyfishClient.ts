@@ -252,7 +252,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
       try {
         const data = ControlMessage.decode(uint8Array);
-        console.log("MESSAGE", data);
         if (data.authenticated !== undefined) {
           this.emit("onAuthSuccess");
         } else if (data.authRequest !== undefined) {
