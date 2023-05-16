@@ -10,6 +10,7 @@ import {
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
+import { ControlMessage } from "./protos/jellyfish/peer_notifications";
 
 /**
  * Events emitted by the client with their arguments.
@@ -238,32 +239,29 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     });
 
     this.websocket.addEventListener("open", (_event) => {
-      this.websocket?.send(
-        JSON.stringify({
-          type: "controlMessage",
-          data: {
-            type: "authRequest",
-            token: config?.token,
-          },
-        })
-      );
+      this.websocket?.send(ControlMessage.encode({ authRequest: { token: config?.token } }).finish());
     });
 
     this.webrtc = new MembraneWebRTC();
 
     this.setupCallbacks();
 
-    this.websocket.addEventListener("message", (event) => {
-      const data = JSON.parse(event.data);
+    this.websocket.addEventListener("message", async (event) => {
+      const arrayBuffer = await new Response(event.data).arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
 
-      if (data["type"] == "controlMessage") {
-        if (data["data"]["type"] == "authenticated") {
+      try {
+        const data = ControlMessage.decode(uint8Array);
+        console.log("MESSAGE", data);
+        if (data.authenticated !== undefined) {
           this.emit("onAuthSuccess");
-        } else if (data["data"]["type"] == "unauthenticated") {
-          this.emit("onAuthError");
+        } else if (data.authRequest !== undefined) {
+          console.warn("Received unexpected control message: authRequest");
+        } else if (data.mediaEvent !== undefined) {
+          this.webrtc?.receiveMediaEvent(data.mediaEvent.data);
         }
-      } else {
-        this.webrtc?.receiveMediaEvent(data["data"]);
+      } catch (e) {
+        console.warn(`Received invalid control message, error: ${e}`);
       }
     });
 
@@ -274,12 +272,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
   private setupCallbacks() {
     this.webrtc?.on("onSendMediaEvent", (mediaEvent: SerializedMediaEvent) => {
-      const messageJS = {
-        type: "mediaEvent",
-        data: mediaEvent,
-      };
-
-      const message = JSON.stringify(messageJS);
+      const message = ControlMessage.encode({ mediaEvent: { data: mediaEvent } }).finish();
       this.websocket?.send(message);
     });
 
