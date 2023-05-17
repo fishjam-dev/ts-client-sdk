@@ -10,7 +10,7 @@ import {
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
-import { ControlMessage } from "./protos/jellyfish/peer_notifications";
+import { PeerMessage } from "./protos/jellyfish/peer_notifications";
 
 /**
  * Events emitted by the client with their arguments.
@@ -227,6 +227,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     }
 
     this.websocket = new WebSocket(`${websocketUrl}`);
+    this.websocket.binaryType = "arraybuffer";
 
     this.websocket.addEventListener("open", (event) => {
       this.emit("onSocketOpen", event);
@@ -239,19 +240,17 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     });
 
     this.websocket.addEventListener("open", (_event) => {
-      this.websocket?.send(ControlMessage.encode({ authRequest: { token: config?.token } }).finish());
+      this.websocket?.send(PeerMessage.encode({ authRequest: { token: config?.token } }).finish());
     });
 
     this.webrtc = new MembraneWebRTC();
 
     this.setupCallbacks();
 
-    this.websocket.addEventListener("message", async (event) => {
-      const arrayBuffer = await new Response(event.data).arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
+    this.websocket.addEventListener("message", (event) => {
+      const uint8Array = new Uint8Array(event.data);
       try {
-        const data = ControlMessage.decode(uint8Array);
+        const data = PeerMessage.decode(uint8Array);
         if (data.authenticated !== undefined) {
           this.emit("onAuthSuccess");
         } else if (data.authRequest !== undefined) {
@@ -271,7 +270,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
   private setupCallbacks() {
     this.webrtc?.on("onSendMediaEvent", (mediaEvent: SerializedMediaEvent) => {
-      const message = ControlMessage.encode({ mediaEvent: { data: mediaEvent } }).finish();
+      const message = PeerMessage.encode({ mediaEvent: { data: mediaEvent } }).finish();
       this.websocket?.send(message);
     });
 
