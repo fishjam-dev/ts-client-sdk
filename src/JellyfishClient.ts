@@ -240,7 +240,8 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     });
 
     this.websocket.addEventListener("open", (_event) => {
-      this.websocket?.send(PeerMessage.encode({ authRequest: { token: config?.token } }).finish());
+      const message = PeerMessage.encode({ authRequest: { token: config?.token } }).finish();
+      this.websocket?.send(message);
     });
 
     this.webrtc = new MembraneWebRTC();
