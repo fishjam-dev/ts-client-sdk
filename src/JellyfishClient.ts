@@ -218,8 +218,8 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   }
 
   /**
-   * Uses the {@link !WebSocket} connection and {@link @jellyfish-dev/membrane-webrtc-js!MembraneWebRTC | MembraneWebRTC} to join to the room. Registers the callbacks to
-   * handle the events emitted by the {@link @jellyfish-dev/membrane-webrtc-js!MembraneWebRTC | MembraneWebRTC}. Make sure that peer metadata is serializable.
+   * Uses the {@link !WebSocket} connection and {@link @jellyfish-dev/membrane-webrtc-js!WebRTCEndpoint | WebRTCEndpoint} to join to the room. Registers the callbacks to
+   * handle the events emitted by the {@link @jellyfish-dev/membrane-webrtc-js!WebRTCEndpoint | WebRTCEndpoint}. Make sure that peer metadata is serializable.
    *
    * @example
    * ```typescript
@@ -248,9 +248,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     console.log({ signaling, websocketUrl });
 
-    // todo check if this works
-    if ((this.websocket && this.websocket.readyState === WebSocket.OPEN) || this.webrtc) {
-      // if (this.status === "initialized") {
+    if (this.status === "initialized") {
       console.log("Cleaning up previous data");
       this.cleanUp();
     }
