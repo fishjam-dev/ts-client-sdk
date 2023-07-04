@@ -34,7 +34,7 @@
     }
   },
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "build": "tsc",
     "docs": "typedoc src",
     "format": "prettier --write . --ignore-path ./.eslintignore",
     "format:check": "prettier --check . --ignore-path ./.eslintignore",
