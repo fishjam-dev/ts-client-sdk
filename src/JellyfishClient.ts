@@ -208,7 +208,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    *
    * @example
    * ```typescript
-   * const client = new JellyfishClient();
+   * const client = new JellyfishClient<PeerMetadata, TrackMetadata>();
    *
    * client.connect({
    *  peerMetadata: {},
@@ -710,7 +710,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    *
    * @example
    * ```typescript
-   * const client = new JellyfishClient();
+   * const client = new JellyfishClient<PeerMetadata, TrackMetadata>();
    *
    * client.connect({ ... });
    *
@@ -729,8 +729,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     }
     this.removeEventListeners?.();
     this.removeEventListeners = null;
-    // todo add
-    // remove all listeners if possible
     if (this.isOpen(this.websocket || null)) {
       this.websocket?.close();
     }
