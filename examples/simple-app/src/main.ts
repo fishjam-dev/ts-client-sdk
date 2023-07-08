@@ -250,7 +250,7 @@ enumerateDevicesButton.addEventListener("click", () => {
 // Screen sharing view
 
 const templateClone = (templateVideoPlayer as HTMLTemplateElement).content.firstElementChild!.cloneNode(
-  true
+  true,
 )! as HTMLElement;
 screenSharingContainer.appendChild(templateClone);
 
