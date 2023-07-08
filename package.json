@@ -50,7 +50,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^2.8.4",
     "react": "^18.2.0",
-    "typed-emitter": "^2.1.0",
     "typedoc": "^0.23.28",
     "typedoc-plugin-external-resolver": "github:ostatni5/typedoc-plugin-external-resolver",
     "typedoc-plugin-mdn-links": "^3.0.3",
@@ -59,7 +58,8 @@
   "dependencies": {
     "@jellyfish-dev/membrane-webrtc-js": "0.5.0",
     "events": "^3.3.0",
-    "ts-proto": "^1.147.2"
+    "ts-proto": "^1.147.2",
+    "typed-emitter": "^2.1.0"
   },
   "directories": {
     "example": "examples"
