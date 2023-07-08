@@ -13,6 +13,7 @@ import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
 
 export type Peer = Endpoint
+export type Component = Endpoint
 
 /**
  * Events emitted by the client with their arguments.
@@ -99,6 +100,21 @@ export interface MessageEvents {
    * Called each time peer has its metadata updated.
    */
   peerUpdated: (peer: Peer) => void;
+
+  /**
+   * Emitted each time new component is added to the room.
+   */
+  componentAdded: (component: Component) => void;
+
+  /**
+   * Emitted each time component is removed.
+   */
+  componentRemoved: (component: Component) => void;
+
+  /**
+   * Emitted each time component has its metadata updated.
+   */
+  componentUpdated: (component: Component) => void;
 
   /**
    * Called in case of errors related to multimedia session e.g. ICE connection.
@@ -303,13 +319,25 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       this.emit("disconnected");
     });
     this.webrtc?.on("endpointAdded", (endpoint: Endpoint) => {
-      this.emit("peerJoined", endpoint);
+      if (endpoint.type === "webrtc") {
+        this.emit("peerJoined", endpoint);
+      } else {
+        this.emit("componentAdded", endpoint);
+      }
     });
     this.webrtc?.on("endpointRemoved", (endpoint: Endpoint) => {
-      this.emit("peerLeft", endpoint);
+      if (endpoint.type === "webrtc") {
+        this.emit("peerLeft", endpoint);
+      } else {
+        this.emit("componentRemoved", endpoint);
+      }
     });
     this.webrtc?.on("endpointUpdated", (endpoint: Endpoint) => {
-      this.emit("peerUpdated", endpoint);
+      if (endpoint.type === "webrtc") {
+        this.emit("peerUpdated", endpoint);
+      } else {
+        this.emit("componentUpdated", endpoint);
+      }
     });
     this.webrtc?.on("trackReady", (ctx: TrackContext) => {
       this.emit("trackReady", ctx);
