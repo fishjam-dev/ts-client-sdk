@@ -347,6 +347,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     });
     this.webrtc?.on("trackRemoved", (ctx: TrackContext) => {
       this.emit("trackRemoved", ctx);
+      ctx.removeAllListeners();
     });
     this.webrtc?.on("trackUpdated", (ctx: TrackContext) => {
       this.emit("trackUpdated", ctx);
