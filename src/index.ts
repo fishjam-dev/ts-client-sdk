@@ -6,5 +6,5 @@ export {
   TrackEncoding,
   VadStatus,
   EncodingReason,
-  TrackBandwidthLimit
+  TrackBandwidthLimit,
 } from "@jellyfish-dev/membrane-webrtc-js";

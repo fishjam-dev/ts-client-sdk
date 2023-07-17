@@ -6,14 +6,14 @@ import {
   SimulcastConfig,
   TrackBandwidthLimit,
   TrackContext,
-  TrackEncoding
+  TrackEncoding,
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
 
-export type Peer = Endpoint
-export type Component = Endpoint
+export type Peer = Endpoint;
+export type Component = Endpoint;
 
 /**
  * Events emitted by the client with their arguments.
@@ -158,7 +158,7 @@ export type SignalingUrl = {
    * Default is `"/socket/peer/websocket"`
    */
   path?: string;
-}
+};
 
 /** Configuration object for the client */
 export interface Config<PeerMetadata> {
@@ -235,11 +235,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * @param {Config} config - Configuration object for the client
    */
   connect(config: Config<PeerMetadata>): void {
-    const {
-      token,
-      peerMetadata,
-      signaling
-    } = config;
+    const { token, peerMetadata, signaling } = config;
 
     const protocol = signaling?.protocol ?? "ws";
     const host = signaling?.host ?? "localhost:5002";
@@ -747,7 +743,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * ```
    */
   cleanUp() {
-
     try {
       this.webrtc?.removeAllListeners();
       this.webrtc?.disconnect();
