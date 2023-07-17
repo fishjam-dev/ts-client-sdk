@@ -4,8 +4,8 @@ const SCREEN_SHARING_MEDIA_CONSTRAINTS = {
   video: {
     frameRate: { ideal: 20, max: 25 },
     width: { max: 1920, ideal: 1920 },
-    height: { max: 1080, ideal: 1080 }
-  }
+    height: { max: 1080, ideal: 1080 },
+  },
 };
 
 // Example metadata types for peer and track
@@ -26,7 +26,7 @@ const peerToken = prompt("Enter peer token") ?? "YOUR_PEER_TOKEN";
 // Start the peer connection
 client.connect({
   peerMetadata: { name: "peer" },
-  token: peerToken
+  token: peerToken,
   // if websocketUrl is not provided, it will default to ws://localhost:5002/socket/peer/websocket
 });
 
@@ -52,7 +52,7 @@ client.on("trackReady", (ctx) => {
   // Create a new video element to display the media
   const videoPlayer = document.createElement("video");
   videoPlayer.id = peerId;
-  videoPlayer.oncanplaythrough = function() {
+  videoPlayer.oncanplaythrough = function () {
     // Chrome blocks autoplay of unmuted video
     videoPlayer.muted = true;
     videoPlayer.play();
