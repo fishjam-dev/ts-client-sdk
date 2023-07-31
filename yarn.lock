@@ -53,9 +53,9 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@jellyfish-dev/membrane-webrtc-js@file:../membrane-webrtc-js":
+"@jellyfish-dev/membrane-webrtc-js@github:jellyfish-dev/membrane-webrtc-js#master":
   version "0.5.1"
-  resolved "file:../membrane-webrtc-js"
+  resolved "git+ssh://git@github.com/jellyfish-dev/membrane-webrtc-js.git#bccc2bd509ab8148f09eaadf8211b8b6b87a78ce"
   dependencies:
     events "^3.3.0"
     typed-emitter "^2.1.0"
@@ -1207,6 +1207,11 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+uuid@^8.3.2:
+  version "8.3.2"
+  resolved "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz"
+  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
 vscode-oniguruma@^1.7.0:
   version "1.7.0"
