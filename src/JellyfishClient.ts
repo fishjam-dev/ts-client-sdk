@@ -13,7 +13,6 @@ import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
 
 export type Peer = Endpoint;
-export type Component = Endpoint;
 
 /**
  * Events emitted by the client with their arguments.
@@ -100,21 +99,6 @@ export interface MessageEvents {
    * Called each time peer has its metadata updated.
    */
   peerUpdated: (peer: Peer) => void;
-
-  /**
-   * Emitted each time new component is added to the room.
-   */
-  componentAdded: (component: Component) => void;
-
-  /**
-   * Emitted each time component is removed.
-   */
-  componentRemoved: (component: Component) => void;
-
-  /**
-   * Emitted each time component has its metadata updated.
-   */
-  componentUpdated: (component: Component) => void;
 
   /**
    * Called in case of errors related to multimedia session e.g. ICE connection.
@@ -317,22 +301,16 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.webrtc?.on("endpointAdded", (endpoint: Endpoint) => {
       if (endpoint.type === "webrtc") {
         this.emit("peerJoined", endpoint);
-      } else {
-        this.emit("componentAdded", endpoint);
       }
     });
     this.webrtc?.on("endpointRemoved", (endpoint: Endpoint) => {
       if (endpoint.type === "webrtc") {
         this.emit("peerLeft", endpoint);
-      } else {
-        this.emit("componentRemoved", endpoint);
       }
     });
     this.webrtc?.on("endpointUpdated", (endpoint: Endpoint) => {
       if (endpoint.type === "webrtc") {
         this.emit("peerUpdated", endpoint);
-      } else {
-        this.emit("componentUpdated", endpoint);
       }
     });
     this.webrtc?.on("trackReady", (ctx: TrackContext) => {
@@ -500,10 +478,9 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    *   })
    * ```
    *
-   * @param track - Audio or video track.
    * @param {string} trackId - Id of audio or video track to replace.
    * @param {MediaStreamTrack} newTrack - New audio or video track.
-   * @param {TrackMetadata} [newMetadata] - Optional track metadata to apply to the new track. If no track metadata is passed, the
+   * @param {TrackMetadata} [newTrackMetadata] - Optional track metadata to apply to the new track. If no track metadata is passed, the
    * old track metadata is retained.
    * @returns {Promise<boolean>} Success
    */
