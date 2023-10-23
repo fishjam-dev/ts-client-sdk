@@ -29,12 +29,12 @@ type Track = {
 };
 const remoteTracks = {
   canvas: {
-    id: null,
+    id: null
   } as Track,
   screen: {
-    id: null,
+    id: null
   } as Track,
-  cameras: {} as Record<string, Track>,
+  cameras: {} as Record<string, Track>
 };
 
 localVideo.play();
@@ -125,7 +125,9 @@ client.on("peerJoined", (peer) => {
   remotePeers.appendChild(clone);
   toastInfo(`New peer joined`);
 });
-client.on("peerUpdated", (_peer) => {});
+client.on("peerUpdated", (_peer) => {
+});
+
 client.on("peerLeft", (peer) => {
   const peerComponent = document.querySelector(`div[data-peer-id="${peer.id}"`)!;
   peerComponent.remove();
@@ -133,29 +135,51 @@ client.on("peerLeft", (peer) => {
 });
 client.on("trackReady", (ctx) => {
   console.log("On track ready");
+  console.log({ name: "trackReady", ctx });
   const peerId = ctx.endpoint.id;
   const peerComponent = document.querySelector(`div[data-peer-id="${peerId}"`)!;
-  const videoPlayer: HTMLVideoElement = peerComponent.querySelector(".remote-peer-template-video")!;
+
+  const videoPlayerTemplate = document.querySelector("#remote-peer-template-video")!;
+  // @ts-ignore
+  const videoWrapper = videoPlayerTemplate.content.cloneNode(true);
+  const videoPlayer: HTMLVideoElement = videoWrapper.querySelector<HTMLVideoElement>(`video`);
+
+  const container = peerComponent.querySelector(".remote-videos");
+
+  if (!container) throw new Error("Remote videos container not found!");
+
+  const simulcastContainer: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-enabled`);
+  simulcastContainer.innerHTML = (ctx?.simulcastConfig?.enabled || false).toString()
+
+  container.appendChild(videoWrapper);
 
   videoPlayer.srcObject = ctx.stream;
-  videoPlayer.play();
+  videoPlayer.onloadedmetadata = () => {
+    videoPlayer.play();
+  };
 });
 
 client.on("trackAdded", (ctx) => {
-  ctx.on("encodingChanged", () => {});
-  ctx.on("voiceActivityChanged", () => {});
+  ctx.on("encodingChanged", () => {
+  });
+  ctx.on("voiceActivityChanged", () => {
+  });
 });
 
-client.on("trackRemoved", (_ctx) => {});
-client.on("trackUpdated", (_ctx) => {});
-client.on("bandwidthEstimationChanged", (_estimation) => {});
-client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {});
+client.on("trackRemoved", (_ctx) => {
+});
+client.on("trackUpdated", (_ctx) => {
+});
+client.on("bandwidthEstimationChanged", (_estimation) => {
+});
+client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {
+});
 
 connectButton.addEventListener("click", () => {
   console.log("Connect");
   client.connect({
     peerMetadata: { name: peerNameInput.value || "" },
-    token: peerTokenInput.value,
+    token: peerTokenInput.value
   });
   elementsToShowIfConnected.forEach((e) => e.classList.remove("hidden"));
 });
@@ -170,12 +194,12 @@ const addTrack = (stream: MediaStream): Track => {
   console.log("Add track");
   const trackMetadata: TrackMetadata = {
     type: "camera",
-    active: true,
+    active: true
   };
   const track = stream.getVideoTracks()[0];
   const id = client.addTrack(track, stream, trackMetadata) || null;
   return {
-    id,
+    id
   };
 };
 
@@ -250,7 +274,7 @@ enumerateDevicesButton.addEventListener("click", () => {
 // Screen sharing view
 
 const templateClone = (templateVideoPlayer as HTMLTemplateElement).content.firstElementChild!.cloneNode(
-  true,
+  true
 )! as HTMLElement;
 screenSharingContainer.appendChild(templateClone);
 
