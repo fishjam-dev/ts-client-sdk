@@ -136,20 +136,53 @@ client.on("peerLeft", (peer) => {
 client.on("trackReady", (ctx) => {
   console.log("On track ready");
   console.log({ name: "trackReady", ctx });
+  if (!ctx.trackId) return;
+
   const peerId = ctx.endpoint.id;
   const peerComponent = document.querySelector(`div[data-peer-id="${peerId}"`)!;
 
   const videoPlayerTemplate = document.querySelector("#remote-peer-template-video")!;
+
   // @ts-ignore
   const videoWrapper = videoPlayerTemplate.content.cloneNode(true);
+
+  const tracksContainer: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.remote-track-container`);
+  tracksContainer.dataset.trackId = ctx.trackId;
+
   const videoPlayer: HTMLVideoElement = videoWrapper.querySelector<HTMLVideoElement>(`video`);
 
   const container = peerComponent.querySelector(".remote-videos");
 
   if (!container) throw new Error("Remote videos container not found!");
 
+  // -- simulcast --
   const simulcastContainer: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-enabled`);
-  simulcastContainer.innerHTML = (ctx?.simulcastConfig?.enabled || false).toString()
+  simulcastContainer.innerHTML = (ctx?.simulcastConfig?.enabled || false).toString();
+
+  const simulcastRadios: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-radios`);
+  if (!ctx?.simulcastConfig?.enabled) {
+    simulcastRadios.classList.add("hidden");
+  }
+
+  const simulcastInputL: HTMLInputElement = videoWrapper.querySelector<HTMLInputElement>(".simulcast-input-radio-l");
+  const simulcastInputM: HTMLInputElement = videoWrapper.querySelector<HTMLInputElement>(".simulcast-input-radio-m");
+  const simulcastInputH: HTMLInputElement = videoWrapper.querySelector<HTMLInputElement>(".simulcast-input-radio-h");
+
+  simulcastInputL.setAttribute("name", `${ctx.trackId}-simulcast`);
+  simulcastInputM.setAttribute("name", `${ctx.trackId}-simulcast`);
+  simulcastInputH.setAttribute("name", `${ctx.trackId}-simulcast`);
+
+  simulcastInputL.addEventListener("click", () => {
+    client.setTargetTrackEncoding(ctx.trackId, "l");
+  });
+  simulcastInputL.addEventListener("click", () => {
+    client.setTargetTrackEncoding(ctx.trackId, "m");
+  });
+  simulcastInputL.addEventListener("click", () => {
+    client.setTargetTrackEncoding(ctx.trackId, "h");
+  });
+
+  // -- simulcast
 
   container.appendChild(videoWrapper);
 
@@ -161,12 +194,19 @@ client.on("trackReady", (ctx) => {
 
 client.on("trackAdded", (ctx) => {
   ctx.on("encodingChanged", () => {
+    const activeEncodingElement = document.querySelector(`div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`)!;
+    console.log({ ctx, activeEncodingElement });
+    activeEncodingElement.innerHTML = ctx.encoding ?? "";
   });
   ctx.on("voiceActivityChanged", () => {
   });
 });
 
-client.on("trackRemoved", (_ctx) => {
+client.on("trackRemoved", (ctx) => {
+  const tracksContainer: HTMLElement | null = document.querySelector(`div[data-track-id="${ctx.trackId}"`);
+  console.log({ name: "track removed", ctx, tracksContainer });
+  if (!tracksContainer) return;
+  tracksContainer.remove();
 });
 client.on("trackUpdated", (_ctx) => {
 });
