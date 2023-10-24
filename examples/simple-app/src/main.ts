@@ -126,6 +126,7 @@ client.on("peerJoined", (peer) => {
   remotePeers.appendChild(clone);
   toastInfo(`New peer joined`);
 });
+
 client.on("peerUpdated", (_peer) => {
 });
 
