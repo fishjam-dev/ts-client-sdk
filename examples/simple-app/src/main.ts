@@ -143,7 +143,7 @@ const setUpSimulcastCheckbox = (element: HTMLDivElement, trackId: string, encodi
   simulcastInputL.setAttribute("name", `${trackId}-simulcast`);
 
   simulcastInputL.addEventListener("click", () => {
-    if (client.tracks[trackId]?.simulcastConfig?.enabled) {
+    if (client.remoteTracks[trackId]?.simulcastConfig?.enabled) {
       client.setTargetTrackEncoding(trackId, encoding);
     } else {
       console.warn("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");

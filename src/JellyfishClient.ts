@@ -287,8 +287,16 @@ export class JellyfishClient<PeerMetadata, TrackMetadata>
     this.status = "initialized";
   }
 
-  get tracks(): Readonly<Record<string, TrackContext<TrackMetadata>>> {
-    return this.webrtc?.tracks ?? {};
+  /**
+   * Returns a snapshot of currently received remote tracks.
+   *
+   * @example
+   * if (client.remoteTracks[trackId]?.simulcastConfig?.enabled) {
+   *   client.setTargetTrackEncoding(trackId, encoding);
+   * }
+   */
+  get remoteTracks(): Readonly<Record<string, TrackContext<TrackMetadata>>> {
+    return this.webrtc?.remoteTracks ?? {};
   }
 
   private setupCallbacks() {
