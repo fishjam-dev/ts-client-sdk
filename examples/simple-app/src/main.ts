@@ -1,7 +1,7 @@
 import "./style.css";
 
 import { createStream } from "./createMockStream";
-import { Endpoint } from "@jellyfish-dev/membrane-webrtc-js";
+import { Endpoint, TrackEncoding } from "@jellyfish-dev/membrane-webrtc-js";
 import { JellyfishClient } from "@jellyfish-dev/ts-client-sdk";
 import { enumerateDevices, getUserMedia, SCREEN_SHARING_MEDIA_CONSTRAINTS } from "@jellyfish-dev/browser-media-utils";
 
@@ -133,6 +133,25 @@ client.on("peerLeft", (peer) => {
   peerComponent.remove();
   toastInfo(`Peer left`);
 });
+
+const setUpSimulcastCheckbox = (element: HTMLDivElement, trackId: string, encoding: "l" | "m" | "h") => {
+  const simulcastInputL: HTMLInputElement | null = element.querySelector<HTMLInputElement>(`.simulcast-input-radio-${encoding}`);
+  if (!simulcastInputL) return;
+
+  simulcastInputL.setAttribute("name", `${trackId}-simulcast`);
+
+  simulcastInputL.addEventListener("click", () => {
+    if (client.tracks[trackId]?.simulcastConfig?.enabled) {
+      client.setTargetTrackEncoding(trackId, encoding);
+    } else {
+      console.warn("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");
+      toastInfo("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");
+    }
+  });
+};
+
+const ENCODINGS: TrackEncoding[] = ["l", "m", "h"];
+
 client.on("trackReady", (ctx) => {
   console.log("On track ready");
   console.log({ name: "trackReady", ctx });
@@ -155,49 +174,17 @@ client.on("trackReady", (ctx) => {
 
   if (!container) throw new Error("Remote videos container not found!");
 
-  // -- simulcast --
   const simulcastContainer: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-enabled`);
   simulcastContainer.innerHTML = (ctx?.simulcastConfig?.enabled || false).toString();
 
   const simulcastRadios: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-radios`);
   if (!ctx?.simulcastConfig?.enabled) {
-    // simulcastRadios.classList.add("hidden");
+    simulcastRadios.classList.add("hidden");
   }
 
-  const simulcastInputL: HTMLInputElement = videoWrapper.querySelector<HTMLInputElement>(".simulcast-input-radio-l");
-  const simulcastInputM: HTMLInputElement = videoWrapper.querySelector<HTMLInputElement>(".simulcast-input-radio-m");
-  const simulcastInputH: HTMLInputElement = videoWrapper.querySelector<HTMLInputElement>(".simulcast-input-radio-h");
-
-  simulcastInputL.setAttribute("name", `${ctx.trackId}-simulcast`);
-  simulcastInputM.setAttribute("name", `${ctx.trackId}-simulcast`);
-  simulcastInputH.setAttribute("name", `${ctx.trackId}-simulcast`);
-
-  simulcastInputL.addEventListener("click", () => {
-    if (client.tracks[ctx.trackId]?.simulcastConfig?.enabled) {
-      client.setTargetTrackEncoding(ctx.trackId, "l");
-    } else {
-      console.warn("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.")
-      toastInfo("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");
-    }
+  ENCODINGS.forEach((encoding) => {
+    setUpSimulcastCheckbox(videoWrapper, ctx.trackId, encoding);
   });
-  simulcastInputM.addEventListener("click", () => {
-    if (client.tracks[ctx.trackId]?.simulcastConfig?.enabled) {
-      client.setTargetTrackEncoding(ctx.trackId, "m");
-    } else {
-      console.warn("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.")
-      toastInfo("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");
-    }
-  });
-  simulcastInputH.addEventListener("click", () => {
-    if (client.tracks[ctx.trackId]?.simulcastConfig?.enabled) {
-      client.setTargetTrackEncoding(ctx.trackId, "h");
-    } else {
-      console.warn("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.")
-      toastInfo("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");
-    }
-  });
-
-  // -- simulcast
 
   container.appendChild(videoWrapper);
 
