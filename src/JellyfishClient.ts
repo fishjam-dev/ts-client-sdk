@@ -291,12 +291,12 @@ export class JellyfishClient<PeerMetadata, TrackMetadata>
    * Returns a snapshot of currently received remote tracks.
    *
    * @example
-   * if (client.remoteTracks[trackId]?.simulcastConfig?.enabled) {
+   * if (client.getRemoteTracks()[trackId]?.simulcastConfig?.enabled) {
    *   client.setTargetTrackEncoding(trackId, encoding);
    * }
    */
-  get remoteTracks(): Readonly<Record<string, TrackContext<TrackMetadata>>> {
-    return this.webrtc?.remoteTracks ?? {};
+  getRemoteTracks(): Readonly<Record<string, TrackContext<TrackMetadata>>> {
+    return this.webrtc?.getRemoteTracks() ?? {};
   }
 
   private setupCallbacks() {
