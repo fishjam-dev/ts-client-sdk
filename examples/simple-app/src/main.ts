@@ -161,7 +161,7 @@ client.on("trackReady", (ctx) => {
 
   const simulcastRadios: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-radios`);
   if (!ctx?.simulcastConfig?.enabled) {
-    simulcastRadios.classList.add("hidden");
+    // simulcastRadios.classList.add("hidden");
   }
 
   const simulcastInputL: HTMLInputElement = videoWrapper.querySelector<HTMLInputElement>(".simulcast-input-radio-l");
@@ -173,13 +173,28 @@ client.on("trackReady", (ctx) => {
   simulcastInputH.setAttribute("name", `${ctx.trackId}-simulcast`);
 
   simulcastInputL.addEventListener("click", () => {
-    client.setTargetTrackEncoding(ctx.trackId, "l");
+    if (client.tracks[ctx.trackId]?.simulcastConfig?.enabled) {
+      client.setTargetTrackEncoding(ctx.trackId, "l");
+    } else {
+      console.warn("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.")
+      toastInfo("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");
+    }
   });
-  simulcastInputL.addEventListener("click", () => {
-    client.setTargetTrackEncoding(ctx.trackId, "m");
+  simulcastInputM.addEventListener("click", () => {
+    if (client.tracks[ctx.trackId]?.simulcastConfig?.enabled) {
+      client.setTargetTrackEncoding(ctx.trackId, "m");
+    } else {
+      console.warn("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.")
+      toastInfo("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");
+    }
   });
-  simulcastInputL.addEventListener("click", () => {
-    client.setTargetTrackEncoding(ctx.trackId, "h");
+  simulcastInputH.addEventListener("click", () => {
+    if (client.tracks[ctx.trackId]?.simulcastConfig?.enabled) {
+      client.setTargetTrackEncoding(ctx.trackId, "h");
+    } else {
+      console.warn("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.")
+      toastInfo("You cannot set 'targetTrackEncoding' on a track that doesn't have an active simulcast.");
+    }
   });
 
   // -- simulcast
@@ -195,7 +210,6 @@ client.on("trackReady", (ctx) => {
 client.on("trackAdded", (ctx) => {
   ctx.on("encodingChanged", () => {
     const activeEncodingElement = document.querySelector(`div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`)!;
-    console.log({ ctx, activeEncodingElement });
     activeEncodingElement.innerHTML = ctx.encoding ?? "";
   });
   ctx.on("voiceActivityChanged", () => {
@@ -204,7 +218,6 @@ client.on("trackAdded", (ctx) => {
 
 client.on("trackRemoved", (ctx) => {
   const tracksContainer: HTMLElement | null = document.querySelector(`div[data-track-id="${ctx.trackId}"`);
-  console.log({ name: "track removed", ctx, tracksContainer });
   if (!tracksContainer) return;
   tracksContainer.remove();
 });
