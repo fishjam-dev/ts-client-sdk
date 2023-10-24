@@ -6,7 +6,7 @@ import {
   SimulcastConfig,
   TrackBandwidthLimit,
   TrackContext as RawTrackContext,
-  TrackEncoding
+  TrackEncoding,
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
@@ -113,7 +113,10 @@ export interface MessageEvents<TrackMetadata> {
    * @param enabledTracks - list of tracks which will be sent to client from SFU
    * @param disabledTracks - list of tracks which will not be sent to client from SFU
    */
-  tracksPriorityChanged: (enabledTracks: TrackContext<TrackMetadata>[], disabledTracks: TrackContext<TrackMetadata>[]) => void;
+  tracksPriorityChanged: (
+    enabledTracks: TrackContext<TrackMetadata>[],
+    disabledTracks: TrackContext<TrackMetadata>[]
+  ) => void;
 
   /**
    * Called every time the server estimates client's bandiwdth.
@@ -155,7 +158,7 @@ export interface Config<PeerMetadata> {
   signaling?: SignalingUrl;
 }
 
-export type TrackContext<TrackMetadata> = Omit<RawTrackContext, "metadata"> & { metadata: TrackMetadata }
+export type TrackContext<TrackMetadata> = Omit<RawTrackContext, "metadata"> & { metadata: TrackMetadata };
 
 /**
  * JellyfishClient is the main class to interact with Jellyfish.
@@ -191,8 +194,9 @@ export type TrackContext<TrackMetadata> = Omit<RawTrackContext, "metadata"> & { 
  * });
  * ```
  */
-export class JellyfishClient<PeerMetadata, TrackMetadata>
-  extends (EventEmitter as new () => TypedEmitter<Required<MessageEvents<any>>>) {
+export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter as new () => TypedEmitter<
+  Required<MessageEvents<any>>
+>) {
   private websocket: WebSocket | null = null;
   private webrtc: WebRTCEndpoint | null = null;
   private removeEventListeners: (() => void) | null = null;
@@ -333,9 +337,12 @@ export class JellyfishClient<PeerMetadata, TrackMetadata>
     this.webrtc?.on("trackUpdated", (ctx: TrackContext<TrackMetadata>) => {
       this.emit("trackUpdated", ctx);
     });
-    this.webrtc?.on("tracksPriorityChanged", (enabledTracks: TrackContext<TrackMetadata>[], disabledTracks: TrackContext<TrackMetadata>[]) => {
-      this.emit("tracksPriorityChanged", enabledTracks, disabledTracks);
-    });
+    this.webrtc?.on(
+      "tracksPriorityChanged",
+      (enabledTracks: TrackContext<TrackMetadata>[], disabledTracks: TrackContext<TrackMetadata>[]) => {
+        this.emit("tracksPriorityChanged", enabledTracks, disabledTracks);
+      }
+    );
     this.webrtc?.on("connectionError", (metadata: string) => {
       this.emit("joinError", metadata);
     });
@@ -359,7 +366,10 @@ export class JellyfishClient<PeerMetadata, TrackMetadata>
    * @param listener - Callback function to be called when the event is emitted
    * @returns This
    */
-  public on<E extends keyof MessageEvents<TrackMetadata>>(event: E, listener: Required<MessageEvents<TrackMetadata>>[E]): this {
+  public on<E extends keyof MessageEvents<TrackMetadata>>(
+    event: E,
+    listener: Required<MessageEvents<TrackMetadata>>[E]
+  ): this {
     return super.on(event, listener);
   }
 
@@ -379,7 +389,10 @@ export class JellyfishClient<PeerMetadata, TrackMetadata>
    * @param listener - Reference to function to be removed from called callbacks
    * @returns This
    */
-  public off<E extends keyof MessageEvents<TrackMetadata>>(event: E, listener: Required<MessageEvents<TrackMetadata>>[E]): this {
+  public off<E extends keyof MessageEvents<TrackMetadata>>(
+    event: E,
+    listener: Required<MessageEvents<TrackMetadata>>[E]
+  ): this {
     return super.off(event, listener);
   }
 
