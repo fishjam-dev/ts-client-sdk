@@ -1,8 +1,7 @@
 import "./style.css";
 
 import { createStream } from "./createMockStream";
-import { Endpoint, TrackEncoding } from "@jellyfish-dev/membrane-webrtc-js";
-import { JellyfishClient } from "@jellyfish-dev/ts-client-sdk";
+import { JellyfishClient, TrackEncoding, Endpoint } from "@jellyfish-dev/ts-client-sdk";
 import { enumerateDevices, getUserMedia, SCREEN_SHARING_MEDIA_CONSTRAINTS } from "@jellyfish-dev/browser-media-utils";
 
 const peerTokenInput = document.querySelector<HTMLInputElement>("#peer-token-input")!;
@@ -103,9 +102,11 @@ client.on("joined", (_peerId, peersInRoom) => {
     remotePeers.appendChild(clone);
   });
 });
+
 client.on("joinError", (_metadata) => {
   toastAlert("Join error");
 });
+
 client.on("peerJoined", (peer) => {
   console.log("Join success!");
   const template = document.querySelector("#remote-peer-template-card")!;
