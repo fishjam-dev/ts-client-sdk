@@ -14,6 +14,7 @@ const localVideo = document.querySelector<HTMLVideoElement>("#local-track-video"
 const enumerateDevicesButton = document.querySelector<HTMLVideoElement>("#enumerate-devices-btn")!;
 const screenSharingContainer = document.querySelector<HTMLVideoElement>("#screen-sharing-container")!;
 const templateVideoPlayer = document.querySelector("#video-player-template")!;
+const ENCODINGS: TrackEncoding[] = ["l", "m", "h"];
 
 const elementsToShowIfConnected = document.querySelectorAll(".show-if-connected");
 elementsToShowIfConnected.forEach((e) => e.classList.add("hidden"));
@@ -28,12 +29,12 @@ type Track = {
 };
 const remoteTracks = {
   canvas: {
-    id: null,
+    id: null
   } as Track,
   screen: {
-    id: null,
+    id: null
   } as Track,
-  cameras: {} as Record<string, Track>,
+  cameras: {} as Record<string, Track>
 };
 
 localVideo.play();
@@ -127,7 +128,8 @@ client.on("peerJoined", (peer) => {
   toastInfo(`New peer joined`);
 });
 
-client.on("peerUpdated", (_peer) => {});
+client.on("peerUpdated", (_peer) => {
+});
 
 client.on("peerLeft", (peer) => {
   const peerComponent = document.querySelector(`div[data-peer-id="${peer.id}"`)!;
@@ -135,9 +137,9 @@ client.on("peerLeft", (peer) => {
   toastInfo(`Peer left`);
 });
 
-const setUpSimulcastCheckbox = (element: HTMLDivElement, trackId: string, encoding: "l" | "m" | "h") => {
+const setupSimulcastCheckbox = (element: DocumentFragment, trackId: string, encoding: "l" | "m" | "h") => {
   const simulcastInputL: HTMLInputElement | null = element.querySelector<HTMLInputElement>(
-    `.simulcast-input-radio-${encoding}`,
+    `.simulcast-input-radio-${encoding}`
   );
   if (!simulcastInputL) return;
 
@@ -153,40 +155,44 @@ const setUpSimulcastCheckbox = (element: HTMLDivElement, trackId: string, encodi
   });
 };
 
-const ENCODINGS: TrackEncoding[] = ["l", "m", "h"];
-
 client.on("trackReady", (ctx) => {
-  console.log("On track ready");
-  console.log({ name: "trackReady", ctx });
+  console.log({ name: "On track ready", ctx });
   if (!ctx.trackId) return;
 
   const peerId = ctx.endpoint.id;
   const peerComponent = document.querySelector(`div[data-peer-id="${peerId}"`)!;
 
-  const videoPlayerTemplate = document.querySelector("#remote-peer-template-video")!;
+  const videoPlayerTemplate = document.querySelector<HTMLTemplateElement>("#remote-peer-template-video");
+  if (!videoPlayerTemplate) throw new Error("Remote video template not found");
 
-  // @ts-ignore
-  const videoWrapper = videoPlayerTemplate.content.cloneNode(true);
+  const videoWrapper = <DocumentFragment>videoPlayerTemplate.content.cloneNode(true);
 
-  const tracksContainer: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.remote-track-container`);
+  const tracksContainer: HTMLDivElement | null = videoWrapper.querySelector<HTMLDivElement>(`.remote-track-container`);
+  if (!tracksContainer) throw new Error("Remote track container not found");
+
   tracksContainer.dataset.trackId = ctx.trackId;
 
-  const videoPlayer: HTMLVideoElement = videoWrapper.querySelector<HTMLVideoElement>(`video`);
+  const videoPlayer: HTMLVideoElement | null = videoWrapper.querySelector<HTMLVideoElement>(`video`);
+  if (!videoPlayer) throw new Error("Video element not found");
 
   const container = peerComponent.querySelector(".remote-videos");
 
   if (!container) throw new Error("Remote videos container not found!");
 
-  const simulcastContainer: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-enabled`);
+  const simulcastContainer: HTMLDivElement | null = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-enabled`);
+  if (!simulcastContainer) throw new Error("Simulcast container not found");
+
   simulcastContainer.innerHTML = (ctx?.simulcastConfig?.enabled || false).toString();
 
-  const simulcastRadios: HTMLDivElement = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-radios`);
+  const simulcastRadios: HTMLDivElement | null = videoWrapper.querySelector<HTMLDivElement>(`.simulcast-radios`);
+  if (!simulcastRadios) throw new Error("Simulcast radios not found");
+
   if (!ctx?.simulcastConfig?.enabled) {
     simulcastRadios.classList.add("hidden");
   }
 
   ENCODINGS.forEach((encoding) => {
-    setUpSimulcastCheckbox(videoWrapper, ctx.trackId, encoding);
+    setupSimulcastCheckbox(videoWrapper, ctx.trackId, encoding);
   });
 
   container.appendChild(videoWrapper);
@@ -200,11 +206,12 @@ client.on("trackReady", (ctx) => {
 client.on("trackAdded", (ctx) => {
   ctx.on("encodingChanged", () => {
     const activeEncodingElement = document.querySelector(
-      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`,
+      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`
     )!;
     activeEncodingElement.innerHTML = ctx.encoding ?? "";
   });
-  ctx.on("voiceActivityChanged", () => {});
+  ctx.on("voiceActivityChanged", () => {
+  });
 });
 
 client.on("trackRemoved", (ctx) => {
@@ -213,17 +220,20 @@ client.on("trackRemoved", (ctx) => {
   tracksContainer.remove();
 });
 
-client.on("trackUpdated", (_ctx) => {});
+client.on("trackUpdated", (_ctx) => {
+});
 
-client.on("bandwidthEstimationChanged", (_estimation) => {});
+client.on("bandwidthEstimationChanged", (_estimation) => {
+});
 
-client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {});
+client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {
+});
 
 connectButton.addEventListener("click", () => {
   console.log("Connect");
   client.connect({
     peerMetadata: { name: peerNameInput.value || "" },
-    token: peerTokenInput.value,
+    token: peerTokenInput.value
   });
   elementsToShowIfConnected.forEach((e) => e.classList.remove("hidden"));
 });
@@ -238,12 +248,12 @@ const addTrack = (stream: MediaStream): Track => {
   console.log("Add track");
   const trackMetadata: TrackMetadata = {
     type: "camera",
-    active: true,
+    active: true
   };
   const track = stream.getVideoTracks()[0];
   const id = client.addTrack(track, stream, trackMetadata) || null;
   return {
-    id,
+    id
   };
 };
 
@@ -318,7 +328,7 @@ enumerateDevicesButton.addEventListener("click", () => {
 // Screen sharing view
 
 const templateClone = (templateVideoPlayer as HTMLTemplateElement).content.firstElementChild!.cloneNode(
-  true,
+  true
 )! as HTMLElement;
 screenSharingContainer.appendChild(templateClone);
 
