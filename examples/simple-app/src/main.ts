@@ -216,8 +216,7 @@ client.on("trackAdded", (ctx) => {
 
 client.on("trackRemoved", (ctx) => {
   const tracksContainer: HTMLElement | null = document.querySelector(`div[data-track-id="${ctx.trackId}"`);
-  if (!tracksContainer) return;
-  tracksContainer.remove();
+  tracksContainer?.remove();
 });
 
 client.on("trackUpdated", (_ctx) => {
