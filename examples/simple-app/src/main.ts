@@ -29,12 +29,12 @@ type Track = {
 };
 const remoteTracks = {
   canvas: {
-    id: null
+    id: null,
   } as Track,
   screen: {
-    id: null
+    id: null,
   } as Track,
-  cameras: {} as Record<string, Track>
+  cameras: {} as Record<string, Track>,
 };
 
 localVideo.play();
@@ -128,8 +128,7 @@ client.on("peerJoined", (peer) => {
   toastInfo(`New peer joined`);
 });
 
-client.on("peerUpdated", (_peer) => {
-});
+client.on("peerUpdated", (_peer) => {});
 
 client.on("peerLeft", (peer) => {
   const peerComponent = document.querySelector(`div[data-peer-id="${peer.id}"`)!;
@@ -139,7 +138,7 @@ client.on("peerLeft", (peer) => {
 
 const setupSimulcastCheckbox = (element: DocumentFragment, trackId: string, encoding: "l" | "m" | "h") => {
   const simulcastInputL: HTMLInputElement | null = element.querySelector<HTMLInputElement>(
-    `.simulcast-input-radio-${encoding}`
+    `.simulcast-input-radio-${encoding}`,
   );
   if (!simulcastInputL) return;
 
@@ -206,12 +205,11 @@ client.on("trackReady", (ctx) => {
 client.on("trackAdded", (ctx) => {
   ctx.on("encodingChanged", () => {
     const activeEncodingElement = document.querySelector(
-      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`
+      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`,
     )!;
     activeEncodingElement.innerHTML = ctx.encoding ?? "";
   });
-  ctx.on("voiceActivityChanged", () => {
-  });
+  ctx.on("voiceActivityChanged", () => {});
 });
 
 client.on("trackRemoved", (ctx) => {
@@ -219,20 +217,17 @@ client.on("trackRemoved", (ctx) => {
   tracksContainer?.remove();
 });
 
-client.on("trackUpdated", (_ctx) => {
-});
+client.on("trackUpdated", (_ctx) => {});
 
-client.on("bandwidthEstimationChanged", (_estimation) => {
-});
+client.on("bandwidthEstimationChanged", (_estimation) => {});
 
-client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {
-});
+client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {});
 
 connectButton.addEventListener("click", () => {
   console.log("Connect");
   client.connect({
     peerMetadata: { name: peerNameInput.value || "" },
-    token: peerTokenInput.value
+    token: peerTokenInput.value,
   });
   elementsToShowIfConnected.forEach((e) => e.classList.remove("hidden"));
 });
@@ -247,12 +242,12 @@ const addTrack = (stream: MediaStream): Track => {
   console.log("Add track");
   const trackMetadata: TrackMetadata = {
     type: "camera",
-    active: true
+    active: true,
   };
   const track = stream.getVideoTracks()[0];
   const id = client.addTrack(track, stream, trackMetadata) || null;
   return {
-    id
+    id,
   };
 };
 
@@ -327,7 +322,7 @@ enumerateDevicesButton.addEventListener("click", () => {
 // Screen sharing view
 
 const templateClone = (templateVideoPlayer as HTMLTemplateElement).content.firstElementChild!.cloneNode(
-  true
+  true,
 )! as HTMLElement;
 screenSharingContainer.appendChild(templateClone);
 
