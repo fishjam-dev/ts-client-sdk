@@ -195,7 +195,7 @@ export type TrackContext<TrackMetadata> = Omit<RawTrackContext, "metadata"> & { 
  * ```
  */
 export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter as new () => TypedEmitter<
-  Required<MessageEvents<any>>
+  Required<MessageEvents<any>> // eslint-disable-line @typescript-eslint/no-explicit-any
 >) {
   private websocket: WebSocket | null = null;
   private webrtc: WebRTCEndpoint | null = null;
@@ -269,13 +269,11 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
           this.emit("authSuccess");
           this.webrtc?.connect(peerMetadata);
         } else if (data.authRequest !== undefined) {
-          // eslint-disable-next-line no-console
           console.warn("Received unexpected control message: authRequest");
         } else if (data.mediaEvent !== undefined) {
           this.webrtc?.receiveMediaEvent(data.mediaEvent.data);
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn(`Received invalid control message, error: ${e}`);
       }
     };
@@ -745,7 +743,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       this.webrtc?.disconnect();
       this.webrtc?.cleanUp();
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.warn(e);
     }
     this.removeEventListeners?.();
