@@ -115,7 +115,7 @@ export interface MessageEvents<TrackMetadata> {
    */
   tracksPriorityChanged: (
     enabledTracks: TrackContext<TrackMetadata>[],
-    disabledTracks: TrackContext<TrackMetadata>[]
+    disabledTracks: TrackContext<TrackMetadata>[],
   ) => void;
 
   /**
@@ -339,7 +339,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       "tracksPriorityChanged",
       (enabledTracks: TrackContext<TrackMetadata>[], disabledTracks: TrackContext<TrackMetadata>[]) => {
         this.emit("tracksPriorityChanged", enabledTracks, disabledTracks);
-      }
+      },
     );
     this.webrtc?.on("connectionError", (metadata: string) => {
       this.emit("joinError", metadata);
@@ -366,7 +366,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public on<E extends keyof MessageEvents<TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<TrackMetadata>>[E]
+    listener: Required<MessageEvents<TrackMetadata>>[E],
   ): this {
     return super.on(event, listener);
   }
@@ -389,7 +389,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public off<E extends keyof MessageEvents<TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<TrackMetadata>>[E]
+    listener: Required<MessageEvents<TrackMetadata>>[E],
   ): this {
     return super.off(event, listener);
   }
@@ -447,7 +447,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     stream: MediaStream,
     trackMetadata?: TrackMetadata,
     simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [] },
-    maxBandwidth: TrackBandwidthLimit = 0 // unlimited bandwidth
+    maxBandwidth: TrackBandwidthLimit = 0, // unlimited bandwidth
   ): string {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
@@ -505,7 +505,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   public async replaceTrack(
     trackId: string,
     newTrack: MediaStreamTrack,
-    newTrackMetadata?: TrackMetadata
+    newTrackMetadata?: TrackMetadata,
   ): Promise<boolean> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
