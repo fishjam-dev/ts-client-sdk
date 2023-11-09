@@ -43,14 +43,17 @@
     "prepare": "tsc"
   },
   "devDependencies": {
+    "@playwright/test": "^1.39.0",
     "@types/events": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^6.8.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
+    "@types/node": "^20.8.10",
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.6",
     "react": "^18.2.0",
+    "testcontainers": "^10.2.2",
     "typed-emitter": "^2.1.0",
     "typedoc": "^0.23.28",
     "typedoc-plugin-external-resolver": "github:ostatni5/typedoc-plugin-external-resolver",
