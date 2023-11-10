@@ -3,6 +3,7 @@ import {setupState} from "./globalSetupState";
 import { type NetworkInterfaceInfo, networkInterfaces } from "os";
 
 export default async function setupJellyfish() {
+  console.log("setupJellyfish");
   const EXTERNAL_IP = Object.values(networkInterfaces()).flat()
     .filter((x): x is NetworkInterfaceInfo => x !== undefined)
     .filter(({family}) => typeof family === "string" ? family === "IPv4" : family === 4)
