@@ -15,6 +15,11 @@ jobs:
         node-version: 18
     - name: Install dependencies
       run: npm ci
+    - name: Build SDK
+      run: npm run build
+    - name: Install example dependencies
+      run: npm ci
+      working-directory: examples/simple-app
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
