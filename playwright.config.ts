@@ -78,6 +78,6 @@ export default defineConfig({
     cwd: "examples/simple-app",
   },
 
-  globalSetup: require.resolve("./setup-jellyfish"),
-  globalTeardown: require.resolve("./teardown-jellyfish"),
+  globalSetup: require.resolve("./tests/setup-jellyfish"),
+  globalTeardown: require.resolve("./tests/teardown-jellyfish"),
 });

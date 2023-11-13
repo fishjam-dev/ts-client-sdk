@@ -113,7 +113,7 @@ client.on("joinError", (_metadata) => {
 });
 
 client.on("peerJoined", (peer) => {
-  console.log("new  peer Join success!");
+  console.log("Peer join success!");
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
 
