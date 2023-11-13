@@ -80,6 +80,6 @@ export default defineConfig({
     stdout: "pipe"
   },
   
-  globalSetup: require.resolve("./setup-jellyfish"),
-  globalTeardown: require.resolve("./teardown-jellyfish"),
+  // globalSetup: require.resolve("./setup-jellyfish"),
+  // globalTeardown: require.resolve("./teardown-jellyfish"),
 });
