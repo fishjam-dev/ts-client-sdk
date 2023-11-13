@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --debug true --clearScreen false --logLevel info",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

@@ -28,8 +28,8 @@ test("connects to Jellyfish Server", async ({ page: firstPage, context }) => {
   await assertThatOtherIsSeen(firstPage, secondClientId);
   await assertThatOtherIsSeen(secondPage, firstClientId);
   
-  await assertThatOtherVideoIsPlaying(firstPage);
-  await assertThatOtherVideoIsPlaying(secondPage);
+  await Promise.all([assertThatOtherVideoIsPlaying(firstPage),
+  assertThatOtherVideoIsPlaying(secondPage)]);
 });
 
 async function joinRoomAndAddTrack(page: Page, roomId: string): Promise<string> {
