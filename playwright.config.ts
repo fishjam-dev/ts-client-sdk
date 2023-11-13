@@ -73,7 +73,8 @@ export default defineConfig({
 
   webServer: {
     command: 'npm run dev',
-    url: 'http://127.0.0.1:3005',
+    // url: 'http://127.0.0.1:3005',
+    port: 3005,
     reuseExistingServer: !process.env.CI,
     cwd: "examples/simple-app",
     stderr: "pipe",
