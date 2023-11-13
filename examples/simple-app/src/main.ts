@@ -64,7 +64,7 @@ export type TrackMetadata = {
 };
 
 const client = new JellyfishClient<PeerMetadata, TrackMetadata>();
-(window as any).client = client;
+(window as unknown as { client: typeof client }).client = client;
 
 client.on("socketClose", () => {
   toastInfo("Socket closed");

@@ -74,11 +74,8 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3005',
-    // port: 3005,
     reuseExistingServer: !process.env.CI,
     cwd: "examples/simple-app",
-    stderr: "pipe",
-    stdout: "pipe"
   },
   
   globalSetup: require.resolve("./setup-jellyfish"),

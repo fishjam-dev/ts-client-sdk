@@ -1,4 +1,4 @@
-import { StartedDockerComposeEnvironment, StartedTestContainer } from "testcontainers";
+import { StartedDockerComposeEnvironment} from "testcontainers";
 
 export type SetupState = {
   jellyfishContainer: StartedDockerComposeEnvironment | null   

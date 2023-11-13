@@ -1,10 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { type JellyfishClient } from "../src/JellyfishClient";
 
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 test('displays basic UI', async ({ page }) => {
   await page.goto('/');
 
@@ -41,15 +37,13 @@ async function joinRoomAndAddTrack(page: Page, roomId: string): Promise<string> 
   }});
   const { peer: { id: peerId }, token: peerToken } = (await peerRequest.json()).data;
   
-  console.log({peerId, peerToken});
-
   await page.getByLabel("Peer Token").fill(peerToken);
   await page.getByLabel("Peer name").fill(peerId);
-  
-  // await sleep(2000);
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
+
   await expect(page.locator('#local-track-video')).toBeVisible();
   await page.locator('#add-track-btn').click();
+
   return peerId; 
 }
 
@@ -61,6 +55,7 @@ async function assertThatOtherIsSeen(page: Page, otherClientId: string) {
   await expect(otherClientCard).toContainText(`Client: ${otherClientId}`);
   await expect(otherClientCard.locator("video")).toBeVisible();
 }
+
 async function assertThatOtherVideoIsPlaying(page: Page) {
   const playing = await page.evaluate(async () => {
     const sleep = async (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -73,11 +68,10 @@ async function assertThatOtherVideoIsPlaying(page: Page) {
       }
     }
 
-    const client = (window as any).client as JellyfishClient<unknown, unknown>;
-    const peerConnection = (client as any).webrtc.connection as RTCPeerConnection;
-    const track = Object.values(client.getRemoteTracks())[0].track;
+    const client = (window as unknown as { client: JellyfishClient<unknown, unknown>}).client ;
+    const peerConnection = (client as unknown as { webrtc: { connection: RTCPeerConnection}}).webrtc.connection;
     const firstMeasure = await getDecodedFrames();
-    await sleep(5000);
+    await sleep(200);
     const secondMeasure = await getDecodedFrames();
     return secondMeasure > firstMeasure;
   })
