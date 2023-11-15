@@ -38,6 +38,7 @@ npm run format
 We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint](https://eslint.org/) with [Prettier](https://prettier.io/) for linting and formatting the code,
 
 ### e2e tests
+
 We use [Playwright](https://playwright.dev/) to run e2e tests.
 
 Use the `npm run e2e` command to run them. You may need to install the browsers using this command: `npx playwright install --with-deps`.
@@ -45,6 +46,7 @@ Use the `npm run e2e` command to run them. You may need to install the browsers 
 The e2e tests start a Jellyfish instance via Docker and [Testcontainers](https://node.testcontainers.org/).
 
 #### Colima
+
 If you are using [colima](https://github.com/abiosoft/colima), you need to run these commands first:
 
 ```bash
