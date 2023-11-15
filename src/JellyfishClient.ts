@@ -265,14 +265,25 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       const uint8Array = new Uint8Array(event.data);
       try {
         const data = PeerMessage.decode(uint8Array);
+        // console.dir({ data }, { depth: null });
         if (data.authenticated !== undefined) {
+          console.log("%cauthSuccess", "color:green");
           this.emit("authSuccess");
           this.webrtc?.connect(peerMetadata);
         } else if (data.authRequest !== undefined) {
+          console.log("%cReceived unexpected control message: authRequest", "color:orange");
           // eslint-disable-next-line no-console
           console.warn("Received unexpected control message: authRequest");
         } else if (data.mediaEvent !== undefined) {
+          const event = JSON.parse(data.mediaEvent.data);
+          console.log(`%cStandard media event: ${event.type} - ${event.data.type}`, "color:blue");
+          console.dir({ event }, { depth: null });
           this.webrtc?.receiveMediaEvent(data.mediaEvent.data);
+          const remoteTracks = this.webrtc?.getRemoteTracks();
+          console.log({ remoteTracks });
+        } else {
+          console.log("%cUnknown", "color:purple");
+          console.dir({ data }, { depth: null });
         }
       } catch (e) {
         // eslint-disable-next-line no-console
