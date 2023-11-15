@@ -31,13 +31,28 @@ To use prettier, run the following:
 npm run format
 ```
 
-### Linting and tests
+### Linting
 
 [ESLint](https://eslint.org/), [Prettier](https://prettier.io/), [TypeScript](https://www.typescriptlang.org/)
 
-We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint](https://eslint.org/) with [Prettier](https://prettier.io/) for linting and formatting the code, and [Jest](https://jestjs.io/) for testing.
+We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint](https://eslint.org/) with [Prettier](https://prettier.io/) for linting and formatting the code,
 
-Our pre-commit hooks verify that the linter and tests pass when committing.
+### e2e tests
+We use [Playwright](https://playwright.dev/) for e2e testing.
+
+Use the `npm run e2e` command to run them. You might need to install the browsers by running this command: `npx playwright install --with-deps`.
+
+The e2e tests start Jellyfish instance via Docker and [Testcontainers](https://node.testcontainers.org/).
+
+#### Colima
+If you are using [colima](https://github.com/abiosoft/colima), you must run these commands first:
+
+```bash
+export DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+```
+
+Check out the Testcontainers' docs to learn about [known issues](https://node.testcontainers.org/supported-container-runtimes/#known-issues_1).
 
 ### Scripts
 
