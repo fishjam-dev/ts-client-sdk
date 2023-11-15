@@ -35,6 +35,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "e2e": "playwright test",
     "docs": "typedoc src",
     "format:fix": "prettier --write . --ignore-path ./.eslintignore",
     "format:check": "prettier --check . --ignore-path ./.eslintignore",
