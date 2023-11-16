@@ -4,9 +4,9 @@
   "description": "Typescript client library for Jellyfish.",
   "license": "Apache-2.0",
   "author": "Membrane Team",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "files": [
     "dist"
   ],
@@ -24,12 +24,12 @@
     "url": "git://github.com/jellyfish-dev/ts-client-sdk.git"
   },
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/src/index.js"
   },
   "typesVersions": {
     "*": {
       ".": [
-        "./dist/index.d.ts"
+        "./dist/src/index.d.ts"
       ]
     }
   },
