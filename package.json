@@ -8,7 +8,7 @@
   "module": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "files": [
-    "dist"
+    "dist/src"
   ],
   "bugs": {
     "url": "https://github.com/jellyfish-dev/ts-client-sdk/issues"
