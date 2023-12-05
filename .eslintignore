@@ -1,6 +1,5 @@
 dist
 docs
-src/protos
 
 # Playwright
 test-results
