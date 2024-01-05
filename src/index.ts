@@ -1,10 +1,15 @@
 export * from "./JellyfishClient";
-export {
+
+export type {
+  TrackBandwidthLimit,
+  SimulcastBandwidthLimit,
+  BandwidthLimit,
+  WebRTCEndpointEvents,
+  TrackContextEvents,
   Endpoint,
   SimulcastConfig,
   TrackContext,
   TrackEncoding,
   VadStatus,
-  EncodingReason,
-  TrackBandwidthLimit,
+  EncodingReason
 } from "@jellyfish-dev/membrane-webrtc-js";
