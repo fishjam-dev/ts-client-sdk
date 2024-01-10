@@ -11,5 +11,5 @@ export type {
   TrackContext,
   TrackEncoding,
   VadStatus,
-  EncodingReason
+  EncodingReason,
 } from "@jellyfish-dev/membrane-webrtc-js";
