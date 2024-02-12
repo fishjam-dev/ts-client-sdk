@@ -24,12 +24,16 @@
     "url": "git://github.com/jellyfish-dev/ts-client-sdk.git"
   },
   "exports": {
-    ".": "./dist/src/index.js"
+    ".": "./dist/src/index.js",
+    "./webrtc": "./dist/src/webrtc/index.js"
   },
   "typesVersions": {
     "*": {
       ".": [
         "./dist/src/index.d.ts"
+      ],
+      "webrtc": [
+        "./dist/src/webrtc/index.d.ts"
       ]
     }
   },
