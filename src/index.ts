@@ -6,11 +6,11 @@ export type {
   TrackBandwidthLimit,
   SimulcastBandwidthLimit,
   BandwidthLimit,
-  WebRTCEndpointEvents, // endpoints
+  WebRTCEndpointEvents,
   TrackContextEvents,
-  Endpoint, // todo endpoint
+  Endpoint,
   SimulcastConfig,
-  TrackContext, // todo endpoint metadata
+  TrackContext,
   TrackEncoding,
   VadStatus,
   EncodingReason,
