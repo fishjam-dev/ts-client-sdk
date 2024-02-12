@@ -115,9 +115,8 @@ client.on("disconnected", () => {
   toastInfo("Disconnected");
 });
 
-client.on("joined", (peerId: string, peersInRoom: Peer<PeerMetadata, TrackMetadata>[]) => {
+client.on("joined", (_peerId: string, peersInRoom: Peer<PeerMetadata, TrackMetadata>[]) => {
   console.log("Join success!");
-  console.log({ peerId, peersInRoom });
   toastSuccess(`Joined room`);
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
@@ -248,11 +247,12 @@ client.on("trackUpdated", (ctx) => {
   console.log({ name: "trackUpdated", ctx });
   const videoWrapper: HTMLElement | null = document.querySelector(`div[data-track-id="${ctx.trackId}"`)!;
 
-  const rawMetadata = videoWrapper.querySelector(".remote-track-raw-metadata")!;
+  const rawMetadata = videoWrapper.querySelector(".remote-track-raw-metadata");
+  if (!rawMetadata) throw new Error("Raw metadata component not found");
   rawMetadata.innerHTML = JSON.stringify(ctx.rawMetadata, undefined, 2);
 
-  const parsedMetadata = videoWrapper.querySelector(".remote-track-parsed-metadata")!;
-
+  const parsedMetadata = videoWrapper.querySelector(".remote-track-parsed-metadata");
+  if (!parsedMetadata) throw new Error("Parsed metadata component not found");
   parsedMetadata.innerHTML = JSON.stringify(ctx.metadata, undefined, 2);
 });
 
