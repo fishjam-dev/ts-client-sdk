@@ -1,7 +1,7 @@
 import "./style.css";
 
 import { createStream } from "./createMockStream";
-import { JellyfishClient, TrackEncoding, Endpoint } from "@jellyfish-dev/ts-client-sdk";
+import { JellyfishClient, TrackEncoding, Endpoint, Peer } from "@jellyfish-dev/ts-client-sdk";
 import { enumerateDevices, getUserMedia, SCREEN_SHARING_MEDIA_CONSTRAINTS } from "@jellyfish-dev/browser-media-utils";
 
 /* eslint-disable no-console */
@@ -31,12 +31,12 @@ type Track = {
 };
 const remoteTracks = {
   canvas: {
-    id: null,
+    id: null
   } as Track,
   screen: {
-    id: null,
+    id: null
   } as Track,
-  cameras: {} as Record<string, Track>,
+  cameras: {} as Record<string, Track>
 };
 
 localVideo.play();
@@ -63,7 +63,34 @@ export type TrackMetadata = {
   active: boolean;
 };
 
-const client = new JellyfishClient<PeerMetadata, TrackMetadata>();
+
+const isPeerMetadata = (input: unknown): input is PeerMetadata => {
+  return typeof input === "object" && input !== null && "name" in input && typeof input["name"] === "string";
+};
+
+const isTrackType = (input: unknown): input is TrackType => TrackTypeValues.includes(input as TrackType);
+
+const isTrackMetadata = (input: unknown): input is TrackMetadata =>
+  typeof input === "object" && input !== null
+  && "type" in input && isTrackType(input.type)
+  && "active" in input && typeof input.active === "boolean";
+
+const trackMetadataParser = (input: unknown): TrackMetadata => {
+  if (isTrackMetadata(input)) return input;
+  throw Error("Invalid track metadata");
+};
+
+const peerMetadataParser = (input: unknown): PeerMetadata => {
+  if (isPeerMetadata(input)) return input;
+
+  throw Error("Invalid peer metadata");
+};
+
+const client: JellyfishClient<PeerMetadata, TrackMetadata> = new JellyfishClient({
+  peerMetadataParser,
+  trackMetadataParser
+});
+
 (window as unknown as { client: typeof client }).client = client;
 
 client.on("socketClose", () => {
@@ -86,13 +113,14 @@ client.on("disconnected", () => {
   toastInfo("Disconnected");
 });
 
-client.on("joined", (_peerId, peersInRoom) => {
+client.on("joined", (peerId: string, peersInRoom: Peer<PeerMetadata, TrackMetadata>[]) => {
   console.log("Join success!");
+  console.log({ peerId, peersInRoom });
   toastSuccess(`Joined room`);
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
 
-  (peersInRoom || []).forEach((peer: Endpoint) => {
+  (peersInRoom || []).forEach((peer: Peer<PeerMetadata, TrackMetadata>) => {
     // @ts-ignore
     const clone = template.content.cloneNode(true);
     const card = clone.firstElementChild;
@@ -132,7 +160,8 @@ client.on("peerJoined", (peer) => {
   toastInfo(`New peer joined`);
 });
 
-client.on("peerUpdated", (_peer) => {});
+client.on("peerUpdated", (_peer) => {
+});
 
 client.on("peerLeft", (peer) => {
   const peerComponent = document.querySelector(`div[data-peer-id="${peer.id}"`)!;
@@ -142,7 +171,7 @@ client.on("peerLeft", (peer) => {
 
 const setupSimulcastCheckbox = (element: DocumentFragment, trackId: string, encoding: "l" | "m" | "h") => {
   const simulcastInputL: HTMLInputElement | null = element.querySelector<HTMLInputElement>(
-    `.simulcast-input-radio-${encoding}`,
+    `.simulcast-input-radio-${encoding}`
   );
   if (!simulcastInputL) return;
 
@@ -198,6 +227,14 @@ client.on("trackReady", (ctx) => {
     setupSimulcastCheckbox(videoWrapper, ctx.trackId, encoding);
   });
 
+  const rawMetadata = videoWrapper.querySelector(".remote-track-raw-metadata");
+  if (!rawMetadata) throw new Error("Raw metadata component not found");
+  rawMetadata.innerHTML = JSON.stringify(ctx.rawMetadata, undefined, 2);
+
+  const parsedMetadata = videoWrapper.querySelector(".remote-track-parsed-metadata");
+  if (!parsedMetadata) throw new Error("Parsed metadata component not found");
+  parsedMetadata.innerHTML = JSON.stringify(ctx.metadata, undefined, 2);
+
   container.appendChild(videoWrapper);
 
   videoPlayer.srcObject = ctx.stream;
@@ -206,14 +243,27 @@ client.on("trackReady", (ctx) => {
   };
 });
 
+client.on("trackUpdated", (ctx) => {
+  console.log({ name: "trackUpdated", ctx });
+  const videoWrapper: HTMLElement | null = document.querySelector(`div[data-track-id="${ctx.trackId}"`)!;
+
+  const rawMetadata = videoWrapper.querySelector(".remote-track-raw-metadata")!;
+  rawMetadata.innerHTML = JSON.stringify(ctx.rawMetadata, undefined, 2);
+
+  const parsedMetadata = videoWrapper.querySelector(".remote-track-parsed-metadata")!;
+
+  parsedMetadata.innerHTML = JSON.stringify(ctx.metadata, undefined, 2);
+});
+
 client.on("trackAdded", (ctx) => {
   ctx.on("encodingChanged", () => {
     const activeEncodingElement = document.querySelector(
-      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`,
+      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`
     )!;
     activeEncodingElement.innerHTML = ctx.encoding ?? "";
   });
-  ctx.on("voiceActivityChanged", () => {});
+  ctx.on("voiceActivityChanged", () => {
+  });
 });
 
 client.on("trackRemoved", (ctx) => {
@@ -221,17 +271,20 @@ client.on("trackRemoved", (ctx) => {
   tracksContainer?.remove();
 });
 
-client.on("trackUpdated", (_ctx) => {});
+client.on("trackUpdated", (_ctx) => {
+});
 
-client.on("bandwidthEstimationChanged", (_estimation) => {});
+client.on("bandwidthEstimationChanged", (_estimation) => {
+});
 
-client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {});
+client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {
+});
 
 connectButton.addEventListener("click", () => {
   console.log("Connect");
   client.connect({
     peerMetadata: { name: peerNameInput.value || "" },
-    token: peerTokenInput.value,
+    token: peerTokenInput.value
   });
   elementsToShowIfConnected.forEach((e) => e.classList.remove("hidden"));
 });
@@ -242,16 +295,16 @@ disconnectButton.addEventListener("click", () => {
   elementsToShowIfConnected.forEach((e) => e.classList.add("hidden"));
 });
 
-const addTrack = (stream: MediaStream): Track => {
+const addTrack = async (stream: MediaStream): Promise<Track> => {
   console.log("Add track");
   const trackMetadata: TrackMetadata = {
     type: "camera",
-    active: true,
+    active: true
   };
   const track = stream.getVideoTracks()[0];
-  const id = client.addTrack(track, stream, trackMetadata) || null;
+  const id = await client.addTrack(track, stream, trackMetadata) || null;
   return {
-    id,
+    id
   };
 };
 
@@ -262,8 +315,8 @@ const removeTrack = (track: Track) => {
   track.id = null;
 };
 
-addTrackButton.addEventListener("click", () => {
-  remoteTracks.canvas = addTrack(stream);
+addTrackButton.addEventListener("click", async () => {
+  remoteTracks.canvas = await addTrack(stream);
   localVideo.classList.add(...borderActiveClasses);
 });
 
@@ -306,10 +359,10 @@ enumerateDevicesButton.addEventListener("click", () => {
         videoPlayer.srcObject = null;
       });
 
-      clone.querySelector(".add-track-template-btn").addEventListener("click", () => {
+      clone.querySelector(".add-track-template-btn").addEventListener("click", async () => {
         if (!videoPlayer.srcObject) return;
 
-        remoteTracks.cameras[device.deviceId] = addTrack(videoPlayer.srcObject);
+        remoteTracks.cameras[device.deviceId] = await addTrack(videoPlayer.srcObject);
         videoPlayer.classList.add(...borderActiveClasses);
       });
 
@@ -326,7 +379,7 @@ enumerateDevicesButton.addEventListener("click", () => {
 // Screen sharing view
 
 const templateClone = (templateVideoPlayer as HTMLTemplateElement).content.firstElementChild!.cloneNode(
-  true,
+  true
 )! as HTMLElement;
 screenSharingContainer.appendChild(templateClone);
 
@@ -349,10 +402,10 @@ templateClone.querySelector(".stop-template-btn")!.addEventListener("click", () 
   screenSharingVideo.srcObject = null;
 });
 
-templateClone.querySelector(".add-track-template-btn")!.addEventListener("click", () => {
+templateClone.querySelector(".add-track-template-btn")!.addEventListener("click", async () => {
   if (!screenSharingVideo.srcObject) return;
 
-  remoteTracks.screen = addTrack(screenSharingVideo.srcObject as MediaStream);
+  remoteTracks.screen = await addTrack(screenSharingVideo.srcObject as MediaStream);
   screenSharingVideo.classList.add(...borderActiveClasses);
 });
 

@@ -1,15 +1,24 @@
-export * from "./JellyfishClient";
+export type {
+  Peer,
+  ConnectConfig,
+  Config,
+  MessageEvents,
+  SignalingUrl
+} from "./JellyfishClient";
+
+export { JellyfishClient } from "./JellyfishClient";
 
 export type {
   TrackBandwidthLimit,
   SimulcastBandwidthLimit,
   BandwidthLimit,
-  WebRTCEndpointEvents,
+  WebRTCEndpointEvents, // endpoints
   TrackContextEvents,
-  Endpoint,
+  Endpoint, // todo endpoint
   SimulcastConfig,
-  TrackContext,
+  TrackContext, // todo endpoint metadata
   TrackEncoding,
   VadStatus,
   EncodingReason,
+  MetadataParser
 } from "@jellyfish-dev/membrane-webrtc-js";

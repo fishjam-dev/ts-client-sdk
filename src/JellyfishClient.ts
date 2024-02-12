@@ -6,7 +6,8 @@ import {
   SimulcastConfig,
   TrackBandwidthLimit,
   TrackContext,
-  TrackEncoding
+  TrackEncoding,
+  MetadataParser
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
@@ -148,7 +149,7 @@ export type SignalingUrl = {
 };
 
 /** Configuration object for the client */
-export interface Config<PeerMetadata> {
+export interface ConnectConfig<PeerMetadata> {
   /** Metadata for the peer */
   peerMetadata: PeerMetadata;
 
@@ -157,6 +158,11 @@ export interface Config<PeerMetadata> {
 
   signaling?: SignalingUrl;
 }
+
+export type Config<PeerMetadata, TrackMetadata> = {
+  peerMetadataParser?: MetadataParser<PeerMetadata>;
+  trackMetadataParser?: MetadataParser<TrackMetadata>;
+};
 
 /**
  * JellyfishClient is the main class to interact with Jellyfish.
@@ -199,8 +205,13 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
   public status: "new" | "initialized" = "new";
 
-  constructor() {
+  private readonly peerMetadataParser: MetadataParser<PeerMetadata>;
+  private readonly trackMetadataParser: MetadataParser<TrackMetadata>;
+
+  constructor(config?: Config<PeerMetadata, TrackMetadata>) {
     super();
+    this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x);
+    this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x);
   }
 
   /**
@@ -217,9 +228,9 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * });
    * ```
    *
-   * @param {Config} config - Configuration object for the client
+   * @param {ConnectConfig} config - Configuration object for the client
    */
-  connect(config: Config<PeerMetadata>): void {
+  connect(config: ConnectConfig<PeerMetadata>): void {
     const { token, peerMetadata, signaling } = config;
 
     const protocol = signaling?.protocol ?? "ws";
@@ -253,7 +264,11 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.websocket.addEventListener("error", socketErrorHandler);
     this.websocket.addEventListener("close", socketCloseHandler);
 
-    this.webrtc = new WebRTCEndpoint();
+    this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
+      endpointMetadataParser: this.peerMetadataParser,
+      trackMetadataParser: this.trackMetadataParser
+    });
+
     this.setupCallbacks();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -306,6 +321,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.webrtc?.on("connected", (peerId: string, peersInRoom: Endpoint<PeerMetadata, TrackMetadata>[]) => {
       this.emit("joined", peerId, peersInRoom);
     });
+
     this.webrtc?.on("disconnected", () => {
       this.emit("disconnected");
     });
