@@ -1,10 +1,4 @@
-export type {
-  Peer,
-  ConnectConfig,
-  Config,
-  MessageEvents,
-  SignalingUrl
-} from "./JellyfishClient";
+export type { Peer, ConnectConfig, Config, MessageEvents, SignalingUrl } from "./JellyfishClient";
 
 export { JellyfishClient } from "./JellyfishClient";
 
@@ -20,5 +14,5 @@ export type {
   TrackEncoding,
   VadStatus,
   EncodingReason,
-  MetadataParser
+  MetadataParser,
 } from "@jellyfish-dev/membrane-webrtc-js";

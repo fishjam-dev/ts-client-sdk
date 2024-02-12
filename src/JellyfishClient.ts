@@ -7,13 +7,13 @@ import {
   TrackBandwidthLimit,
   TrackContext,
   TrackEncoding,
-  MetadataParser
+  MetadataParser,
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
 
-export type Peer<PeerMetadata, TrackMetadat> = Endpoint<PeerMetadata, TrackMetadat>
+export type Peer<PeerMetadata, TrackMetadat> = Endpoint<PeerMetadata, TrackMetadat>;
 
 /**
  * Events emitted by the client with their arguments.
@@ -116,7 +116,7 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
    */
   tracksPriorityChanged: (
     enabledTracks: TrackContext<PeerMetadata, TrackMetadata>[],
-    disabledTracks: TrackContext<PeerMetadata, TrackMetadata>[]
+    disabledTracks: TrackContext<PeerMetadata, TrackMetadata>[],
   ) => void;
 
   /**
@@ -198,7 +198,9 @@ export type Config<PeerMetadata, TrackMetadata> = {
  * });
  * ```
  */
-export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter as { new<PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>; })<PeerMetadata, TrackMetadata> {
+export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter as {
+  new <PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>;
+})<PeerMetadata, TrackMetadata> {
   private websocket: WebSocket | null = null;
   private webrtc: WebRTCEndpoint | null = null;
   private removeEventListeners: (() => void) | null = null;
@@ -266,7 +268,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
       endpointMetadataParser: this.peerMetadataParser,
-      trackMetadataParser: this.trackMetadataParser
+      trackMetadataParser: this.trackMetadataParser,
     });
 
     this.setupCallbacks();
@@ -347,11 +349,9 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.webrtc?.on("trackUpdated", (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
       this.emit("trackUpdated", ctx);
     });
-    this.webrtc?.on(
-      "tracksPriorityChanged", (enabledTracks, disabledTracks) => {
-        this.emit("tracksPriorityChanged", enabledTracks, disabledTracks);
-      }
-    );
+    this.webrtc?.on("tracksPriorityChanged", (enabledTracks, disabledTracks) => {
+      this.emit("tracksPriorityChanged", enabledTracks, disabledTracks);
+    });
     this.webrtc?.on("connectionError", (metadata: string) => {
       this.emit("joinError", metadata);
     });
@@ -377,7 +377,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public on<E extends keyof MessageEvents<PeerMetadata, TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E]
+    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E],
   ): this {
     return super.on(event, listener);
   }
@@ -400,7 +400,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public off<E extends keyof MessageEvents<PeerMetadata, TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E]
+    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E],
   ): this {
     return super.off(event, listener);
   }
@@ -458,7 +458,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     stream: MediaStream,
     trackMetadata?: TrackMetadata,
     simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [] },
-    maxBandwidth: TrackBandwidthLimit = 0 // unlimited bandwidth
+    maxBandwidth: TrackBandwidthLimit = 0, // unlimited bandwidth
   ): Promise<string> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
@@ -516,7 +516,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   public async replaceTrack(
     trackId: string,
     newTrack: MediaStreamTrack,
-    newTrackMetadata?: TrackMetadata
+    newTrackMetadata?: TrackMetadata,
   ): Promise<void> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
