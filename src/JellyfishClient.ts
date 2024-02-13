@@ -457,7 +457,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     track: MediaStreamTrack,
     stream: MediaStream,
     trackMetadata?: TrackMetadata,
-    simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [] },
+    simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [], disabledEncodings: [] },
     maxBandwidth: TrackBandwidthLimit = 0, // unlimited bandwidth
   ): Promise<string> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
