@@ -1,7 +1,7 @@
 import "./style.css";
 
 import { createStream } from "./createMockStream";
-import { JellyfishClient, TrackEncoding, Peer } from "@jellyfish-dev/ts-client-sdk";
+import { JellyfishClient, TrackEncoding, Peer, TrackContext } from "@jellyfish-dev/ts-client-sdk";
 import { enumerateDevices, getUserMedia, SCREEN_SHARING_MEDIA_CONSTRAINTS } from "@jellyfish-dev/browser-media-utils";
 
 /* eslint-disable no-console */
@@ -115,16 +115,12 @@ client.on("disconnected", () => {
   toastInfo("Disconnected");
 });
 
+client.on("trackAdded", (ctx) => {
+  console.log({ name: "trackAdded", ctx });
+});
+
 client.on("joined", (_peerId: string, peersInRoom: Peer<PeerMetadata, TrackMetadata>[]) => {
   console.log("Join success!");
-  console.log({ name: "joined", peersInRoom });
-  peersInRoom.forEach((peer) => {
-    if (peer.tracks instanceof Map) {
-      console.log({ name: "peer.tracks is Map" });
-    } else {
-      console.log({ name: "is not Map" });
-    }
-  });
   toastSuccess(`Joined room`);
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
@@ -153,6 +149,8 @@ client.on("peerJoined", (peer: Peer<PeerMetadata, TrackMetadata>) => {
   console.log("Peer join success!");
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
+
+  console.log({ name: "peerJoined", isInstanceOfMap: peer.tracks instanceof Map });
 
   // @ts-ignore
   const clone = template.content.cloneNode(true);
