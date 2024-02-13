@@ -13,7 +13,7 @@ import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
 
-export type Peer<PeerMetadata, TrackMetadat> = Endpoint<PeerMetadata, TrackMetadat>;
+export type Peer<PeerMetadata, TrackMetadata> = Endpoint<PeerMetadata, TrackMetadata>;
 
 /**
  * Events emitted by the client with their arguments.
