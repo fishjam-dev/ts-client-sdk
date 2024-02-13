@@ -212,8 +212,8 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
   constructor(config?: Config<PeerMetadata, TrackMetadata>) {
     super();
-    this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x);
-    this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x);
+    this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x as PeerMetadata);
+    this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x as TrackMetadata);
   }
 
   /**

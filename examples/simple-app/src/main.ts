@@ -117,6 +117,14 @@ client.on("disconnected", () => {
 
 client.on("joined", (_peerId: string, peersInRoom: Peer<PeerMetadata, TrackMetadata>[]) => {
   console.log("Join success!");
+  console.log({ name: "joined", peersInRoom });
+  peersInRoom.forEach((peer) => {
+    if (peer.tracks instanceof Map) {
+      console.log({ name: "peer.tracks is Map" });
+    } else {
+      console.log({ name: "is not Map" });
+    }
+  });
   toastSuccess(`Joined room`);
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
@@ -141,7 +149,7 @@ client.on("joinError", (_metadata) => {
   toastAlert("Join error");
 });
 
-client.on("peerJoined", (peer) => {
+client.on("peerJoined", (peer: Peer<PeerMetadata, TrackMetadata>) => {
   console.log("Peer join success!");
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
