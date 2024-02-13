@@ -1,7 +1,7 @@
 import "./style.css";
 
 import { createStream } from "./createMockStream";
-import { JellyfishClient, TrackEncoding, Peer, TrackContext } from "@jellyfish-dev/ts-client-sdk";
+import { JellyfishClient, TrackEncoding, Peer } from "@jellyfish-dev/ts-client-sdk";
 import { enumerateDevices, getUserMedia, SCREEN_SHARING_MEDIA_CONSTRAINTS } from "@jellyfish-dev/browser-media-utils";
 
 /* eslint-disable no-console */
