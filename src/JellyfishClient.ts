@@ -282,10 +282,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
           this.emit("authSuccess");
 
           this.webrtc?.connect(peerMetadata);
-          // TODO if there metadata parser throws error this function also throws
-          //  what should we de?
-          //  - emit event invalid metadata?
-          //  - throws until connect become async?
         } else if (data.authRequest !== undefined) {
           console.warn("Received unexpected control message: authRequest");
         } else if (data.mediaEvent !== undefined) {
