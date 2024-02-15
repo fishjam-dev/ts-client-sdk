@@ -147,10 +147,11 @@ client.on("joinError", (_metadata) => {
 
 client.on("peerJoined", (peer: Peer<PeerMetadata, TrackMetadata>) => {
   console.log("Peer join success!");
+
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
 
-  console.log({ name: "peerJoined", isInstanceOfMap: peer.tracks instanceof Map });
+  console.log({ name: "peerJoined" });
 
   // @ts-ignore
   const clone = template.content.cloneNode(true);
