@@ -1,4 +1,4 @@
-export type { Peer, ConnectConfig, Config, MessageEvents, SignalingUrl } from "./JellyfishClient";
+export type { Peer, ConnectConfig, CreateConfig, MessageEvents, SignalingUrl } from "./JellyfishClient";
 
 export { JellyfishClient } from "./JellyfishClient";
 

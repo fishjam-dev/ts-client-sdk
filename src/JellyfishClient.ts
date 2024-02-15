@@ -159,7 +159,7 @@ export interface ConnectConfig<PeerMetadata> {
   signaling?: SignalingUrl;
 }
 
-export type Config<PeerMetadata, TrackMetadata> = {
+export type CreateConfig<PeerMetadata, TrackMetadata> = {
   peerMetadataParser?: MetadataParser<PeerMetadata>;
   trackMetadataParser?: MetadataParser<TrackMetadata>;
 };
@@ -210,7 +210,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   private readonly peerMetadataParser: MetadataParser<PeerMetadata>;
   private readonly trackMetadataParser: MetadataParser<TrackMetadata>;
 
-  constructor(config?: Config<PeerMetadata, TrackMetadata>) {
+  constructor(config?: CreateConfig<PeerMetadata, TrackMetadata>) {
     super();
     this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x as PeerMetadata);
     this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x as TrackMetadata);
@@ -280,7 +280,12 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
         const data = PeerMessage.decode(uint8Array);
         if (data.authenticated !== undefined) {
           this.emit("authSuccess");
+
           this.webrtc?.connect(peerMetadata);
+          // TODO if there metadata parser throws error this function also throws
+          //  what should we de?
+          //  - emit event invalid metadata?
+          //  - throws until connect become async?
         } else if (data.authRequest !== undefined) {
           console.warn("Received unexpected control message: authRequest");
         } else if (data.mediaEvent !== undefined) {
