@@ -151,8 +151,6 @@ client.on("peerJoined", (peer: Peer<PeerMetadata, TrackMetadata>) => {
   const template = document.querySelector("#remote-peer-template-card")!;
   const remotePeers = document.querySelector("#remote-peers")!;
 
-  console.log({ name: "peerJoined" });
-
   // @ts-ignore
   const clone = template.content.cloneNode(true);
   const card = clone.firstElementChild;
