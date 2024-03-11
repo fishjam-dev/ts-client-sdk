@@ -7,7 +7,7 @@ import {
   TrackBandwidthLimit,
   TrackContext,
   TrackEncoding,
-  MetadataParser,
+  MetadataParser
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
@@ -116,7 +116,7 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
    */
   tracksPriorityChanged: (
     enabledTracks: TrackContext<PeerMetadata, TrackMetadata>[],
-    disabledTracks: TrackContext<PeerMetadata, TrackMetadata>[],
+    disabledTracks: TrackContext<PeerMetadata, TrackMetadata>[]
   ) => void;
 
   /**
@@ -199,7 +199,7 @@ export type CreateConfig<PeerMetadata, TrackMetadata> = {
  * ```
  */
 export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter as {
-  new <PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>;
+  new<PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>;
 })<PeerMetadata, TrackMetadata> {
   private websocket: WebSocket | null = null;
   private webrtc: WebRTCEndpoint | null = null;
@@ -268,7 +268,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
       endpointMetadataParser: this.peerMetadataParser,
-      trackMetadataParser: this.trackMetadataParser,
+      trackMetadataParser: this.trackMetadataParser
     });
 
     this.setupCallbacks();
@@ -301,6 +301,19 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       this.websocket?.removeEventListener("message", messageHandler);
     };
     this.status = "initialized";
+  }
+
+  /**
+   * Retrieves statistics related to the RTCPeerConnection.
+   * These statistics provide insights into the performance and status of the connection.
+   *
+   * @return {Promise<RTCStatsReport>}
+   *
+   * @external RTCPeerConnection#getStats()
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getStats | MDN Web Docs: RTCPeerConnection.getStats()}
+   */
+  public async getStats(selector?: MediaStreamTrack | null): Promise<RTCStatsReport> {
+    return await this.webrtc?.getStats(selector) ?? new Map();
   }
 
   /**
@@ -378,7 +391,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public on<E extends keyof MessageEvents<PeerMetadata, TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E],
+    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E]
   ): this {
     return super.on(event, listener);
   }
@@ -401,7 +414,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public off<E extends keyof MessageEvents<PeerMetadata, TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E],
+    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E]
   ): this {
     return super.off(event, listener);
   }
@@ -459,7 +472,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     stream: MediaStream,
     trackMetadata?: TrackMetadata,
     simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [], disabledEncodings: [] },
-    maxBandwidth: TrackBandwidthLimit = 0, // unlimited bandwidth
+    maxBandwidth: TrackBandwidthLimit = 0 // unlimited bandwidth
   ): Promise<string> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
@@ -517,7 +530,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   public async replaceTrack(
     trackId: string,
     newTrack: MediaStreamTrack,
-    newTrackMetadata?: TrackMetadata,
+    newTrackMetadata?: TrackMetadata
   ): Promise<void> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
