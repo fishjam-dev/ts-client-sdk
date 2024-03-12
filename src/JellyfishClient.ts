@@ -312,8 +312,8 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * @external RTCPeerConnection#getStats()
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getStats | MDN Web Docs: RTCPeerConnection.getStats()}
    */
-  public async getStats(selector?: MediaStreamTrack | null): Promise<RTCStatsReport> {
-    return (await this.webrtc?.getStats(selector)) ?? new Map();
+  public async getStatistics(selector?: MediaStreamTrack | null): Promise<RTCStatsReport> {
+    return (await this.webrtc?.getStatistics(selector)) ?? new Map();
   }
 
   /**
