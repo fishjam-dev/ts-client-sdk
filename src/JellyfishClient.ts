@@ -202,7 +202,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   new <PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>;
 })<PeerMetadata, TrackMetadata> {
   private websocket: WebSocket | null = null;
-  private webrtc: WebRTCEndpoint | null = null;
+  private webrtc: WebRTCEndpoint<PeerMetadata, TrackMetadata> | null = null;
   private removeEventListeners: (() => void) | null = null;
 
   public status: "new" | "initialized" = "new";
@@ -312,8 +312,8 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * @external RTCPeerConnection#getStats()
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getStats | MDN Web Docs: RTCPeerConnection.getStats()}
    */
-  public async getStats(selector?: MediaStreamTrack | null): Promise<RTCStatsReport> {
-    return (await this.webrtc?.getStats(selector)) ?? new Map();
+  public async getStatistics(selector?: MediaStreamTrack | null): Promise<RTCStatsReport> {
+    return (await this.webrtc?.getStatistics(selector)) ?? new Map();
   }
 
   /**
@@ -326,6 +326,26 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   getRemoteTracks(): Readonly<Record<string, TrackContext<PeerMetadata, TrackMetadata>>> {
     return this.webrtc?.getRemoteTracks() ?? {};
+  }
+
+  /**
+   * Returns a snapshot of currently received remote endpoints.
+   */
+  public getRemoteEndpoints(): Record<string, Endpoint<PeerMetadata, TrackMetadata>> {
+    return this.webrtc?.getRemoteEndpoints() ?? {}
+  }
+
+  // todo change to read only
+  public getLocalEndpoint(): Endpoint<PeerMetadata, TrackMetadata> {
+    if(!this.webrtc) throw Error("Webrtc not initialized")
+
+    return this.webrtc?.getLocalEndpoint()
+  }
+
+  public getBandwidthEstimation(): bigint {
+    if(!this.webrtc) throw Error("Webrtc not initialized")
+
+    return this.webrtc?.getBandwidthEstimation();
   }
 
   private setupCallbacks() {
