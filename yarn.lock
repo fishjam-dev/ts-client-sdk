@@ -64,7 +64,7 @@
   integrity sha512-dvuCeX5fC9dXgJn9t+X5atfmgQAzUOWqS1254Gh0m6i8wKd10ebXkfNKiRK+1GWi/yTvvLDHpoxLr0xxxeslWw==
 
 "@jellyfish-dev/membrane-webrtc-js@file:../membrane-webrtc-js":
-  version "0.7.0"
+  version "0.7.1"
   resolved "file:../membrane-webrtc-js"
   dependencies:
     events "^3.3.0"

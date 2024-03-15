@@ -7,7 +7,7 @@ import {
   TrackBandwidthLimit,
   TrackContext,
   TrackEncoding,
-  MetadataParser,
+  MetadataParser
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
@@ -116,7 +116,7 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
    */
   tracksPriorityChanged: (
     enabledTracks: TrackContext<PeerMetadata, TrackMetadata>[],
-    disabledTracks: TrackContext<PeerMetadata, TrackMetadata>[],
+    disabledTracks: TrackContext<PeerMetadata, TrackMetadata>[]
   ) => void;
 
   /**
@@ -126,6 +126,22 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
    * by the server. It's measured in bits per second.
    */
   bandwidthEstimationChanged: (estimation: bigint) => void;
+
+  // new
+  targetTrackEncodingRequested: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  // local events
+  localTrackAdded: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  localTrackRemoved: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  localTrackReplaced: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  localTrackBandwidthSet: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  localTrackEncodingBandwidthSet: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  localTrackEncodingEnabled: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  localTrackEncodingDisabled: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  localEndpointMetadataChanged: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  localTrackMetadataChanged: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  disconnectRequested: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export type SignalingUrl = {
@@ -199,7 +215,7 @@ export type CreateConfig<PeerMetadata, TrackMetadata> = {
  * ```
  */
 export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter as {
-  new <PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>;
+  new<PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>;
 })<PeerMetadata, TrackMetadata> {
   private websocket: WebSocket | null = null;
   private webrtc: WebRTCEndpoint<PeerMetadata, TrackMetadata> | null = null;
@@ -268,7 +284,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
       endpointMetadataParser: this.peerMetadataParser,
-      trackMetadataParser: this.trackMetadataParser,
+      trackMetadataParser: this.trackMetadataParser
     });
 
     this.setupCallbacks();
@@ -332,18 +348,16 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * Returns a snapshot of currently received remote endpoints.
    */
   public getRemoteEndpoints(): Record<string, Endpoint<PeerMetadata, TrackMetadata>> {
-    return this.webrtc?.getRemoteEndpoints() ?? {}
+    return this.webrtc?.getRemoteEndpoints() ?? {};
   }
 
   // todo change to read only
-  public getLocalEndpoint(): Endpoint<PeerMetadata, TrackMetadata> {
-    if(!this.webrtc) throw Error("Webrtc not initialized")
-
-    return this.webrtc?.getLocalEndpoint()
+  public getLocalEndpoint(): Endpoint<PeerMetadata, TrackMetadata> | null {
+    return this.webrtc?.getLocalEndpoint() || null;
   }
 
   public getBandwidthEstimation(): bigint {
-    if(!this.webrtc) throw Error("Webrtc not initialized")
+    if (!this.webrtc) throw Error("Webrtc not initialized");
 
     return this.webrtc?.getBandwidthEstimation();
   }
@@ -392,6 +406,49 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.webrtc?.on("bandwidthEstimationChanged", (estimation: bigint) => {
       this.emit("bandwidthEstimationChanged", estimation);
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("targetTrackEncodingRequested", (event: any) => {
+      this.emit("targetTrackEncodingRequested", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localTrackAdded", (event: any) => {
+      this.emit("localTrackAdded", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localTrackRemoved", (event: any) => {
+      this.emit("localTrackRemoved", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localTrackReplaced", (event: any) => {
+      this.emit("localTrackReplaced", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localTrackBandwidthSet", (event: any) => {
+      this.emit("localTrackBandwidthSet", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localTrackEncodingBandwidthSet", (event: any) => {
+      this.emit("localTrackEncodingBandwidthSet", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localTrackEncodingEnabled", (event: any) => {
+      this.emit("localTrackEncodingEnabled", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localTrackEncodingDisabled", (event: any) => {
+      this.emit("localTrackEncodingDisabled", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localEndpointMetadataChanged", (event: any) => {
+      this.emit("localEndpointMetadataChanged", event);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.webrtc?.on("localTrackMetadataChanged", (event: any) => {
+      this.emit("localTrackMetadataChanged", event);
+    });
+    this.webrtc?.on("disconnectRequested", (event: any) => {
+      this.emit("disconnectRequested", event);
+    });
   }
 
   /**
@@ -411,7 +468,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public on<E extends keyof MessageEvents<PeerMetadata, TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E],
+    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E]
   ): this {
     return super.on(event, listener);
   }
@@ -434,7 +491,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public off<E extends keyof MessageEvents<PeerMetadata, TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E],
+    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E]
   ): this {
     return super.off(event, listener);
   }
@@ -492,7 +549,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     stream: MediaStream,
     trackMetadata?: TrackMetadata,
     simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [], disabledEncodings: [] },
-    maxBandwidth: TrackBandwidthLimit = 0, // unlimited bandwidth
+    maxBandwidth: TrackBandwidthLimit = 0 // unlimited bandwidth
   ): Promise<string> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
@@ -550,7 +607,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   public async replaceTrack(
     trackId: string,
     newTrack: MediaStreamTrack,
-    newTrackMetadata?: TrackMetadata,
+    newTrackMetadata?: TrackMetadata
   ): Promise<void> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
