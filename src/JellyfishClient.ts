@@ -7,7 +7,7 @@ import {
   TrackBandwidthLimit,
   TrackContext,
   TrackEncoding,
-  MetadataParser,
+  MetadataParser
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
@@ -116,7 +116,7 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
    */
   tracksPriorityChanged: (
     enabledTracks: TrackContext<PeerMetadata, TrackMetadata>[],
-    disabledTracks: TrackContext<PeerMetadata, TrackMetadata>[],
+    disabledTracks: TrackContext<PeerMetadata, TrackMetadata>[]
   ) => void;
 
   /**
@@ -159,9 +159,39 @@ export interface ConnectConfig<PeerMetadata> {
   signaling?: SignalingUrl;
 }
 
+export type ReconnectConfig = {
+  /*
+   + default: 3
+   */
+  maxAttempts?: number,
+  /*
+   * unit: milliseconds
+   * default: 500
+   */
+  initialDelay?: number,
+  /*
+   * unit: milliseconds
+   * default: 500
+   */
+  delay?: number,
+}
+
+const DISABLED_RECONNECT_CONFIG: Required<ReconnectConfig> = {
+  maxAttempts: 0,
+  initialDelay: 0,
+  delay: 0
+};
+
+const DEFAULT_RECONNECT_CONFIG: Required<ReconnectConfig> = {
+  maxAttempts: 3,
+  initialDelay: 500,
+  delay: 500
+};
+
 export type CreateConfig<PeerMetadata, TrackMetadata> = {
   peerMetadataParser?: MetadataParser<PeerMetadata>;
   trackMetadataParser?: MetadataParser<TrackMetadata>;
+  reconnect?: ReconnectConfig | boolean
 };
 
 /**
@@ -199,13 +229,19 @@ export type CreateConfig<PeerMetadata, TrackMetadata> = {
  * ```
  */
 export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter as {
-  new <PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>;
+  new<PeerMetadata, TrackMetadata>(): TypedEmitter<Required<MessageEvents<PeerMetadata, TrackMetadata>>>;
 })<PeerMetadata, TrackMetadata> {
   private websocket: WebSocket | null = null;
   private webrtc: WebRTCEndpoint | null = null;
   private removeEventListeners: (() => void) | null = null;
 
   public status: "new" | "initialized" = "new";
+
+  private connectConfig: ConnectConfig<PeerMetadata> | null = null;
+
+  private readonly reconnectConfig: Required<ReconnectConfig>;
+  private reconnectAttempt: number = 0;
+  private reconnectTimeoutId: NodeJS.Timeout | null = null;
 
   private readonly peerMetadataParser: MetadataParser<PeerMetadata>;
   private readonly trackMetadataParser: MetadataParser<TrackMetadata>;
@@ -214,6 +250,18 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     super();
     this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x as PeerMetadata);
     this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x as TrackMetadata);
+
+    if (!config?.reconnect) {
+      this.reconnectConfig = DISABLED_RECONNECT_CONFIG;
+    } else if (config.reconnect === true) {
+      this.reconnectConfig = DEFAULT_RECONNECT_CONFIG;
+    } else {
+      this.reconnectConfig = {
+        maxAttempts: config?.reconnect?.maxAttempts ?? DEFAULT_RECONNECT_CONFIG.maxAttempts,
+        initialDelay: config?.reconnect?.initialDelay ?? DEFAULT_RECONNECT_CONFIG.initialDelay,
+        delay: config?.reconnect?.delay ?? DEFAULT_RECONNECT_CONFIG.delay
+      };
+    }
   }
 
   /**
@@ -233,7 +281,38 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * @param {ConnectConfig} config - Configuration object for the client
    */
   connect(config: ConnectConfig<PeerMetadata>): void {
-    const { token, peerMetadata, signaling } = config;
+    this.resetReconnectState();
+    this.initConnection(config);
+  }
+
+  private resetReconnectState() {
+    this.reconnectAttempt = 0;
+    if (this.reconnectTimeoutId) clearTimeout(this.reconnectTimeoutId);
+    this.reconnectTimeoutId = null;
+  }
+
+  private initConnection(config: ConnectConfig<PeerMetadata>): void {
+    this.connectConfig = config;
+
+    if (this.status === "initialized") {
+      this.disconnect();
+    }
+
+    this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
+      endpointMetadataParser: this.peerMetadataParser,
+      trackMetadataParser: this.trackMetadataParser
+    });
+
+    this.initWebsocket();
+    this.setupCallbacks();
+
+    this.status = "initialized";
+  }
+
+  private initWebsocket() {
+    if (!this.connectConfig) throw Error("ConnectConfig is null");
+
+    const { token, peerMetadata, signaling } = this.connectConfig;
 
     const protocol = signaling?.protocol ?? "ws";
     const host = signaling?.host ?? "localhost:5002";
@@ -241,24 +320,29 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     const websocketUrl = protocol + "://" + host + path;
 
-    if (this.status === "initialized") {
-      this.disconnect();
-    }
-
-    this.websocket = new WebSocket(`${websocketUrl}`);
+    this.websocket = new WebSocket(websocketUrl);
     this.websocket.binaryType = "arraybuffer";
 
     const socketOpenHandler = (event: Event) => {
+      console.log("Socket open!");
+
       this.emit("socketOpen", event);
+
       const message = PeerMessage.encode({ authRequest: { token } }).finish();
       this.websocket?.send(message);
     };
 
     const socketErrorHandler = (event: Event) => {
+      console.error({ name: "socketErrorHandler", event });
+      this.reconnect();
+
       this.emit("socketError", event);
     };
 
     const socketCloseHandler = (event: CloseEvent) => {
+      console.error({ name: "socketCloseHandler", event });
+      this.reconnect();
+
       this.emit("socketClose", event);
     };
 
@@ -266,19 +350,13 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.websocket.addEventListener("error", socketErrorHandler);
     this.websocket.addEventListener("close", socketCloseHandler);
 
-    this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
-      endpointMetadataParser: this.peerMetadataParser,
-      trackMetadataParser: this.trackMetadataParser,
-    });
-
-    this.setupCallbacks();
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const messageHandler = (event: MessageEvent<any>) => {
       const uint8Array = new Uint8Array(event.data);
       try {
         const data = PeerMessage.decode(uint8Array);
         if (data.authenticated !== undefined) {
+          this.resetReconnectState();
           this.emit("authSuccess");
 
           this.webrtc?.connect(peerMetadata);
@@ -300,7 +378,32 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       this.websocket?.removeEventListener("close", socketCloseHandler);
       this.websocket?.removeEventListener("message", messageHandler);
     };
-    this.status = "initialized";
+  }
+
+  // todo change to private
+  private reconnect() {
+    if (!this.connectConfig) throw Error("Invalid inner state! ConnectConfig is null");
+
+    if (this.reconnectTimeoutId) return;
+
+    console.log({ name: "state", attempt: this.reconnectAttempt, max: this.reconnectConfig.maxAttempts });
+
+    if ((this.reconnectAttempt) >= (this.reconnectConfig.maxAttempts)) return;
+
+    const timeout = this.reconnectConfig.initialDelay + this.reconnectAttempt * this.reconnectConfig.delay;
+
+    console.log({ name: "schedule next attempt", attempt: this.reconnectAttempt, timeout: timeout });
+
+    this.reconnectAttempt += 1;
+
+    this.reconnectTimeoutId = setTimeout(() => {
+      this.reconnectTimeoutId = null;
+      console.log(`Reconnect attempt ${this.reconnectAttempt}`);
+
+      if (!this.connectConfig) throw Error("Connect config is null");
+
+      this.initConnection(this.connectConfig);
+    }, timeout);
   }
 
   /**
@@ -391,7 +494,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public on<E extends keyof MessageEvents<PeerMetadata, TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E],
+    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E]
   ): this {
     return super.on(event, listener);
   }
@@ -414,7 +517,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   public off<E extends keyof MessageEvents<PeerMetadata, TrackMetadata>>(
     event: E,
-    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E],
+    listener: Required<MessageEvents<PeerMetadata, TrackMetadata>>[E]
   ): this {
     return super.off(event, listener);
   }
@@ -472,7 +575,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     stream: MediaStream,
     trackMetadata?: TrackMetadata,
     simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [], disabledEncodings: [] },
-    maxBandwidth: TrackBandwidthLimit = 0, // unlimited bandwidth
+    maxBandwidth: TrackBandwidthLimit = 0 // unlimited bandwidth
   ): Promise<string> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
@@ -530,7 +633,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   public async replaceTrack(
     trackId: string,
     newTrack: MediaStreamTrack,
-    newTrackMetadata?: TrackMetadata,
+    newTrackMetadata?: TrackMetadata
   ): Promise<void> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();
 
@@ -717,7 +820,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * client.disconnect();
    * ```
    */
-  disconnect() {
+  public disconnect() {
     try {
       this.webrtc?.removeAllListeners();
       this.webrtc?.disconnect();
