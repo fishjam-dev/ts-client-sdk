@@ -258,6 +258,9 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   private readonly reconnectConfig: Required<ReconnectConfig>;
   private reconnectAttempt: number = 0;
   private reconnectTimeoutId: NodeJS.Timeout | null = null;
+  private reconnectFailedNotificationSend: boolean = false;
+  private ongoingReconnecting: boolean = false;
+  private lastLocalEndpoint: Endpoint<PeerMetadata, TrackMetadata> | null = null;
 
   private readonly peerMetadataParser: MetadataParser<PeerMetadata>;
   private readonly trackMetadataParser: MetadataParser<TrackMetadata>;
@@ -413,7 +416,21 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     //   config: this.reconnectConfig
     // });
 
-    if ((this.reconnectAttempt) >= (this.reconnectConfig.maxAttempts)) return;
+    if ((this.reconnectAttempt) >= (this.reconnectConfig.maxAttempts)) {
+      if (!this.reconnectFailedNotificationSend) {
+        console.log("Reconnect failed");
+        this.reconnectFailedNotificationSend = true;
+      }
+      return;
+    }
+
+    if (!this.ongoingReconnecting) {
+      this.ongoingReconnecting = true;
+
+      console.log("Saving last localEndpoint");
+      this.lastLocalEndpoint = this.webrtc?.getLocalEndpoint() || null;
+      console.log({ lastLocalEndpoint: this.lastLocalEndpoint });
+    }
 
     const timeout = this.reconnectConfig.initialDelay + this.reconnectAttempt * this.reconnectConfig.delay;
 
@@ -427,6 +444,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
       if (!this.connectConfig) throw Error("Connect config is null");
 
+      // todo should I cleanup previous webrtc object? removeAllListeners?
       this.initConnection();
     }, timeout);
   }
@@ -474,6 +492,27 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     return this.webrtc?.getBandwidthEstimation();
   }
 
+  private addPreviousTracks() {
+    if (!this.lastLocalEndpoint) {
+      console.log("Skipping addPreviousTrack");
+      return;
+    }
+
+    this.lastLocalEndpoint.tracks.forEach(async (track) => {
+      console.log({name: "Track to add", track})
+      if (!track.track || !track.stream) return;
+
+      console.log({name: "Adding track:", track})
+      await this.addTrack(
+        track.track,
+        track.stream,
+        track.rawMetadata,
+        track.simulcastConfig,
+        track.maxBandwidth
+      );
+    });
+  }
+
   private setupCallbacks() {
     this.webrtc?.on("sendMediaEvent", (mediaEvent: SerializedMediaEvent) => {
       const message = PeerMessage.encode({ mediaEvent: { data: mediaEvent } }).finish();
@@ -481,6 +520,14 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     });
 
     this.webrtc?.on("connected", (peerId: string, peersInRoom: Endpoint<PeerMetadata, TrackMetadata>[]) => {
+      console.log("Joined to room");
+
+      if (this.ongoingReconnecting) {
+        this.addPreviousTracks();
+
+        this.ongoingReconnecting = false;
+      }
+
       this.emit("joined", peerId, peersInRoom);
     });
 
