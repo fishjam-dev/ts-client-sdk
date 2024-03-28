@@ -12,6 +12,7 @@ import {
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
+import { ReconnectConfig, ReconnectManager } from "./reconnection";
 
 export type Peer<PeerMetadata, TrackMetadata> = Endpoint<PeerMetadata, TrackMetadata>;
 
@@ -175,42 +176,6 @@ export interface ConnectConfig<PeerMetadata> {
   signaling?: SignalingUrl;
 }
 
-export type ReconnectConfig = {
-  /*
-   + default: 3
-   */
-  maxAttempts?: number,
-  /*
-   * unit: milliseconds
-   * default: 500
-   */
-  initialDelay?: number,
-  /*
-   * unit: milliseconds
-   * default: 500
-   */
-  delay?: number,
-
-  /*
-   * default: false
-   */
-  addTracksOnReconnect?: boolean,
-}
-
-const DISABLED_RECONNECT_CONFIG: Required<ReconnectConfig> = {
-  maxAttempts: 0,
-  initialDelay: 0,
-  delay: 0,
-  addTracksOnReconnect: false
-};
-
-const DEFAULT_RECONNECT_CONFIG: Required<ReconnectConfig> = {
-  maxAttempts: 3,
-  initialDelay: 500,
-  delay: 500,
-  addTracksOnReconnect: true
-};
-
 export type CreateConfig<PeerMetadata, TrackMetadata> = {
   peerMetadataParser?: MetadataParser<PeerMetadata>;
   trackMetadataParser?: MetadataParser<TrackMetadata>;
@@ -262,13 +227,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
   private connectConfig: ConnectConfig<PeerMetadata> | null = null;
 
-  private readonly reconnectConfig: Required<ReconnectConfig>;
-  private reconnectAttempt: number = 0;
-  private reconnectTimeoutId: NodeJS.Timeout | null = null;
-  private reconnectFailedNotificationSend: boolean = false;
-  private ongoingReconnection: boolean = false;
-
-  private lastLocalEndpoint: Endpoint<PeerMetadata, TrackMetadata> | null = null;
+  private reconnectManager: ReconnectManager<PeerMetadata, TrackMetadata>;
 
   private readonly peerMetadataParser: MetadataParser<PeerMetadata>;
   private readonly trackMetadataParser: MetadataParser<TrackMetadata>;
@@ -277,19 +236,9 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     super();
     this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x as PeerMetadata);
     this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x as TrackMetadata);
-    this.reconnectConfig = this.createReconnectConfig(config?.reconnect);
-  }
-
-  private createReconnectConfig(config?: ReconnectConfig | boolean): Required<ReconnectConfig> {
-    if (!config) return DISABLED_RECONNECT_CONFIG;
-    if (config === true) return DEFAULT_RECONNECT_CONFIG;
-
-    return {
-      maxAttempts: config?.maxAttempts ?? DEFAULT_RECONNECT_CONFIG.maxAttempts,
-      initialDelay: config?.initialDelay ?? DEFAULT_RECONNECT_CONFIG.initialDelay,
-      delay: config?.delay ?? DEFAULT_RECONNECT_CONFIG.delay,
-      addTracksOnReconnect: config?.addTracksOnReconnect ?? DEFAULT_RECONNECT_CONFIG.addTracksOnReconnect
-    };
+    this.reconnectManager = new ReconnectManager<PeerMetadata, TrackMetadata>(
+      this, () => this.initConnection(), config?.reconnect
+    );
   }
 
   /**
@@ -309,15 +258,9 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * @param {ConnectConfig} config - Configuration object for the client
    */
   connect(config: ConnectConfig<PeerMetadata>): void {
-    this.resetReconnectState();
+    this.reconnectManager.reset();
     this.connectConfig = config;
     this.initConnection();
-  }
-
-  private resetReconnectState() {
-    this.reconnectAttempt = 0;
-    if (this.reconnectTimeoutId) clearTimeout(this.reconnectTimeoutId);
-    this.reconnectTimeoutId = null;
   }
 
   private initConnection(): void {
@@ -341,7 +284,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     const { token, peerMetadata, signaling } = this.connectConfig;
 
-    const metadata = this.lastLocalEndpoint?.metadata ?? peerMetadata;
+    const metadata = this.reconnectManager.getLastPeerMetadata() ?? peerMetadata;
 
     const protocol = signaling?.protocol ?? "ws";
     const host = signaling?.host ?? "localhost:5002";
@@ -363,14 +306,14 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     const socketErrorHandler = (event: Event) => {
       console.error({ name: "socketErrorHandler", event });
-      this.reconnect();
+      this.reconnectManager.reconnect(this.connectConfig);
 
       this.emit("socketError", event);
     };
 
     const socketCloseHandler = (event: CloseEvent) => {
       console.error({ name: "socketCloseHandler", event });
-      this.reconnect();
+      this.reconnectManager.reconnect(this.connectConfig);
 
       this.emit("socketClose", event);
     };
@@ -385,7 +328,8 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       try {
         const data = PeerMessage.decode(uint8Array);
         if (data.authenticated !== undefined) {
-          this.resetReconnectState();
+          // todo subscribe in reconnect manager to authSuccess
+          this.reconnectManager.reset();
           this.emit("authSuccess");
 
           this.webrtc?.connect(metadata);
@@ -407,52 +351,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       this.websocket?.removeEventListener("close", socketCloseHandler);
       this.websocket?.removeEventListener("message", messageHandler);
     };
-  }
-
-  // todo change to private
-  private reconnect() {
-    if (!this.connectConfig) throw Error("Invalid inner state! ConnectConfig is null");
-
-    if (this.reconnectTimeoutId) return;
-
-    // console.log({
-    //   name: "state",
-    //   attempt: this.reconnectAttempt,
-    //   max: this.reconnectConfig.maxAttempts,
-    //   config: this.reconnectConfig
-    // });
-
-    if ((this.reconnectAttempt) >= (this.reconnectConfig.maxAttempts)) {
-      if (!this.reconnectFailedNotificationSend) {
-        console.log("Reconnect failed");
-        this.reconnectFailedNotificationSend = true;
-      }
-      return;
-    }
-
-    if (!this.ongoingReconnection) {
-      this.ongoingReconnection = true;
-
-      console.log("Saving last localEndpoint");
-      this.lastLocalEndpoint = this.webrtc?.getLocalEndpoint() || null;
-      console.log({ lastLocalEndpoint: this.lastLocalEndpoint });
-    }
-
-    const timeout = this.reconnectConfig.initialDelay + this.reconnectAttempt * this.reconnectConfig.delay;
-
-    // console.log({ name: "schedule next attempt", attempt: this.reconnectAttempt, timeout: timeout });
-
-    this.reconnectAttempt += 1;
-
-    this.reconnectTimeoutId = setTimeout(() => {
-      this.reconnectTimeoutId = null;
-      // console.log(`Reconnect attempt ${this.reconnectAttempt}`);
-
-      if (!this.connectConfig) throw Error("Connect config is null");
-
-      // todo should I cleanup previous webrtc object? removeAllListeners?
-      this.initConnection();
-    }, timeout);
   }
 
   /**
@@ -498,29 +396,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     return this.webrtc?.getBandwidthEstimation();
   }
 
-  private addPreviousTracks() {
-    if (!this.lastLocalEndpoint || !this.reconnectConfig.addTracksOnReconnect) {
-      console.log("Skipping addPreviousTrack");
-      return;
-    }
-
-    this.lastLocalEndpoint.tracks.forEach(async (track) => {
-      console.log({ name: "Track to add", track });
-      if (!track.track || !track.stream) return;
-
-      console.log({ name: "Adding track:", track });
-      await this.addTrack(
-        track.track,
-        track.stream,
-        track.rawMetadata,
-        track.simulcastConfig,
-        track.maxBandwidth
-      );
-    });
-
-    this.lastLocalEndpoint = null;
-  }
-
   private setupCallbacks() {
     this.webrtc?.on("sendMediaEvent", (mediaEvent: SerializedMediaEvent) => {
       const message = PeerMessage.encode({ mediaEvent: { data: mediaEvent } }).finish();
@@ -530,13 +405,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.webrtc?.on("connected", (peerId: string, peersInRoom: Endpoint<PeerMetadata, TrackMetadata>[]) => {
       console.log("Joined to room");
 
-      if (this.ongoingReconnection) {
-        this.addPreviousTracks();
-
-        this.ongoingReconnection = false;
-
-        console.log("Reconnection succeeded");
-      }
+      this.reconnectManager.handleReconnect();
 
       this.emit("joined", peerId, peersInRoom);
     });
