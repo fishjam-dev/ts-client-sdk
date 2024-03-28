@@ -42,8 +42,9 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
   private readonly reconnectConfig: Required<ReconnectConfig>;
 
-  private readonly connect: () => void;
+  private readonly connect: (metadata: PeerMetadata) => void;
   private readonly client: JellyfishClient<PeerMetadata, TrackMetadata>;
+  private initialMetadata: PeerMetadata | undefined | null = undefined;
 
   private reconnectAttempt: number = 0;
   private reconnectTimeoutId: NodeJS.Timeout | null = null;
@@ -53,27 +54,42 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
   constructor(
     client: JellyfishClient<PeerMetadata, TrackMetadata>,
-    connect: () => void,
+    connect: (metadata: PeerMetadata) => void,
     config?: ReconnectConfig | boolean
   ) {
     this.client = client;
     this.connect = connect;
     this.reconnectConfig = createReconnectConfig(config);
+
+    this.client.on("socketError", () => {
+      this.reconnect();
+    });
+
+    this.client.on("socketClose", () => {
+      this.reconnect();
+    });
+
+    this.client.on("authSuccess", () => {
+      this.reset(this.initialMetadata!);
+    });
+
+    this.client.on("joined", () => {
+      this.handleReconnect();
+    });
   }
 
-  public reset() {
+  public reset(initialMetadata: PeerMetadata) {
+    this.initialMetadata = initialMetadata;
     this.reconnectAttempt = 0;
     if (this.reconnectTimeoutId) clearTimeout(this.reconnectTimeoutId);
     this.reconnectTimeoutId = null;
   }
 
-  public getLastPeerMetadata(): PeerMetadata | undefined {
+  private getLastPeerMetadata(): PeerMetadata | undefined {
     return this.lastLocalEndpoint?.metadata;
   }
 
-  public reconnect(connectConfig: ConnectConfig<PeerMetadata> | null) {
-    if (!connectConfig) throw Error("Invalid inner state! ConnectConfig is null");
-
+  private reconnect() {
     if (this.reconnectTimeoutId) return;
 
     if ((this.reconnectAttempt) >= (this.reconnectConfig.maxAttempts)) {
@@ -95,14 +111,12 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
 
-      if (!connectConfig) throw Error("Connect config is null");
-
       // todo should I cleanup previous webrtc object? removeAllListeners?
-      this.connect();
+      this.connect(this.getLastPeerMetadata() ?? this.initialMetadata!);
     }, timeout);
   }
 
-  public handleReconnect() {
+  private handleReconnect() {
     if (!this.ongoingReconnection) return;
 
     if (this.lastLocalEndpoint && this.reconnectConfig.addTracksOnReconnect) {
@@ -123,7 +137,6 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     this.ongoingReconnection = false;
     console.log("Reconnection succeeded");
   }
-
 }
 
 export const createReconnectConfig = (config?: ReconnectConfig | boolean): Required<ReconnectConfig> => {

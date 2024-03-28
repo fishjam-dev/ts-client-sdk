@@ -237,7 +237,9 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x as PeerMetadata);
     this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x as TrackMetadata);
     this.reconnectManager = new ReconnectManager<PeerMetadata, TrackMetadata>(
-      this, () => this.initConnection(), config?.reconnect
+      this,
+      (peerMetadata) => this.initConnection(peerMetadata),
+      config?.reconnect
     );
   }
 
@@ -258,12 +260,13 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    * @param {ConnectConfig} config - Configuration object for the client
    */
   connect(config: ConnectConfig<PeerMetadata>): void {
-    this.reconnectManager.reset();
+    this.reconnectManager.reset(config.peerMetadata);
     this.connectConfig = config;
-    this.initConnection();
+
+    this.initConnection(config.peerMetadata);
   }
 
-  private initConnection(): void {
+  private initConnection(peerMetadata: PeerMetadata): void {
     if (this.status === "initialized") {
       this.disconnect();
     }
@@ -273,18 +276,16 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       trackMetadataParser: this.trackMetadataParser
     });
 
-    this.initWebsocket();
+    this.initWebsocket(peerMetadata);
     this.setupCallbacks();
 
     this.status = "initialized";
   }
 
-  private initWebsocket() {
+  private initWebsocket(peerMetadata: PeerMetadata) {
     if (!this.connectConfig) throw Error("ConnectConfig is null");
 
-    const { token, peerMetadata, signaling } = this.connectConfig;
-
-    const metadata = this.reconnectManager.getLastPeerMetadata() ?? peerMetadata;
+    const { token, signaling } = this.connectConfig;
 
     const protocol = signaling?.protocol ?? "ws";
     const host = signaling?.host ?? "localhost:5002";
@@ -306,14 +307,12 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     const socketErrorHandler = (event: Event) => {
       console.error({ name: "socketErrorHandler", event });
-      this.reconnectManager.reconnect(this.connectConfig);
 
       this.emit("socketError", event);
     };
 
     const socketCloseHandler = (event: CloseEvent) => {
       console.error({ name: "socketCloseHandler", event });
-      this.reconnectManager.reconnect(this.connectConfig);
 
       this.emit("socketClose", event);
     };
@@ -328,11 +327,9 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       try {
         const data = PeerMessage.decode(uint8Array);
         if (data.authenticated !== undefined) {
-          // todo subscribe in reconnect manager to authSuccess
-          this.reconnectManager.reset();
           this.emit("authSuccess");
 
-          this.webrtc?.connect(metadata);
+          this.webrtc?.connect(peerMetadata);
         } else if (data.authRequest !== undefined) {
           console.warn("Received unexpected control message: authRequest");
         } else if (data.mediaEvent !== undefined) {
@@ -403,10 +400,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     });
 
     this.webrtc?.on("connected", (peerId: string, peersInRoom: Endpoint<PeerMetadata, TrackMetadata>[]) => {
-      console.log("Joined to room");
-
-      this.reconnectManager.handleReconnect();
-
       this.emit("joined", peerId, peersInRoom);
     });
 
