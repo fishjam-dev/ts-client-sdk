@@ -266,16 +266,16 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     super();
     this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x as PeerMetadata);
     this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x as TrackMetadata);
-    console.log({ "Reconnect is": config?.reconnect });
+    // console.log({ "Reconnect is": config?.reconnect });
 
     if (!config?.reconnect) {
-      console.log("Reconnect is false");
+      // console.log("Reconnect is false");
       this.reconnectConfig = DISABLED_RECONNECT_CONFIG;
     } else if (config.reconnect === true) {
-      console.log("Reconnect is true");
+      // console.log("Reconnect is true");
       this.reconnectConfig = DEFAULT_RECONNECT_CONFIG;
     } else {
-      console.log("Reconnect is provided");
+      // console.log("Reconnect is provided");
       this.reconnectConfig = {
         maxAttempts: config?.reconnect?.maxAttempts ?? DEFAULT_RECONNECT_CONFIG.maxAttempts,
         initialDelay: config?.reconnect?.initialDelay ?? DEFAULT_RECONNECT_CONFIG.initialDelay,
@@ -370,8 +370,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.websocket.addEventListener("error", socketErrorHandler);
     this.websocket.addEventListener("close", socketCloseHandler);
 
-    this.setupCallbacks();
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const messageHandler = (event: MessageEvent<any>) => {
       const uint8Array = new Uint8Array(event.data);
@@ -408,24 +406,24 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     if (this.reconnectTimeoutId) return;
 
-    console.log({
-      name: "state",
-      attempt: this.reconnectAttempt,
-      max: this.reconnectConfig.maxAttempts,
-      config: this.reconnectConfig
-    });
+    // console.log({
+    //   name: "state",
+    //   attempt: this.reconnectAttempt,
+    //   max: this.reconnectConfig.maxAttempts,
+    //   config: this.reconnectConfig
+    // });
 
     if ((this.reconnectAttempt) >= (this.reconnectConfig.maxAttempts)) return;
 
     const timeout = this.reconnectConfig.initialDelay + this.reconnectAttempt * this.reconnectConfig.delay;
 
-    console.log({ name: "schedule next attempt", attempt: this.reconnectAttempt, timeout: timeout });
+    // console.log({ name: "schedule next attempt", attempt: this.reconnectAttempt, timeout: timeout });
 
     this.reconnectAttempt += 1;
 
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
-      console.log(`Reconnect attempt ${this.reconnectAttempt}`);
+      // console.log(`Reconnect attempt ${this.reconnectAttempt}`);
 
       if (!this.connectConfig) throw Error("Connect config is null");
 
