@@ -10,6 +10,9 @@ const peerTokenInput = document.querySelector<HTMLInputElement>("#peer-token-inp
 const peerNameInput = document.querySelector<HTMLInputElement>("#peer-name-input")!;
 const connectButton = document.querySelector<HTMLButtonElement>("#connect-btn")!;
 const disconnectButton = document.querySelector<HTMLButtonElement>("#disconnect-btn")!;
+const reconnectButton = document.querySelector<HTMLButtonElement>("#reconnect-btn")!;
+const forceErrorButton = document.querySelector<HTMLButtonElement>("#force-error-btn")!;
+const forceCloseButton = document.querySelector<HTMLButtonElement>("#force-close-btn")!;
 const addTrackButton = document.querySelector<HTMLButtonElement>("#add-track-btn")!;
 const removeTrackButton = document.querySelector<HTMLButtonElement>("#remove-track-btn")!;
 const localVideo = document.querySelector<HTMLVideoElement>("#local-track-video")!;
@@ -31,12 +34,12 @@ type Track = {
 };
 const remoteTracks = {
   canvas: {
-    id: null,
+    id: null
   } as Track,
   screen: {
-    id: null,
+    id: null
   } as Track,
-  cameras: {} as Record<string, Track>,
+  cameras: {} as Record<string, Track>
 };
 
 localVideo.play();
@@ -91,6 +94,7 @@ const peerMetadataParser = (input: unknown): PeerMetadata => {
 const client: JellyfishClient<PeerMetadata, TrackMetadata> = new JellyfishClient({
   peerMetadataParser,
   trackMetadataParser,
+  reconnect: true,
 });
 
 (window as unknown as { client: typeof client }).client = client;
@@ -141,7 +145,8 @@ client.on("joined", (_peerId: string, peersInRoom: Peer<PeerMetadata, TrackMetad
   });
 });
 
-client.on("joinError", (_metadata) => {
+client.on("joinError", (metadata) => {
+  console.log({ name: "joinError", metadata });
   toastAlert("Join error");
 });
 
@@ -166,7 +171,8 @@ client.on("peerJoined", (peer: Peer<PeerMetadata, TrackMetadata>) => {
   toastInfo(`New peer joined`);
 });
 
-client.on("peerUpdated", (_peer) => {});
+client.on("peerUpdated", (_peer) => {
+});
 
 client.on("peerLeft", (peer) => {
   const peerComponent = document.querySelector(`div[data-peer-id="${peer.id}"`)!;
@@ -176,7 +182,7 @@ client.on("peerLeft", (peer) => {
 
 const setupSimulcastCheckbox = (element: DocumentFragment, trackId: string, encoding: "l" | "m" | "h") => {
   const simulcastInputL: HTMLInputElement | null = element.querySelector<HTMLInputElement>(
-    `.simulcast-input-radio-${encoding}`,
+    `.simulcast-input-radio-${encoding}`
   );
   if (!simulcastInputL) return;
 
@@ -264,11 +270,12 @@ client.on("trackUpdated", (ctx) => {
 client.on("trackAdded", (ctx) => {
   ctx.on("encodingChanged", () => {
     const activeEncodingElement = document.querySelector(
-      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`,
+      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`
     )!;
     activeEncodingElement.innerHTML = ctx.encoding ?? "";
   });
-  ctx.on("voiceActivityChanged", () => {});
+  ctx.on("voiceActivityChanged", () => {
+  });
 });
 
 client.on("trackRemoved", (ctx) => {
@@ -276,17 +283,20 @@ client.on("trackRemoved", (ctx) => {
   tracksContainer?.remove();
 });
 
-client.on("trackUpdated", (_ctx) => {});
+client.on("trackUpdated", (_ctx) => {
+});
 
-client.on("bandwidthEstimationChanged", (_estimation) => {});
+client.on("bandwidthEstimationChanged", (_estimation) => {
+});
 
-client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {});
+client.on("tracksPriorityChanged", (_enabledTracks, _disabledTracks) => {
+});
 
 connectButton.addEventListener("click", () => {
   console.log("Connect");
   client.connect({
     peerMetadata: { name: peerNameInput.value || "" },
-    token: peerTokenInput.value,
+    token: peerTokenInput.value
   });
   elementsToShowIfConnected.forEach((e) => e.classList.remove("hidden"));
 });
@@ -297,16 +307,31 @@ disconnectButton.addEventListener("click", () => {
   elementsToShowIfConnected.forEach((e) => e.classList.add("hidden"));
 });
 
+reconnectButton.addEventListener("click", () => {
+  console.log("Reconnect button");
+  client["reconnect"]?.();
+});
+
+forceErrorButton.addEventListener("click", () => {
+  console.log("force error button");
+  client["websocket"]?.dispatchEvent(new Event("error"));
+});
+
+forceCloseButton.addEventListener("click", () => {
+  console.log("force close button");
+  client["websocket"]?.dispatchEvent(new Event("close"));
+});
+
 const addTrack = async (stream: MediaStream): Promise<Track> => {
   console.log("Add track");
   const trackMetadata: TrackMetadata = {
     type: "camera",
-    active: true,
+    active: true
   };
   const track = stream.getVideoTracks()[0];
   const id = (await client.addTrack(track, stream, trackMetadata)) || null;
   return {
-    id,
+    id
   };
 };
 
@@ -381,18 +406,17 @@ enumerateDevicesButton.addEventListener("click", () => {
 // Screen sharing view
 
 const templateClone = (templateVideoPlayer as HTMLTemplateElement).content.firstElementChild!.cloneNode(
-  true,
+  true
 )! as HTMLElement;
 screenSharingContainer.appendChild(templateClone);
 
 const screenSharingVideo = templateClone.querySelector(".video-player")! as HTMLVideoElement;
 
-templateClone.querySelector(".start-template-btn")!.addEventListener("click", () => {
-  navigator.mediaDevices.getDisplayMedia(SCREEN_SHARING_MEDIA_CONSTRAINTS).then((stream) => {
-    console.log("Screen sharing stream");
-    screenSharingVideo.srcObject = stream;
-    screenSharingVideo.play();
-  });
+templateClone.querySelector(".start-template-btn")!.addEventListener("click", async () => {
+  const stream = await navigator.mediaDevices.getDisplayMedia(SCREEN_SHARING_MEDIA_CONSTRAINTS);
+  console.log("Screen sharing stream");
+  screenSharingVideo.srcObject = stream;
+  await screenSharingVideo.play();
 });
 
 templateClone.querySelector(".stop-template-btn")!.addEventListener("click", () => {
