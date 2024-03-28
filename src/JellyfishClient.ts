@@ -250,18 +250,23 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     super();
     this.peerMetadataParser = config?.peerMetadataParser ?? ((x) => x as PeerMetadata);
     this.trackMetadataParser = config?.trackMetadataParser ?? ((x) => x as TrackMetadata);
+    console.log({ "Reconnect is": config?.reconnect });
 
     if (!config?.reconnect) {
+      console.log("Reconnect is false");
       this.reconnectConfig = DISABLED_RECONNECT_CONFIG;
     } else if (config.reconnect === true) {
+      console.log("Reconnect is true");
       this.reconnectConfig = DEFAULT_RECONNECT_CONFIG;
     } else {
+      console.log("Reconnect is provided");
       this.reconnectConfig = {
         maxAttempts: config?.reconnect?.maxAttempts ?? DEFAULT_RECONNECT_CONFIG.maxAttempts,
         initialDelay: config?.reconnect?.initialDelay ?? DEFAULT_RECONNECT_CONFIG.initialDelay,
         delay: config?.reconnect?.delay ?? DEFAULT_RECONNECT_CONFIG.delay
       };
     }
+    console.log({ reconnect: this.reconnectConfig });
   }
 
   /**
@@ -282,7 +287,8 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
    */
   connect(config: ConnectConfig<PeerMetadata>): void {
     this.resetReconnectState();
-    this.initConnection(config);
+    this.connectConfig = config;
+    this.initConnection();
   }
 
   private resetReconnectState() {
@@ -291,9 +297,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     this.reconnectTimeoutId = null;
   }
 
-  private initConnection(config: ConnectConfig<PeerMetadata>): void {
-    this.connectConfig = config;
-
+  private initConnection(): void {
     if (this.status === "initialized") {
       this.disconnect();
     }
@@ -386,7 +390,12 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
     if (this.reconnectTimeoutId) return;
 
-    console.log({ name: "state", attempt: this.reconnectAttempt, max: this.reconnectConfig.maxAttempts });
+    console.log({
+      name: "state",
+      attempt: this.reconnectAttempt,
+      max: this.reconnectConfig.maxAttempts,
+      config: this.reconnectConfig
+    });
 
     if ((this.reconnectAttempt) >= (this.reconnectConfig.maxAttempts)) return;
 
@@ -402,7 +411,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
 
       if (!this.connectConfig) throw Error("Connect config is null");
 
-      this.initConnection(this.connectConfig);
+      this.initConnection();
     }, timeout);
   }
 
