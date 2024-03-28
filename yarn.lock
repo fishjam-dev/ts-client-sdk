@@ -63,9 +63,9 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-2.0.1.tgz"
   integrity sha512-dvuCeX5fC9dXgJn9t+X5atfmgQAzUOWqS1254Gh0m6i8wKd10ebXkfNKiRK+1GWi/yTvvLDHpoxLr0xxxeslWw==
 
-"@jellyfish-dev/membrane-webrtc-js@file:../membrane-webrtc-js":
+"@jellyfish-dev/membrane-webrtc-js@github:jellyfish-dev/membrane-webrtc-js#fix/skip-update-track-metadata":
   version "0.7.1"
-  resolved "file:../membrane-webrtc-js"
+  resolved "git+ssh://git@github.com/jellyfish-dev/membrane-webrtc-js.git#a352a6050c7a6eefb16b63be2154ce0e91b61980"
   dependencies:
     events "^3.3.0"
     typed-emitter "^2.1.0"
@@ -1716,6 +1716,11 @@ util-deprecate@^1.0.1, util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz"
   integrity sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
+
+uuid@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.npmjs.org/uuid/-/uuid-9.0.1.tgz"
+  integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
 
 vscode-oniguruma@^1.7.0:
   version "1.7.0"
