@@ -63,9 +63,9 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-2.0.1.tgz"
   integrity sha512-dvuCeX5fC9dXgJn9t+X5atfmgQAzUOWqS1254Gh0m6i8wKd10ebXkfNKiRK+1GWi/yTvvLDHpoxLr0xxxeslWw==
 
-"@jellyfish-dev/membrane-webrtc-js@github:jellyfish-dev/membrane-webrtc-js#fix/skip-update-track-metadata":
+"@jellyfish-dev/membrane-webrtc-js@github:jellyfish-dev/membrane-webrtc-js#feature/expose-private-state":
   version "0.7.1"
-  resolved "git+ssh://git@github.com/jellyfish-dev/membrane-webrtc-js.git#a352a6050c7a6eefb16b63be2154ce0e91b61980"
+  resolved "git+ssh://git@github.com/jellyfish-dev/membrane-webrtc-js.git#1e116a117da668609919ea07654a04bd4888e33a"
   dependencies:
     events "^3.3.0"
     typed-emitter "^2.1.0"

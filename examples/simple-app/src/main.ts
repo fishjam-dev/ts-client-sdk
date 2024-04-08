@@ -309,6 +309,7 @@ disconnectButton.addEventListener("click", () => {
 
 reconnectButton.addEventListener("click", () => {
   console.log("Reconnect button");
+  // @ts-expect-error
   client["reconnect"]?.();
 });
 
