@@ -7,14 +7,17 @@ import {
   TrackBandwidthLimit,
   TrackContext,
   TrackEncoding,
-  MetadataParser, WebRTCEndpointEvents
+  MetadataParser,
+  WebRTCEndpointEvents
 } from "@jellyfish-dev/membrane-webrtc-js";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
 import { ReconnectConfig, ReconnectManager } from "./reconnection";
 
-export type Peer<PeerMetadata, TrackMetadata> = Endpoint<PeerMetadata, TrackMetadata>;
+export type Peer<PeerMetadata, TrackMetadata> = Endpoint<PeerMetadata, TrackMetadata> & { type: "webrtc" };
+
+const isPeer = <PeerMetadata, TrackMetadata>(endpoint: Endpoint<PeerMetadata, TrackMetadata>): endpoint is Peer<PeerMetadata, TrackMetadata> => endpoint.type === "webrtc";
 
 /**
  * Events emitted by the client with their arguments.
@@ -372,6 +375,21 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     return this.webrtc?.getRemoteEndpoints() ?? {};
   }
 
+  /**
+   * Returns a snapshot of currently received remote peers.
+   */
+  public getRemotePeers(): Record<string, Endpoint<PeerMetadata, TrackMetadata>> {
+    Object.entries(this.webrtc?.getRemoteEndpoints() ?? {})
+      .reduce((acc, [id, peer]) => {
+        if (!isPeer(peer)) return acc;
+
+        acc[id] = peer;
+        return acc;
+      }, {} as Record<string, Peer<PeerMetadata, TrackMetadata>>);
+
+    return this.webrtc?.getRemoteEndpoints() ?? {};
+  }
+
   // todo change to read only
   public getLocalEndpoint(): Endpoint<PeerMetadata, TrackMetadata> | null {
     return this.webrtc?.getLocalEndpoint() || null;
@@ -389,46 +407,52 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       this.websocket?.send(message);
     });
 
-    this.webrtc?.on("connected", (peerId: string, peersInRoom: Endpoint<PeerMetadata, TrackMetadata>[]) => {
-      this.emit("joined", peerId, peersInRoom);
+    this.webrtc?.on("connected", (peerId: string, endpointsInRoom: Endpoint<PeerMetadata, TrackMetadata>[]) => {
+      // todo handle components
+      const peers = endpointsInRoom
+        .filter((endpoint) => isPeer(endpoint))
+        .map((peer) => peer as Peer<PeerMetadata, TrackMetadata>);
+
+      this.emit("joined", peerId, peers);
     });
 
     this.webrtc?.on("disconnected", () => {
       this.emit("disconnected");
     });
     this.webrtc?.on("endpointAdded", (endpoint: Endpoint<PeerMetadata, TrackMetadata>) => {
-      if (endpoint.type !== "webrtc") return;
+      if (!isPeer(endpoint)) return;
 
       this.emit("peerJoined", endpoint);
     });
     this.webrtc?.on("endpointRemoved", (endpoint: Endpoint<PeerMetadata, TrackMetadata>) => {
-      if (endpoint.type !== "webrtc") return;
+      if (!isPeer(endpoint)) return;
 
       this.emit("peerLeft", endpoint);
     });
     this.webrtc?.on("endpointUpdated", (endpoint: Endpoint<PeerMetadata, TrackMetadata>) => {
-      if (endpoint.type !== "webrtc") return;
+      if (!isPeer(endpoint)) return;
 
       this.emit("peerUpdated", endpoint);
     });
     this.webrtc?.on("trackReady", (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-      if (ctx.endpoint.type !== "webrtc") return;
+      // todo handle file component track
+      if (!isPeer(ctx.endpoint)) return;
 
       this.emit("trackReady", ctx);
     });
     this.webrtc?.on("trackAdded", (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-      if (ctx.endpoint.type !== "webrtc") return;
+      if (!isPeer(ctx.endpoint)) return;
 
       this.emit("trackAdded", ctx);
     });
     this.webrtc?.on("trackRemoved", (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-      if (ctx.endpoint.type !== "webrtc") return;
+      if (!isPeer(ctx.endpoint)) return;
 
       this.emit("trackRemoved", ctx);
       ctx.removeAllListeners();
     });
     this.webrtc?.on("trackUpdated", (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-      if (ctx.endpoint.type !== "webrtc") return;
+      if (!isPeer(ctx.endpoint)) return;
 
       this.emit("trackUpdated", ctx);
     });
