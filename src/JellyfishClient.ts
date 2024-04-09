@@ -17,7 +17,16 @@ import { ReconnectConfig, ReconnectManager } from "./reconnection";
 
 export type Peer<PeerMetadata, TrackMetadata> = Endpoint<PeerMetadata, TrackMetadata> & { type: "webrtc" };
 
+export type Component<PeerMetadata, TrackMetadata> = Omit<Endpoint<PeerMetadata, TrackMetadata>, "type">
+  & { type: "recording" | "hls" | "file" | "rtsp" | "sip" };
+
 const isPeer = <PeerMetadata, TrackMetadata>(endpoint: Endpoint<PeerMetadata, TrackMetadata>): endpoint is Peer<PeerMetadata, TrackMetadata> => endpoint.type === "webrtc";
+const isComponent = <PeerMetadata, TrackMetadata>(endpoint: Endpoint<PeerMetadata, TrackMetadata>): endpoint is Component<PeerMetadata, TrackMetadata> =>
+  endpoint.type === "recording"
+  || endpoint.type === "hls"
+  || endpoint.type === "file"
+  || endpoint.type === "rtsp"
+  || endpoint.type === "sip";
 
 /**
  * Events emitted by the client with their arguments.
@@ -56,7 +65,7 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
   /**
    * Called when peer was accepted.
    */
-  joined: (peerId: string, peers: Peer<PeerMetadata, TrackMetadata>[]) => void;
+  joined: (peerId: string, peers: Peer<PeerMetadata, TrackMetadata>[], components: Component<PeerMetadata, TrackMetadata>[]) => void;
 
   /**
    * Called when peer was not accepted
@@ -104,6 +113,21 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
    * Called each time peer has its metadata updated.
    */
   peerUpdated: (peer: Peer<PeerMetadata, TrackMetadata>) => void;
+
+  /**
+   * Called each time new peer joins the room.
+   */
+  componentAdded: (peer: Component<PeerMetadata, TrackMetadata>) => void;
+
+  /**
+   * Called each time peer leaves the room.
+   */
+  componentRemoved: (peer: Component<PeerMetadata, TrackMetadata>) => void;
+
+  /**
+   * Called each time peer has its metadata updated.
+   */
+  componentUpdated: (peer: Component<PeerMetadata, TrackMetadata>) => void;
 
   /**
    * Called in case of errors related to multimedia session e.g. ICE connection.
@@ -378,16 +402,24 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
   /**
    * Returns a snapshot of currently received remote peers.
    */
-  public getRemotePeers(): Record<string, Endpoint<PeerMetadata, TrackMetadata>> {
-    Object.entries(this.webrtc?.getRemoteEndpoints() ?? {})
+  public getRemotePeers(): Record<string, Peer<PeerMetadata, TrackMetadata>> {
+    return Object.entries(this.webrtc?.getRemoteEndpoints() ?? {})
       .reduce((acc, [id, peer]) => {
         if (!isPeer(peer)) return acc;
 
         acc[id] = peer;
         return acc;
       }, {} as Record<string, Peer<PeerMetadata, TrackMetadata>>);
+  }
 
-    return this.webrtc?.getRemoteEndpoints() ?? {};
+  public getRemoteComponents(): Record<string, Component<PeerMetadata, TrackMetadata>> {
+    return Object.entries(this.webrtc?.getRemoteEndpoints() ?? {})
+      .reduce((acc, [id, component]) => {
+        if (!isComponent(component)) return acc;
+
+        acc[id] = component;
+        return acc;
+      }, {} as Record<string, Component<PeerMetadata, TrackMetadata>>);
   }
 
   // todo change to read only
@@ -408,31 +440,43 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     });
 
     this.webrtc?.on("connected", (peerId: string, endpointsInRoom: Endpoint<PeerMetadata, TrackMetadata>[]) => {
-      // todo handle components
       const peers = endpointsInRoom
         .filter((endpoint) => isPeer(endpoint))
         .map((peer) => peer as Peer<PeerMetadata, TrackMetadata>);
 
-      this.emit("joined", peerId, peers);
+      const components = endpointsInRoom
+        .filter((endpoint) => isComponent(endpoint))
+        .map((component) => component as Component<PeerMetadata, TrackMetadata>);
+
+      this.emit("joined", peerId, peers, components);
     });
 
     this.webrtc?.on("disconnected", () => {
       this.emit("disconnected");
     });
     this.webrtc?.on("endpointAdded", (endpoint: Endpoint<PeerMetadata, TrackMetadata>) => {
-      if (!isPeer(endpoint)) return;
-
-      this.emit("peerJoined", endpoint);
+      if (isPeer(endpoint)) {
+        this.emit("peerJoined", endpoint);
+      }
+      if(isComponent(endpoint)) {
+        this.emit("componentAdded", endpoint);
+      }
     });
     this.webrtc?.on("endpointRemoved", (endpoint: Endpoint<PeerMetadata, TrackMetadata>) => {
-      if (!isPeer(endpoint)) return;
-
-      this.emit("peerLeft", endpoint);
+      if (isPeer(endpoint)) {
+        this.emit("peerLeft", endpoint);
+      }
+      if(isComponent(endpoint)) {
+        this.emit("componentRemoved", endpoint);
+      }
     });
     this.webrtc?.on("endpointUpdated", (endpoint: Endpoint<PeerMetadata, TrackMetadata>) => {
-      if (!isPeer(endpoint)) return;
-
-      this.emit("peerUpdated", endpoint);
+      if (isPeer(endpoint)) {
+        this.emit("peerUpdated", endpoint);
+      }
+      if(isComponent(endpoint)) {
+        this.emit("componentUpdated", endpoint);
+      }
     });
     this.webrtc?.on("trackReady", (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
       // todo handle file component track

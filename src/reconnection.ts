@@ -135,7 +135,6 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
     this.lastLocalEndpoint = null;
     this.ongoingReconnection = false;
-    console.log("Reconnection succeeded");
   }
 }
 
