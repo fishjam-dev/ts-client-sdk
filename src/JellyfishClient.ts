@@ -14,6 +14,7 @@ import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
 import { ReconnectConfig, ReconnectManager } from "./reconnection";
+import { AuthErrorReason, isAuthError } from "./auth";
 
 export type Peer<PeerMetadata, TrackMetadata> = Endpoint<PeerMetadata, TrackMetadata> & { type: "webrtc" };
 
@@ -57,7 +58,7 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
   authSuccess: () => void;
 
   /** Emitted when authentication fails */
-  authError: () => void;
+  authError: (reason: AuthErrorReason) => void;
 
   /** Emitted when the connection is closed */
   disconnected: () => void;
@@ -331,6 +332,10 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     };
 
     const socketCloseHandler = (event: CloseEvent) => {
+      if (isAuthError(event.reason)) {
+        this.emit("authError", event.reason);
+      }
+
       this.emit("socketClose", event);
     };
 
@@ -458,7 +463,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       if (isPeer(endpoint)) {
         this.emit("peerJoined", endpoint);
       }
-      if(isComponent(endpoint)) {
+      if (isComponent(endpoint)) {
         this.emit("componentAdded", endpoint);
       }
     });
@@ -466,7 +471,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       if (isPeer(endpoint)) {
         this.emit("peerLeft", endpoint);
       }
-      if(isComponent(endpoint)) {
+      if (isComponent(endpoint)) {
         this.emit("componentRemoved", endpoint);
       }
     });
@@ -474,7 +479,7 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       if (isPeer(endpoint)) {
         this.emit("peerUpdated", endpoint);
       }
-      if(isComponent(endpoint)) {
+      if (isComponent(endpoint)) {
         this.emit("componentUpdated", endpoint);
       }
     });

@@ -4,6 +4,15 @@ export type {
   ReconnectConfig
 } from "./reconnection";
 
+export type {
+  AuthErrorReason
+} from "./auth.js";
+
+export {
+  isAuthError,
+  AUTH_ERROR_REASONS
+} from "./auth.js";
+
 export { JellyfishClient } from "./JellyfishClient";
 
 export type {

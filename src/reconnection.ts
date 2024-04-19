@@ -1,5 +1,6 @@
 import { Endpoint } from "@jellyfish-dev/membrane-webrtc-js";
-import { ConnectConfig, JellyfishClient } from "./JellyfishClient";
+import { JellyfishClient } from "./JellyfishClient";
+import { isAuthError } from "./auth";
 
 export type ReconnectConfig = {
   /*
@@ -65,7 +66,9 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
       this.reconnect();
     });
 
-    this.client.on("socketClose", () => {
+    this.client.on("socketClose", (event) => {
+      if (isAuthError(event.reason)) return;
+
       this.reconnect();
     });
 

@@ -65,7 +65,7 @@
 
 "@jellyfish-dev/membrane-webrtc-js@github:jellyfish-dev/membrane-webrtc-js#feature/expose-private-state":
   version "0.7.1"
-  resolved "git+ssh://git@github.com/jellyfish-dev/membrane-webrtc-js.git#1e116a117da668609919ea07654a04bd4888e33a"
+  resolved "git+ssh://git@github.com/jellyfish-dev/membrane-webrtc-js.git#816e310a91ae257963ede5fabe3c97950a831508"
   dependencies:
     events "^3.3.0"
     typed-emitter "^2.1.0"
