@@ -15,4 +15,4 @@ export type {
   VadStatus,
   EncodingReason,
   MetadataParser,
-} from "@jellyfish-dev/membrane-webrtc-js";
+} from "./webrtc";

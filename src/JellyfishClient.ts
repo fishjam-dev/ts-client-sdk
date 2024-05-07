@@ -8,7 +8,7 @@ import {
   TrackContext,
   TrackEncoding,
   MetadataParser,
-} from "@jellyfish-dev/membrane-webrtc-js";
+} from "./webrtc";
 import TypedEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 import { PeerMessage } from "./protos/jellyfish/peer_notifications";
