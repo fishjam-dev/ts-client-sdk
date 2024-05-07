@@ -33,7 +33,7 @@ jobs:
         run: yarn lint:check
 
       - name: Build 📦
-        run: yarn build --if-present
+        run: yarn build
 
       - name: Test 🚀
         run: yarn test
@@ -68,6 +68,3 @@ jobs:
 
       - name: Build 📦
         run: yarn build
-
-      - name: Test 🚀
-        run: yarn test

@@ -18,7 +18,7 @@ jobs:
       - name: Build SDK
         run: yarn build
       - name: Install example dependencies
-        run: yarn ci
+        run: yarn
         working-directory: examples/simple-app
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
