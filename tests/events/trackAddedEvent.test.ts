@@ -8,7 +8,7 @@ import {
 } from "../fixtures";
 import { CustomOfferDataEvent, TracksAddedMediaEvent } from "../schema";
 import { mockRTCPeerConnection } from "../mocks";
-import { deserializeMediaEvent } from "../../src/mediaEvent";
+import { deserializeMediaEvent } from "../../src/webrtc/mediaEvent";
 import { expect, it } from "vitest";
 
 it("Connect to room with one endpoint then addTrack produce event", () =>

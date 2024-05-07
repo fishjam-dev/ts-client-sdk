@@ -16,3 +16,5 @@ export type {
   EncodingReason,
   MetadataParser,
 } from "./webrtc";
+
+export * from "./webrtc";
