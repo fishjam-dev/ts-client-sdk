@@ -1,9 +1,8 @@
 import { createStream } from "./mocks.ts";
-import { WebRTCEndpoint } from "@jellyfish-dev/membrane-webrtc-js";
 import { VideoPlayer } from "./VideoPlayer.tsx";
 import { useRef, useState } from "react";
 import { EndpointMetadata, TrackMetadata } from "./App.tsx";
-import { BandwidthLimit, SimulcastConfig } from "@jellyfish-dev/membrane-webrtc-js";
+import { BandwidthLimit, SimulcastConfig, WebRTCEndpoint } from "@jellyfish-dev/ts-client-sdk";
 
 const brainMock = createStream("🧠", "white", "low", 24);
 const brain2Mock = createStream("🤯", "#00ff00", "low", 24);

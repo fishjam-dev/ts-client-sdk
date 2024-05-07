@@ -4,17 +4,15 @@ import {
   TrackContext,
   TrackEncoding,
   WebRTCEndpoint,
-} from "@jellyfish-dev/membrane-webrtc-js";
-import { PeerMessage } from "./protos/jellyfish/peer_notifications";
-import { useEffect, useState, useSyncExternalStore } from "react";
-import { MockComponent } from "./MockComponent.tsx";
-import { VideoPlayerWithDetector } from "./VideoPlayerWithDetector.tsx";
-import {
   WebRTCEndpointEvents,
   TrackContextEvents,
   BandwidthLimit,
   SimulcastConfig,
-} from "@jellyfish-dev/membrane-webrtc-js";
+} from "@jellyfish-dev/ts-client-sdk";
+import { PeerMessage } from "./protos/jellyfish/peer_notifications";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { MockComponent } from "./MockComponent.tsx";
+import { VideoPlayerWithDetector } from "./VideoPlayerWithDetector.tsx";
 
 /* eslint-disable no-console */
 
