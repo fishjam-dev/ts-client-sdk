@@ -14,16 +14,16 @@ jobs:
         with:
           node-version: 18
       - name: Install dependencies
-        run: npm ci
+        run: yarn
       - name: Build SDK
-        run: npm run build
+        run: yarn build
       - name: Install example dependencies
-        run: npm ci
+        run: yarn ci
         working-directory: examples/simple-app
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: npm run e2e
+        run: yarn e2e
       - uses: actions/upload-artifact@v3
         if: always()
         with:

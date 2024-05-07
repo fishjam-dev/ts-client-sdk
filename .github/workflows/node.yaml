@@ -24,19 +24,19 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies ⬇️
-        run: npm ci
+        run: yarn
 
       - name: Check formatting 🎨
-        run: npm run format:check
+        run: yarn format:check
 
       - name: Run linter
-        run: npm run lint:check
+        run: yarn lint:check
 
       - name: Build 📦
-        run: npm run build --if-present
+        run: yarn build --if-present
 
       - name: Test 🚀
-        run: npm test --if-present
+        run: yarn test
 
   build_and_test_examples:
     name: Build and test examples
@@ -60,14 +60,14 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies lib ⬇️
-        run: npm ci
+        run: yarn
         working-directory: .
 
       - name: Install dependencies ⬇️
-        run: npm ci
+        run: yarn
 
       - name: Build 📦
-        run: npm run build --if-present
+        run: yarn build
 
       - name: Test 🚀
-        run: npm test --if-present
+        run: yarn test
