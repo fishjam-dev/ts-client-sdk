@@ -157,9 +157,9 @@
     wrap-ansi "^8.1.0"
     wrap-ansi-cjs "npm:wrap-ansi@^7.0.0"
 
-"@jellyfish-dev/browser-media-utils@github:jellyfish-dev/browser-media-utils#1.0.0":
+"@jellyfish-dev/browser-media-utils@https://github.com/jellyfish-dev/browser-media-utils#1.0.0":
   version "0.0.1"
-  resolved "https://codeload.github.com/jellyfish-dev/browser-media-utils/tar.gz/86841c9962ddfa8263d846005906aa19bde16572"
+  resolved "https://github.com/jellyfish-dev/browser-media-utils#86841c9962ddfa8263d846005906aa19bde16572"
 
 "@jellyfish-dev/ts-client-sdk@file:../..":
   version "0.3.1"

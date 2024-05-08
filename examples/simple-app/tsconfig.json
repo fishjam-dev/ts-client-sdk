@@ -13,7 +13,12 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@jellyfish-dev/ts-client-sdk": [
+        "../../src/index.ts"
+      ]
+    }
   },
   "include": ["./src/**/*"]
 }
