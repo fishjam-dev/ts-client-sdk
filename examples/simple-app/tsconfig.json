@@ -15,9 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "paths": {
-      "@jellyfish-dev/ts-client-sdk": [
-        "../../src/index.ts"
-      ]
+      "@jellyfish-dev/ts-client-sdk": ["../../src/index.ts"]
     }
   },
   "include": ["./src/**/*"]
