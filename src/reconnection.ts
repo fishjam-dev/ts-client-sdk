@@ -6,41 +6,39 @@ export type ReconnectConfig = {
   /*
    + default: 3
    */
-  maxAttempts?: number,
+  maxAttempts?: number;
   /*
    * unit: milliseconds
    * default: 500
    */
-  initialDelay?: number,
+  initialDelay?: number;
   /*
    * unit: milliseconds
    * default: 500
    */
-  delay?: number,
+  delay?: number;
 
   /*
    * default: false
    */
-  addTracksOnReconnect?: boolean,
-}
-
+  addTracksOnReconnect?: boolean;
+};
 
 const DISABLED_RECONNECT_CONFIG: Required<ReconnectConfig> = {
   maxAttempts: 0,
   initialDelay: 0,
   delay: 0,
-  addTracksOnReconnect: false
+  addTracksOnReconnect: false,
 };
 
 const DEFAULT_RECONNECT_CONFIG: Required<ReconnectConfig> = {
   maxAttempts: 3,
   initialDelay: 500,
   delay: 500,
-  addTracksOnReconnect: true
+  addTracksOnReconnect: true,
 };
 
 export class ReconnectManager<PeerMetadata, TrackMetadata> {
-
   private readonly reconnectConfig: Required<ReconnectConfig>;
 
   private readonly connect: (metadata: PeerMetadata) => void;
@@ -56,7 +54,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   constructor(
     client: JellyfishClient<PeerMetadata, TrackMetadata>,
     connect: (metadata: PeerMetadata) => void,
-    config?: ReconnectConfig | boolean
+    config?: ReconnectConfig | boolean,
   ) {
     this.client = client;
     this.connect = connect;
@@ -95,7 +93,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   private reconnect() {
     if (this.reconnectTimeoutId) return;
 
-    if ((this.reconnectAttempt) >= (this.reconnectConfig.maxAttempts)) {
+    if (this.reconnectAttempt >= this.reconnectConfig.maxAttempts) {
       if (!this.reconnectFailedNotificationSend) {
         this.reconnectFailedNotificationSend = true;
       }
@@ -131,7 +129,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
           track.stream,
           track.rawMetadata,
           track.simulcastConfig,
-          track.maxBandwidth
+          track.maxBandwidth,
         );
       });
     }
@@ -149,6 +147,6 @@ export const createReconnectConfig = (config?: ReconnectConfig | boolean): Requi
     maxAttempts: config?.maxAttempts ?? DEFAULT_RECONNECT_CONFIG.maxAttempts,
     initialDelay: config?.initialDelay ?? DEFAULT_RECONNECT_CONFIG.initialDelay,
     delay: config?.delay ?? DEFAULT_RECONNECT_CONFIG.delay,
-    addTracksOnReconnect: config?.addTracksOnReconnect ?? DEFAULT_RECONNECT_CONFIG.addTracksOnReconnect
+    addTracksOnReconnect: config?.addTracksOnReconnect ?? DEFAULT_RECONNECT_CONFIG.addTracksOnReconnect,
   };
 };
