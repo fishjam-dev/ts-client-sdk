@@ -27,7 +27,7 @@ export type {
   TrackEncoding,
   VadStatus,
   EncodingReason,
-  MetadataParser
-} from "@jellyfish-dev/membrane-webrtc-js";
+  MetadataParser,
+} from "./webrtc";
 
-
+export * from "./webrtc";
