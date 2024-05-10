@@ -1,4 +1,4 @@
-import { Endpoint } from "@jellyfish-dev/membrane-webrtc-js";
+import { Endpoint } from "./webrtc";
 import { JellyfishClient } from "./JellyfishClient";
 import { isAuthError } from "./auth";
 
