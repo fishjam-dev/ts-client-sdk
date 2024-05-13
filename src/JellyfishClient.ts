@@ -460,7 +460,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
     );
   }
 
-  // todo change to read only
   public getLocalEndpoint(): Endpoint<PeerMetadata, TrackMetadata> | null {
     return this.webrtc?.getLocalEndpoint() || null;
   }
@@ -517,7 +516,6 @@ export class JellyfishClient<PeerMetadata, TrackMetadata> extends (EventEmitter 
       }
     });
     this.webrtc?.on("trackReady", (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-      // todo handle file component track
       if (!isPeer(ctx.endpoint)) return;
 
       this.emit("trackReady", ctx);

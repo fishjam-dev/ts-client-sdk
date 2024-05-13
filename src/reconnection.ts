@@ -112,7 +112,6 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
 
-      // todo should I cleanup previous webrtc object? removeAllListeners?
       this.connect(this.getLastPeerMetadata() ?? this.initialMetadata!);
     }, timeout);
   }
