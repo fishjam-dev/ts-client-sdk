@@ -140,8 +140,8 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.20.2.tgz#9c907b21e30a52db959ba4f80bb01a0cc403d5cc"
   integrity sha512-N49X4lJX27+l9jbLKSqZ6bKNjzQvHaT8IIFUy+YIqmXQdjYCToGWwOItDrfby14c78aDd5NHQl29xingXfCdLQ==
 
-"@jellyfish-dev/ts-client-sdk@file:../..":
-  version "0.3.1"
+"@fishjam-dev/ts-client-sdk@file:../..":
+  version "0.4.0"
   dependencies:
     events "^3.3.0"
     ts-proto "^1.165.0"
