@@ -1,7 +1,7 @@
 import "./style.css";
 
 import { createStream } from "./createMockStream";
-import { FishjamClient, TrackEncoding, Peer } from "@fishjam-dev/ts-client-sdk";
+import { FishjamClient, TrackEncoding, Peer } from "@fishjam-dev/ts-client";
 import { enumerateDevices, getUserMedia, SCREEN_SHARING_MEDIA_CONSTRAINTS } from "@fishjam-dev/browser-media-utils";
 
 /* eslint-disable no-console */

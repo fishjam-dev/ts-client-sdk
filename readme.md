@@ -11,7 +11,7 @@ Documentation is available [here](https://fishjam-dev.github.io/ts-client-sdk/)
 You can install this package using `npm`:
 
 ```bash
-npm install @fishjam-dev/ts-client-sdk
+npm install @fishjam-dev/ts-client
 ```
 
 It was tested with `node.js` version specified in `.tool-versions` file.
@@ -27,7 +27,7 @@ Prerequisites:
 This snippet is based on [minimal](https://github.com/fishjam-dev/ts-client-sdk/tree/main/examples/minimal) example.
 
 ```ts
-import { FishjamClient, WebRTCEndpoint } from "@fishjam-dev/ts-client-sdk";
+import { FishjamClient, WebRTCEndpoint } from "@fishjam-dev/ts-client";
 
 const SCREEN_SHARING_MEDIA_CONSTRAINTS = {
   video: {

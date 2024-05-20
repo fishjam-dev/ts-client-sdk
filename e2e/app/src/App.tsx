@@ -8,7 +8,7 @@ import {
   TrackContextEvents,
   BandwidthLimit,
   SimulcastConfig,
-} from "@fishjam-dev/ts-client-sdk";
+} from "@fishjam-dev/ts-client";
 import { PeerMessage } from "./protos/fishjam/peer_notifications";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { MockComponent } from "./MockComponent.tsx";
