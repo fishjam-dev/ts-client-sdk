@@ -410,6 +410,7 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
 
   private readonly endpointMetadataParser: MetadataParser<EndpointMetadata>;
   private readonly trackMetadataParser: MetadataParser<TrackMetadata>;
+  private trackIdToSender: Record<string, RTCRtpSender> = {};
 
   constructor(config?: Config<EndpointMetadata, TrackMetadata>) {
     super();
@@ -975,6 +976,11 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
 
     this.localTrackIdToTrack.set(trackId, trackContext);
 
+    const trackContextNew = this.localTrackIdToTrack.get(trackId)!;
+
+    console.log(`trackContextNew: ${trackContextNew}`);
+    console.log(trackContextNew);
+
     if (this.connection) {
       this.addTrackToConnection(trackContext);
 
@@ -1141,7 +1147,7 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
    *   })
    * ```
    */
-  public async replaceTrack(trackId: string, newTrack: MediaStreamTrack, newTrackMetadata?: any): Promise<void> {
+  public async replaceTrack(trackId: string, newTrack: MediaStreamTrack, newTrackMetadata?: any, muteAction?: "mute" | "unmute"): Promise<void> {
     const resolutionNotifier = new Deferred<void>();
     try {
       const newMetadata = newTrackMetadata !== undefined ? this.trackMetadataParser(newTrackMetadata) : undefined;
@@ -1153,6 +1159,19 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
         newTrackMetadata: newMetadata,
         resolutionNotifier,
       });
+
+      if (muteAction == "mute") {
+        const mediaEvent = generateMediaEvent("muteTrack", { trackId: trackId });
+        this.sendMediaEvent(mediaEvent);
+        console.log("sent mute event");
+      }
+
+      if (muteAction == "unmute") {
+        const mediaEvent = generateMediaEvent("unmuteTrack", { trackId: trackId });
+        this.sendMediaEvent(mediaEvent);
+        console.log("sent unmute event");
+      }
+
     } catch (error) {
       resolutionNotifier.reject(error);
     }
@@ -1169,7 +1188,19 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
     const { trackId, newTrack, newTrackMetadata } = command;
 
     const trackContext = this.localTrackIdToTrack.get(trackId)!;
-    const sender = this.findSender(trackContext.track!.id);
+
+    console.log({ trackId, newTrack, newTrackMetadata, trackContext });
+
+    let sender: RTCRtpSender | null = null;
+    if (trackContext.track !== null) {
+      sender = this.findSender(trackContext.track!.id);
+      this.trackIdToSender[trackId] = sender;
+    } else {
+      sender = this.trackIdToSender[trackId];
+    }
+
+    if (!sender) throw Error("Sender is empty!");
+
     if (sender) {
       this.ongoingTrackReplacement = true;
       sender
