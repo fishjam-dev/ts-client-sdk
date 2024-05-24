@@ -2,78 +2,69 @@
 
 Contributions are always welcome, no matter how large or small!
 
-We want this community to be friendly and respectful to each other. Please follow it in all your interactions with the project. Before contributing, please read the [code of conduct](./CODE_OF_CONDUCT.md).
+We aspire to build a community that is friendly and respectful to each other. Please adhere to this spirit in all your interactions within the project.
 
-## Development workflow
+## Development Workflow
 
-To get started with the project, run `npm install` in the root directory to install the required dependencies for each package:
+To get started with the project, run `npm install` in the root directory to install the required dependencies:
 
 ```sh
 npm install
 ```
 
-Make sure your code passes TypeScript and ESLint. Run the following to verify:
+Ensure your code passes TypeScript, ESLint and formatter checks by running the following commands:
 
 ```sh
-npm run watch
+npm run build:check
+npm run lint:check
+npm run format:check
+```
+
+To lint and format your code, use the following commands:
+
+```sh
 npm run lint
-```
-
-To fix formatting errors, run the following:
-
-```sh
-npm run lint --fix
-```
-
-To use prettier, run the following:
-
-```sh
 npm run format
 ```
 
-### Linting
+For other scripts, refer to [package.json](./package.json).
 
-[ESLint](https://eslint.org/), [Prettier](https://prettier.io/), [TypeScript](https://www.typescriptlang.org/)
+### Code Checking
 
-We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint](https://eslint.org/) with [Prettier](https://prettier.io/) for linting and formatting the code,
+We utilize [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint](https://eslint.org/) for linting, and [Prettier](https://prettier.io/) for formatting the code.
 
-### e2e tests
+### E2E Tests
 
-We use [Playwright](https://playwright.dev/) to run e2e tests.
+We employ [Playwright](https://playwright.dev/) to run End-to-End (E2E) tests.
 
-Use the `npm run e2e` command to run them. You may need to install the browsers using this command: `npx playwright install --with-deps`.
+You can use the `npm run test:e2e` command to run these tests. However, you may need to first install the browsers using this command: `npx playwright install --with-deps`.
 
-The e2e tests start a Fishjam instance via Docker and [Testcontainers](https://node.testcontainers.org/).
+E2E tests initiate a Fishjam instance using Docker and [Testcontainers](https://node.testcontainers.org/).
 
 #### Colima
 
-If you are using [colima](https://github.com/abiosoft/colima), you need to run these commands first:
+If you are a [Colima](https://github.com/abiosoft/colima) user, you will need to run the following commands first:
 
 ```bash
 export DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 ```
 
-See the Testcontainers' documentation to learn about [known issues](https://node.testcontainers.org/supported-container-runtimes/#known-issues_1).
+To learn about known issues, refer to the [Testcontainers' documentation](https://node.testcontainers.org/supported-container-runtimes/#known-issues_1).
 
-### Scripts
+### Submitting a Pull Request
 
-The `package.json` file contains various scripts for common tasks:
-
-- `npm run watch`: type-check files with TypeScript.
-- `npm run lint`: lint files with ESLint.
-- `npm run format`: format files with Prettier.
-- `npm run dev`: run the dashboard in development mode.
-- `npm run build`: build the dashboard for production.
-
-### Sending a pull request
-
-> **Working on your first pull request?** You can learn how from this _free_ series: [How to Contribute to an Open Source Project on GitHub](https://app.egghead.io/playlists/how-to-contribute-to-an-open-source-project-on-github).
+> **Working on your first pull request?** Get started with this _free_ series: [How to Contribute to an Open Source Project on GitHub](https://app.egghead.io/playlists/how-to-contribute-to-an-open-source-project-on-github).
 
 When you're sending a pull request:
 
-- Prefer small pull requests focused on one change.
-- Verify that linters and tests are passing.
+- Focus on one change and try to keep pull requests small.
+- Make sure that formatter, linter and test checks are passing.
 - Review the documentation to make sure it looks good.
 - Follow the pull request template when opening a pull request.
-- For pull requests that change the API or implementation, discuss with maintainers first by opening an issue.
+- If your pull request changes the API or implementation, first discuss the changes with the maintainers by opening an issue.
+
+## Releasing New Versions
+
+To release a new version of the package, navigate to `Actions` > `Release package` workflow and trigger it with the chosen release type.
+The workflow will update the package version in `package.json`, release the package to NPM, create a new git tag and a GitHub release.

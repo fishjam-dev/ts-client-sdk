@@ -1,8 +1,8 @@
-# Examples for Fishjam client
+# Examples for Fishjam Client
 
-List of examples:
+Available examples include:
 
-- [minimal](https://github.com/fishjam-dev/ts-client-sdk/tree/main/examples/minimal) - minimal example of usage of Fishjam client:
+- [Minimal](./minimal): This example demonstrates minimal usage of the Fishjam client:
 
   - Pure TypeScript
   - connect to Fishjam server
@@ -11,7 +11,7 @@ List of examples:
   - receive media from other peers
   - almost no UI
 
-- [simple-app](https://github.com/fishjam-dev/ts-client-sdk/tree/main/examples/simple-app) - example of usage of Fishjam client with vanilla TypeScript:
+- [Simple App](./simple-app): This example shows how to use the Fishjam client with vanilla TypeScript:
   - Pure TypeScript
   - connect to Fishjam server
   - join room

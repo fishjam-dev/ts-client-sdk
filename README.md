@@ -1,10 +1,10 @@
-# Fishjam TS client
+[![NPM Version](https://img.shields.io/npm/v/@fishjam-dev/ts-client)](https://www.npmjs.com/package/@fishjam-dev/ts-client)
+[![TypeScript Strict](https://badgen.net/badge/TS/Strict)](https://www.typescriptlang.org)
+[![TypeDoc](https://img.shields.io/badge/TypeDoc-8A2BE2)](https://fishjam-dev.github.io/ts-client-sdk/)
+
+# Fishjam TS Client
 
 TypeScript client library for [Fishjam](https://github.com/fishjam-dev/fishjam).
-
-## Documentation
-
-Documentation is available [here](https://fishjam-dev.github.io/ts-client-sdk/)
 
 ## Installation
 
@@ -14,17 +14,22 @@ You can install this package using `npm`:
 npm install @fishjam-dev/ts-client
 ```
 
-It was tested with `node.js` version specified in `.tool-versions` file.
+## Documentation
+
+Documentation is available [here](https://fishjam-dev.github.io/ts-client-sdk/).
+
+For a more comprehensive tutorial on Fishjam, its capabilities and usage in production, refer to the
+[Fishjam docs](https://fishjam-dev.github.io/fishjam-docs/).
 
 ## Usage
 
 Prerequisites:
 
-- Running [Fishjam](https://github.com/fishjam-dev/fishjam) server.
-- Created room and token of peer in that room.
-  You u can use [dashboard](https://github.com/fishjam-dev/fishjam-dashboard) example to create room and peer token.
+- A running [Fishjam](https://github.com/fishjam-dev/fishjam) server.
+- A created room and a peer's token in that room.
+  You can use the [dashboard](https://github.com/fishjam-dev/fishjam-dashboard) example to create a room and a peer token.
 
-This snippet is based on [minimal](https://github.com/fishjam-dev/ts-client-sdk/tree/main/examples/minimal) example.
+The following code snippet is based on the [minimal](./examples/minimal) example.
 
 ```ts
 import { FishjamClient, WebRTCEndpoint } from "@fishjam-dev/ts-client";
@@ -38,7 +43,7 @@ const SCREEN_SHARING_MEDIA_CONSTRAINTS = {
 };
 
 // Example metadata types for peer and track
-// You can define your own metadata types just make sure they are serializable
+// You can define your own metadata types, just make sure they are serializable
 type PeerMetadata = {
   name: string;
 };
@@ -47,7 +52,7 @@ type TrackMetadata = {
   type: "camera" | "screen";
 };
 
-// Creates a new FishjamClient object to interact with Fishjam
+// Create a new FishjamClient object to interact with Fishjam
 const client = new FishjamClient<PeerMetadata, TrackMetadata>();
 
 const peerToken = prompt("Enter peer token") ?? "YOUR_PEER_TOKEN";
@@ -56,7 +61,7 @@ const peerToken = prompt("Enter peer token") ?? "YOUR_PEER_TOKEN";
 client.connect({
   peerMetadata: { name: "peer" },
   token: peerToken,
-  // if websocketUrl is not provided, it will default to ws://localhost:5002/socket/peer/websocket
+  // if the 'signaling' field is missing, the client will connect to ws://localhost:5002/socket/peer/websocket
 });
 
 // You can listen to events emitted by the client
@@ -64,12 +69,12 @@ client.on("joined", (peerId, peersInRoom) => {
   // Check if webrtc is initialized
   if (!client.webrtc) return console.error("webrtc is not initialized");
 
-  // To start broadcasting your media you will need source of MediaStream like camera, microphone or screen
-  // In this example we will use screen sharing
+  // To start broadcasting your media, you will need a source of MediaStream like a camera, microphone, or screen
+  // In this example, we will use screen sharing
   startScreenSharing(client.webrtc);
 });
 
-// To receive media from other peers you need to listen to onTrackReady event
+// To receive media from other peers, you need to listen to the onTrackReady event
 client.on("trackReady", (ctx) => {
   const peerId = ctx.peer.id;
 
@@ -105,34 +110,26 @@ async function startScreenSharing(webrtc: WebRTCEndpoint) {
 
 ## Examples
 
-For more examples, see [examples](https://github.com/fishjam-dev/ts-client-sdk/tree/main/examples) folder.
+For more examples, see the [examples](./examples) folder.
 
 ## Contributing
 
-We welcome contributions to Fishjam Ts Client SDK. Please report any bugs or issues you find or feel free to make a pull request with your own bug fixes and/or features.
+We welcome contributions to the Fishjam TS Client. Please report any bugs or issues that you find, or feel free to make a pull request with your own bug fixes and/or features.
 
-Detailed information about contributing can be found in [contributing.md](./contributing.md).
-
-### Releasing new versions
-
-To release a new version of the package, go to `Actions` > `Release package` workflow and trigger it with the chosen release type.
-The workflow will bump the package version in `package.json`, release the package to NPM, create a new git tag and a GitHub release.
+More detailed information about contributing can be found in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Fishjam Ecosystem
 
-|             |                                                                                                                                                                                                                                                      |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Client SDKs | [React](https://github.com/fishjam-dev/react-client-sdk), [React Native](https://github.com/fishjam-dev/react-native-client-sdk), [iOs](https://github.com/fishjam-dev/ios-client-sdk), [Android](https://github.com/fishjam-dev/android-client-sdk) |
-| Server SDKs | [Elixir](https://github.com/fishjam-dev/elixir_server_sdk), [Python](https://github.com/fishjam-dev/python-server-sdk), [OpenAPI](https://fishjam-dev.github.io/fishjam-docs/api_reference/rest_api)                                                 |
-| Services    | [Videoroom](https://github.com/fishjam-dev/fishjam-videoroom) - an example videoconferencing app written in elixir <br/> [Dashboard](https://github.com/fishjam-dev/fishjam-dashboard) - an internal tool used to showcase Fishjam's capabilities    |
-| Resources   | [Fishjam Book](https://fishjam-dev.github.io/book/) - theory of the framework, [Docs](https://fishjam-dev.github.io/fishjam-docs/), [Tutorials](https://github.com/fishjam-dev/fishjam-clients-tutorials)                                            |
-| Membrane    | Fishjam is based on [Membrane](https://membrane.stream/), [Discord](https://discord.gg/nwnfVSY)                                                                                                                                                      |
-| Compositor  | [Compositor](https://github.com/membraneframework/membrane_video_compositor_plugin) - Membrane plugin to transform video                                                                                                                             |
-| Protobufs   | If you want to use Fishjam on your own, you can use our [protobufs](https://github.com/fishjam-dev/protos)                                                                                                                                           |
+|                |                                                                                                                                                                                                                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📱 Client SDKs | [TypeScript](https://github.com/fishjam-dev/ts-client-sdk/) <br/> [React](https://github.com/fishjam-dev/react-client-sdk) <br/> [iOS](https://github.com/fishjam-dev/ios-client-sdk) <br/> [Android](https://github.com/fishjam-dev/android-client-sdk) <br/> [React Native](https://github.com/fishjam-dev/react-native-client-sdk) |
+| ⚙️ Server SDKs | [JavaScript](https://github.com/fishjam-dev/js-server-sdk) <br/> [Python](https://github.com/fishjam-dev/python-server-sdk) <br/> [Elixir](https://github.com/fishjam-dev/elixir_server_sdk)                                                                                                                                          |
+| 📚 Resources   | [Fishjam Docs](https://fishjam-dev.github.io/fishjam-docs/) <br/> [Membrane Framework](https://membrane.stream/) <br/> [Join Membrane Discord!](https://discord.gg/nwnfVSY)                                                                                                                                                           |
+| 🫙 Services    | [Videoroom](https://github.com/fishjam-dev/fishjam-videoroom) <br/> A videoconferencing app built on top of Fishjam <br/><br/> [Dashboard](https://github.com/fishjam-dev/fishjam-dashboard) <br/> An all-around development tool for Fishjam                                                                                         |
 
 ## Copyright and License
 
-Copyright 2023, [Software Mansion](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=fishjam)
+Copyright 2024, [Software Mansion](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=fishjam)
 
 [![Software Mansion](https://logo.swmansion.com/logo?color=white&variant=desktop&width=200&tag=membrane-github)](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=fishjam)
 
