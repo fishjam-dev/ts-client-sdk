@@ -19,7 +19,7 @@ import {
  * Test in this file should be run a few times in a row to be sure that there is no race conditions.
  * To run a test multiple times use command:
  *
- * npm run e2e -- --repeat-each=20 -g "Test name"
+ * npm run test:e2e -- --repeat-each=20 -g "Test name"
  */
 
 /*
