@@ -20,7 +20,7 @@ it("Connect to room with one endpoint then addTrack produce event", () =>
 
     const trackAddedEvent: TracksAddedMediaEvent = createAddTrackMediaEvent(
       createConnectedEventWithOneEndpoint().data.otherEndpoints[0].id,
-      trackId,
+      trackId
     );
 
     webRTCEndpoint.on("trackAdded", (ctx) => {
@@ -52,7 +52,7 @@ it("Correctly parses track metadata", () =>
     const trackAddedEvent: TracksAddedMediaEvent = createAddTrackMediaEvent(
       createConnectedEventWithOneEndpoint().data.otherEndpoints[0].id,
       trackId,
-      { goodStuff: "ye", extraFluff: "nah" },
+      { goodStuff: "ye", extraFluff: "nah" }
     );
 
     webRTCEndpoint.on("trackAdded", (ctx) => {
@@ -82,7 +82,7 @@ it("Correctly handles incorrect metadata", () =>
     const trackAddedEvent: TracksAddedMediaEvent = createAddTrackMediaEvent(
       createConnectedEventWithOneEndpoint().data.otherEndpoints[0].id,
       trackId,
-      { validMetadata: false },
+      { validMetadata: false }
     );
 
     webRTCEndpoint.on("trackAdded", (ctx) => {
@@ -110,7 +110,7 @@ it("tracksAdded -> handle offerData with one video track from server", () =>
 
     const trackAddedEvent: TracksAddedMediaEvent = createAddTrackMediaEvent(
       connectedEvent.data.otherEndpoints[0].id,
-      trackId,
+      trackId
     );
 
     webRTCEndpoint.receiveMediaEvent(JSON.stringify(trackAddedEvent));
@@ -153,7 +153,7 @@ it("tracksAdded -> offerData with one track -> handle sdpAnswer data with one vi
 
   webRTCEndpoint.receiveMediaEvent(JSON.stringify(createConnectedEventWithOneEndpoint()));
   webRTCEndpoint.receiveMediaEvent(
-    JSON.stringify(createAddTrackMediaEvent(createConnectedEventWithOneEndpoint().data.otherEndpoints[0].id, trackId)),
+    JSON.stringify(createAddTrackMediaEvent(createConnectedEventWithOneEndpoint().data.otherEndpoints[0].id, trackId))
   );
   webRTCEndpoint.receiveMediaEvent(JSON.stringify(createCustomOfferDataEventWithOneVideoTrack()));
 

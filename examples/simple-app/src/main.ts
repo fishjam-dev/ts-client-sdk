@@ -181,7 +181,7 @@ client.on("peerLeft", (peer) => {
 
 const setupSimulcastCheckbox = (element: DocumentFragment, trackId: string, encoding: "l" | "m" | "h") => {
   const simulcastInputL: HTMLInputElement | null = element.querySelector<HTMLInputElement>(
-    `.simulcast-input-radio-${encoding}`,
+    `.simulcast-input-radio-${encoding}`
   );
   if (!simulcastInputL) return;
 
@@ -269,7 +269,7 @@ client.on("trackUpdated", (ctx) => {
 client.on("trackAdded", (ctx) => {
   ctx.on("encodingChanged", () => {
     const activeEncodingElement = document.querySelector(
-      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`,
+      `div[data-track-id="${ctx.trackId}"] .simulcast-active-encoding`
     )!;
     activeEncodingElement.innerHTML = ctx.encoding ?? "";
   });
@@ -402,7 +402,7 @@ enumerateDevicesButton.addEventListener("click", () => {
 // Screen sharing view
 
 const templateClone = (templateVideoPlayer as HTMLTemplateElement).content.firstElementChild!.cloneNode(
-  true,
+  true
 )! as HTMLElement;
 screenSharingContainer.appendChild(templateClone);
 

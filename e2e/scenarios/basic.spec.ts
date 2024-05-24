@@ -56,17 +56,17 @@ test("Client properly sees 3 other peers", async ({ page, context }) => {
     pages.map(async (page) => {
       await page.goto("/");
       return await joinRoomAndAddScreenShare(page, roomId);
-    }),
+    })
   );
 
   await Promise.all(
     pages.map(async (page, idx) => {
       await assertThatRemoteTracksAreVisible(
         page,
-        peerIds.filter((id) => id !== peerIds[idx]),
+        peerIds.filter((id) => id !== peerIds[idx])
       );
       await assertThatOtherVideoIsPlaying(page);
-    }),
+    })
   );
 });
 
@@ -84,21 +84,21 @@ test("Peer see peers just in the same room", async ({ page, context }) => {
     firstRoomPages.map(async (page) => {
       await page.goto("/");
       return await joinRoomAndAddScreenShare(page, firstRoomId);
-    }),
+    })
   );
 
   const secondRoomPeerIds = await Promise.all(
     secondRoomPages.map(async (page) => {
       await page.goto("/");
       return await joinRoomAndAddScreenShare(page, secondRoomId);
-    }),
+    })
   );
 
   await Promise.all([
     ...firstRoomPages.map(async (page, idx) => {
       await assertThatRemoteTracksAreVisible(
         page,
-        firstRoomPeerIds.filter((id) => id !== firstRoomPeerIds[idx]),
+        firstRoomPeerIds.filter((id) => id !== firstRoomPeerIds[idx])
       );
       await expect(throwIfRemoteTracksAreNotPresent(page, secondRoomPeerIds)).rejects.toThrow();
       await assertThatOtherVideoIsPlaying(page);
@@ -106,7 +106,7 @@ test("Peer see peers just in the same room", async ({ page, context }) => {
     ...secondRoomPages.map(async (page, idx) => {
       await assertThatRemoteTracksAreVisible(
         page,
-        secondRoomPeerIds.filter((id) => id !== secondRoomPeerIds[idx]),
+        secondRoomPeerIds.filter((id) => id !== secondRoomPeerIds[idx])
       );
       await expect(throwIfRemoteTracksAreNotPresent(page, firstRoomPeerIds)).rejects.toThrow();
       await assertThatOtherVideoIsPlaying(page);
@@ -123,7 +123,7 @@ test("Client throws an error if joining room at max capacity", async ({ page, co
     [page1, page2].map(async (page) => {
       await page.goto("/");
       return await joinRoomAndAddScreenShare(page, roomId);
-    }),
+    })
   );
 
   await overflowingPage.goto("/");
@@ -133,6 +133,6 @@ test("Client throws an error if joining room at max capacity", async ({ page, co
       response: {
         errors: `Reached webrtc peers limit in room ${roomId}`,
       },
-    }),
+    })
   );
 });

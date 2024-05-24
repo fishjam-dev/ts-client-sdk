@@ -72,7 +72,7 @@ it("Parses the metadata", () => {
 
   // When
   webRTCEndpoint.receiveMediaEvent(
-    JSON.stringify(createEndpointAdded(endpointId, { goodStuff: "ye", extraFluff: "nah" })),
+    JSON.stringify(createEndpointAdded(endpointId, { goodStuff: "ye", extraFluff: "nah" }))
   );
 
   // Then

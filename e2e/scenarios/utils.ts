@@ -34,7 +34,7 @@ export const joinRoom = async (
   page: Page,
   roomId: string,
   metadata?: any,
-  waitForConnection: boolean = true,
+  waitForConnection: boolean = true
 ): Promise<string> =>
   test.step("Join room", async () => {
     const peerRequest = await createPeer(page, roomId);
@@ -95,7 +95,7 @@ export const throwIfRemoteTracksAreNotPresent = async (page: Page, otherClientId
 export const assertThatRemoteTracksAreVisible = async (page: Page, otherClientIds: string[]) => {
   await test.step("Assert that remote tracks are visible", async () => {
     const responses = await Promise.allSettled(
-      otherClientIds.map((peerId) => page.locator(`css=video[data-peer-id="${peerId}"]`)),
+      otherClientIds.map((peerId) => page.locator(`css=video[data-peer-id="${peerId}"]`))
     );
     const isAnyRejected = responses.some((e) => e.status === "rejected");
     expect(isAnyRejected).toBe(false);
@@ -198,7 +198,7 @@ export const assertThatAllTracksAreReady = async (page: Page, otherClientId: str
 export const assertThatTrackBackgroundColorIsOk = async (page: Page, otherClientId: string, color: string) =>
   await test.step(`Assert that track background color is ${color}`, () =>
     expectWithLongerTimeout(
-      page.locator(`xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`),
+      page.locator(`xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`)
     ).toBeVisible());
 
 export const assertThatTrackReplaceStatusIsSuccess = async (page: Page, replaceStatus: string) =>

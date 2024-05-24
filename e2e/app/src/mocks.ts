@@ -36,7 +36,7 @@ export const createStream: (
   emoji: string,
   backgroundColor: string,
   quality: Quality,
-  framerate: number,
+  framerate: number
 ) => {
   stop: () => void;
   stream: MediaStream;

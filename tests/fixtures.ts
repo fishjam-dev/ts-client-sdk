@@ -73,7 +73,7 @@ export const createConnectedEvent = (localEndpointId?: string): ConnectedMediaEv
 export const createEncodingSwitchedEvent = (
   endpointId: string,
   trackId: string,
-  encoding: TrackEncoding,
+  encoding: TrackEncoding
 ): CustomEncodingUpdatedEvent =>
   CustomEncodingSwitchedEventSchema.parse({
     data: {
@@ -141,7 +141,7 @@ export const createEndpointRemoved = (endpointId: string): EndpointRemovedEvent 
 
 export const createConnectedEventWithOneEndpoint = (
   endpointId?: string,
-  localEndpointId?: string,
+  localEndpointId?: string
 ): ConnectedMediaEvent => {
   const connectedEvent = createConnectedEvent(localEndpointId);
   connectedEvent.data.otherEndpoints = [createEmptyEndpoint(endpointId)];
@@ -151,7 +151,7 @@ export const createConnectedEventWithOneEndpoint = (
 export const createConnectedEventWithOneEndpointWithOneTrack = (
   remoteEndpointId: string,
   trackId: string,
-  localEndpointId?: string,
+  localEndpointId?: string
 ): ConnectedMediaEvent => {
   const connectedEvent = createConnectedEvent(localEndpointId);
   connectedEvent.data.otherEndpoints = [createEmptyEndpoint(remoteEndpointId)];
@@ -167,7 +167,7 @@ export const createConnectedEventWithOneEndpointWithOneTrack = (
 export const createAddTrackMediaEvent = (
   endpointId: string,
   trackId: string,
-  metadata: any = undefined,
+  metadata: any = undefined
 ): TracksAddedMediaEvent =>
   TracksAddedMediaEventSchema.parse({
     type: "tracksAdded",

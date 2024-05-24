@@ -65,7 +65,7 @@ export const CustomOfferDataEventSchema = z.object({
           serverPort: z.number(),
           transport: z.string().min(1),
           username: z.string().min(1),
-        }),
+        })
       ),
       tracksTypes: z.object({
         audio: z.number(), // .min(0).max(infinity) - number of video tracks

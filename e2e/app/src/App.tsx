@@ -198,7 +198,7 @@ export function App() {
 
   const [remoteEndpoints, remoteTracks] = useSyncExternalStore(
     (callback) => remoteTracksStore.subscribe(callback),
-    () => remoteTracksStore.snapshot(),
+    () => remoteTracksStore.snapshot()
   );
 
   const setEncoding = (trackId: string, encoding: TrackEncoding) => {
@@ -252,7 +252,7 @@ export function App() {
                   <button onClick={() => setEncoding(trackId, "h")}>h</button>
                 </div>
               </div>
-            ),
+            )
           )}
         </div>
       </div>

@@ -54,7 +54,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   constructor(
     client: FishjamClient<PeerMetadata, TrackMetadata>,
     connect: (metadata: PeerMetadata) => void,
-    config?: ReconnectConfig | boolean,
+    config?: ReconnectConfig | boolean
   ) {
     this.client = client;
     this.connect = connect;
@@ -128,7 +128,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
           track.stream,
           track.rawMetadata,
           track.simulcastConfig,
-          track.maxBandwidth,
+          track.maxBandwidth
         );
       });
     }

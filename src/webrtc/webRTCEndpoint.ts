@@ -212,7 +212,7 @@ class TrackContextImpl<EndpointMetadata, ParsedMetadata>
     trackId: string,
     metadata: any,
     simulcastConfig: SimulcastConfig,
-    metadataParser: MetadataParser<ParsedMetadata>,
+    metadataParser: MetadataParser<ParsedMetadata>
   ) {
     super();
     this.endpoint = endpoint;
@@ -315,7 +315,7 @@ export interface WebRTCEndpointEvents<EndpointMetadata, TrackMetadata> {
    */
   tracksPriorityChanged: (
     enabledTracks: TrackContext<EndpointMetadata, TrackMetadata>[],
-    disabledTracks: TrackContext<EndpointMetadata, TrackMetadata>[],
+    disabledTracks: TrackContext<EndpointMetadata, TrackMetadata>[]
   ) => void;
 
   /**
@@ -473,7 +473,7 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
         const otherEndpoints: Endpoint<EndpointMetadata, TrackMetadata>[] = endpoints.map((endpoint) => {
           const tracks = this.mapMediaEventTracksToTrackContextImpl(
             new Map<string, any>(Object.entries(endpoint.tracks)),
-            endpoint,
+            endpoint
           );
 
           try {
@@ -750,11 +750,11 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
 
       case "tracksPriority": {
         const enabledTracks = (deserializedMediaEvent.data.tracks as string[]).map(
-          (trackId) => this.trackIdToTrack.get(trackId)!,
+          (trackId) => this.trackIdToTrack.get(trackId)!
         );
 
         const disabledTracks = Array.from(this.trackIdToTrack.values()).filter(
-          (track) => !enabledTracks.includes(track),
+          (track) => !enabledTracks.includes(track)
         );
 
         this.emit("tracksPriorityChanged", enabledTracks, disabledTracks);
@@ -854,7 +854,7 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
     stream: MediaStream,
     trackMetadata?: TrackMetadata,
     simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [], disabledEncodings: [] },
-    maxBandwidth: TrackBandwidthLimit = 0,
+    maxBandwidth: TrackBandwidthLimit = 0
   ): Promise<string> {
     const resolutionNotifier = new Deferred<void>();
     const trackId = this.getTrackId(uuidv4());
@@ -964,7 +964,7 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
       trackId,
       trackMetadata,
       simulcastConfig,
-      this.trackMetadataParser,
+      this.trackMetadataParser
     );
 
     trackContext.track = track;
@@ -982,7 +982,7 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
         .getTransceivers()
         .forEach(
           (transceiver) =>
-            (transceiver.direction = transceiver.direction === "sendrecv" ? "sendonly" : transceiver.direction),
+            (transceiver.direction = transceiver.direction === "sendrecv" ? "sendonly" : transceiver.direction)
         );
     }
 
@@ -1009,13 +1009,13 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
   }
 
   private createAudioTransceiverConfig(
-    trackContext: TrackContext<EndpointMetadata, TrackMetadata>,
+    trackContext: TrackContext<EndpointMetadata, TrackMetadata>
   ): RTCRtpTransceiverInit {
     return { direction: "sendonly", streams: trackContext.stream ? [trackContext.stream] : [] };
   }
 
   private createVideoTransceiverConfig(
-    trackContext: TrackContext<EndpointMetadata, TrackMetadata>,
+    trackContext: TrackContext<EndpointMetadata, TrackMetadata>
   ): RTCRtpTransceiverInit {
     let transceiverConfig: RTCRtpTransceiverInit;
     if (trackContext.simulcastConfig!.enabled) {
@@ -1085,7 +1085,7 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
     const firstScaleDownBy = encodings![0].scaleResolutionDownBy || 1;
     const bitrate_parts = encodings.reduce(
       (acc, value) => acc + (firstScaleDownBy / (value.scaleResolutionDownBy || 1)) ** 2,
-      0,
+      0
     );
     const x = bandwidth / bitrate_parts;
 
@@ -1514,7 +1514,7 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
       const mid = transceiver.mid;
       if (localTrackId && mid) {
         const trackContext = Array.from(this.localTrackIdToTrack.values()).find(
-          (trackContext) => trackContext!.track!.id === localTrackId,
+          (trackContext) => trackContext!.track!.id === localTrackId
         )!;
         localTrackMidToTrackId[mid] = trackContext.trackId;
       }
@@ -1845,13 +1845,13 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
 
   private mapMediaEventTracksToTrackContextImpl = (
     tracks: Map<string, any>,
-    endpoint: Endpoint<EndpointMetadata, TrackMetadata>,
+    endpoint: Endpoint<EndpointMetadata, TrackMetadata>
   ): Map<string, TrackContextImpl<EndpointMetadata, TrackMetadata>> => {
     const mappedTracks: Array<[string, TrackContextImpl<EndpointMetadata, TrackMetadata>]> = Array.from(tracks).map(
       ([trackId, track]) => [
         trackId,
         new TrackContextImpl(endpoint, trackId, track.metadata, track.simulcastConfig, this.trackMetadataParser),
-      ],
+      ]
     );
 
     return new Map(mappedTracks);

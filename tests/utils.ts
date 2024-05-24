@@ -43,7 +43,7 @@ export const setupRoom = (webRTCEndpoint: WebRTCEndpoint, endpointId: string, tr
 export const setupRoomWithMocks = async (
   webRTCEndpoint: WebRTCEndpoint,
   endpointId: string,
-  trackId: string,
+  trackId: string
 ): Promise<void> => {
   mockRTCPeerConnection();
 

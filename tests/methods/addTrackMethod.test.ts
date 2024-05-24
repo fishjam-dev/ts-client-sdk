@@ -53,7 +53,7 @@ it("Adding track before being accepted by the server throws error", async () => 
 
   // When
   await expect(() => webRTCEndpoint.addTrack(mockTrack, stream)).rejects.toThrow(
-    "Cannot add tracks before being accepted by the server",
+    "Cannot add tracks before being accepted by the server"
   );
 });
 
@@ -69,6 +69,6 @@ it("Adding track with invalid metadata throws error", async () => {
 
   // When
   await expect(() =>
-    webRTCEndpoint.addTrack(mockTrack, stream, { validMetadata: false } as unknown as TrackMetadata),
+    webRTCEndpoint.addTrack(mockTrack, stream, { validMetadata: false } as unknown as TrackMetadata)
   ).rejects.toThrow("Invalid");
 });
