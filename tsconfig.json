@@ -1,18 +1,24 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "_version": "20.1.0",
+
   "compilerOptions": {
-    "allowJs": true,
-    "declaration": true,
-    "declarationMap": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "outDir": "dist/",
-    "skipLibCheck": true,
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "es2022",
+    "jsx": "react-jsx",
+
     "strict": true,
-    "target": "ESNext",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx"
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+
+    "outDir": "dist"
   },
   "include": ["src/**/*", "tests/**/*"]
 }
