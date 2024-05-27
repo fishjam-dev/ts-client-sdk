@@ -1,7 +1,10 @@
 {
-  "printWidth": 120,
   "plugins": ["prettier-plugin-tailwindcss"],
-  "trailingComma": "es5",
+  "bracketSameLine": true,
+  "proseWrap": "always",
+  "quoteProps": "consistent",
+  "singleQuote": true,
   "tabWidth": 2,
-  "semi": true
+  "trailingComma": "all",
+  "useTabs": false
 }

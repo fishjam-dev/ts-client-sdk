@@ -2,7 +2,8 @@
 
 Available examples include:
 
-- [Minimal](./minimal): This example demonstrates minimal usage of the Fishjam client:
+- [Minimal](./minimal): This example demonstrates minimal usage of the Fishjam
+  client:
 
   - Pure TypeScript
   - connect to Fishjam server
@@ -11,7 +12,8 @@ Available examples include:
   - receive media from other peers
   - almost no UI
 
-- [Simple App](./simple-app): This example shows how to use the Fishjam client with vanilla TypeScript:
+- [Simple App](./simple-app): This example shows how to use the Fishjam client
+  with vanilla TypeScript:
   - Pure TypeScript
   - connect to Fishjam server
   - join room

@@ -18,7 +18,8 @@ npm install @fishjam-dev/ts-client
 
 Documentation is available [here](https://fishjam-dev.github.io/ts-client-sdk/).
 
-For a more comprehensive tutorial on Fishjam, its capabilities and usage in production, refer to the
+For a more comprehensive tutorial on Fishjam, its capabilities and usage in
+production, refer to the
 [Fishjam docs](https://fishjam-dev.github.io/fishjam-docs/).
 
 ## Usage
@@ -26,13 +27,15 @@ For a more comprehensive tutorial on Fishjam, its capabilities and usage in prod
 Prerequisites:
 
 - A running [Fishjam](https://github.com/fishjam-dev/fishjam) server.
-- A created room and a peer's token in that room.
-  You can use the [dashboard](https://github.com/fishjam-dev/fishjam-dashboard) example to create a room and a peer token.
+- A created room and a peer's token in that room. You can use the
+  [dashboard](https://github.com/fishjam-dev/fishjam-dashboard) example to
+  create a room and a peer token.
 
-The following code snippet is based on the [minimal](./examples/minimal) example.
+The following code snippet is based on the [minimal](./examples/minimal)
+example.
 
 ```ts
-import { FishjamClient, WebRTCEndpoint } from "@fishjam-dev/ts-client";
+import { FishjamClient, WebRTCEndpoint } from '@fishjam-dev/ts-client';
 
 const SCREEN_SHARING_MEDIA_CONSTRAINTS = {
   video: {
@@ -49,25 +52,25 @@ type PeerMetadata = {
 };
 
 type TrackMetadata = {
-  type: "camera" | "screen";
+  type: 'camera' | 'screen';
 };
 
 // Create a new FishjamClient object to interact with Fishjam
 const client = new FishjamClient<PeerMetadata, TrackMetadata>();
 
-const peerToken = prompt("Enter peer token") ?? "YOUR_PEER_TOKEN";
+const peerToken = prompt('Enter peer token') ?? 'YOUR_PEER_TOKEN';
 
 // Start the peer connection
 client.connect({
-  peerMetadata: { name: "peer" },
+  peerMetadata: { name: 'peer' },
   token: peerToken,
   // if the 'signaling' field is missing, the client will connect to ws://localhost:5002/socket/peer/websocket
 });
 
 // You can listen to events emitted by the client
-client.on("joined", (peerId, peersInRoom) => {
+client.on('joined', (peerId, peersInRoom) => {
   // Check if webrtc is initialized
-  if (!client.webrtc) return console.error("webrtc is not initialized");
+  if (!client.webrtc) return console.error('webrtc is not initialized');
 
   // To start broadcasting your media, you will need a source of MediaStream like a camera, microphone, or screen
   // In this example, we will use screen sharing
@@ -75,13 +78,13 @@ client.on("joined", (peerId, peersInRoom) => {
 });
 
 // To receive media from other peers, you need to listen to the onTrackReady event
-client.on("trackReady", (ctx) => {
+client.on('trackReady', (ctx) => {
   const peerId = ctx.peer.id;
 
   document.getElementById(peerId)?.remove(); // remove previous video element if it exists
 
   // Create a new video element to display the media
-  const videoPlayer = document.createElement("video");
+  const videoPlayer = document.createElement('video');
   videoPlayer.id = peerId;
   videoPlayer.oncanplaythrough = function () {
     // Chrome blocks autoplay of unmuted video
@@ -94,17 +97,23 @@ client.on("trackReady", (ctx) => {
 });
 
 // Cleanup video element when track is removed
-client.on("trackRemoved", (ctx) => {
+client.on('trackRemoved', (ctx) => {
   const peerId = ctx.peer.id;
   document.getElementById(peerId)?.remove(); // remove video element
 });
 
 async function startScreenSharing(webrtc: WebRTCEndpoint) {
   // Get screen sharing MediaStream
-  const screenStream = await navigator.mediaDevices.getDisplayMedia(SCREEN_SHARING_MEDIA_CONSTRAINTS);
+  const screenStream = await navigator.mediaDevices.getDisplayMedia(
+    SCREEN_SHARING_MEDIA_CONSTRAINTS,
+  );
 
   // Add local MediaStream to webrtc
-  screenStream.getTracks().forEach((track) => webrtc.addTrack(track, screenStream, { type: "screen" }));
+  screenStream
+    .getTracks()
+    .forEach((track) =>
+      webrtc.addTrack(track, screenStream, { type: 'screen' }),
+    );
 }
 ```
 
@@ -114,9 +123,12 @@ For more examples, see the [examples](./examples) folder.
 
 ## Contributing
 
-We welcome contributions to the Fishjam TS Client. Please report any bugs or issues that you find, or feel free to make a pull request with your own bug fixes and/or features.
+We welcome contributions to the Fishjam TS Client. Please report any bugs or
+issues that you find, or feel free to make a pull request with your own bug
+fixes and/or features.
 
-More detailed information about contributing can be found in [CONTRIBUTING.md](./CONTRIBUTING.md).
+More detailed information about contributing can be found in
+[CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Fishjam Ecosystem
 
@@ -129,7 +141,8 @@ More detailed information about contributing can be found in [CONTRIBUTING.md](.
 
 ## Copyright and License
 
-Copyright 2024, [Software Mansion](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=fishjam)
+Copyright 2024,
+[Software Mansion](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=fishjam)
 
 [![Software Mansion](https://logo.swmansion.com/logo?color=white&variant=desktop&width=200&tag=membrane-github)](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=fishjam)
 

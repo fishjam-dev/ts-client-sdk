@@ -4,12 +4,19 @@ import {
   createAddTrackMediaEvent,
   createConnectedEventWithOneEndpointWithOneTrack,
   stream,
-} from "./fixtures";
-import { WebRTCEndpoint } from "../src";
-import { mockRTCPeerConnection } from "./mocks";
+} from './fixtures';
+import { WebRTCEndpoint } from '../src';
+import { mockRTCPeerConnection } from './mocks';
 
-export const setupRoom = (webRTCEndpoint: WebRTCEndpoint, endpointId: string, trackId: string): void => {
-  const connectedEvent = createConnectedEventWithOneEndpointWithOneTrack(endpointId, trackId);
+export const setupRoom = (
+  webRTCEndpoint: WebRTCEndpoint,
+  endpointId: string,
+  trackId: string,
+): void => {
+  const connectedEvent = createConnectedEventWithOneEndpointWithOneTrack(
+    endpointId,
+    trackId,
+  );
   webRTCEndpoint.receiveMediaEvent(JSON.stringify(connectedEvent));
 
   // Right now info about tracks from connectedEvent is ignored
@@ -43,16 +50,20 @@ export const setupRoom = (webRTCEndpoint: WebRTCEndpoint, endpointId: string, tr
 export const setupRoomWithMocks = async (
   webRTCEndpoint: WebRTCEndpoint,
   endpointId: string,
-  trackId: string
+  trackId: string,
 ): Promise<void> => {
   mockRTCPeerConnection();
 
   setupRoom(webRTCEndpoint, endpointId, trackId);
 
-  webRTCEndpoint.receiveMediaEvent(JSON.stringify(createAddLocalTrackSDPOffer()));
-  webRTCEndpoint.receiveMediaEvent(JSON.stringify(createAddLocalTrackAnswerData(trackId)));
+  webRTCEndpoint.receiveMediaEvent(
+    JSON.stringify(createAddLocalTrackSDPOffer()),
+  );
+  webRTCEndpoint.receiveMediaEvent(
+    JSON.stringify(createAddLocalTrackAnswerData(trackId)),
+  );
 
-  const connection = webRTCEndpoint["connection"]!;
+  const connection = webRTCEndpoint['connection']!;
   const transciever = new RTCRtpTransceiver();
 
   // @ts-ignore
