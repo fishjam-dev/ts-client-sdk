@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getPixel, Pixel } from "./mocks.ts";
+import { getPixel, Pixel } from "./mocks";
 
 type Props = {
   stream?: MediaStream;
