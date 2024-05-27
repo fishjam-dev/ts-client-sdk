@@ -14,6 +14,12 @@ install the required dependencies:
 npm install
 ```
 
+Then, setup [Husky](https://typicode.github.io/husky/) to run pre-commit hooks:
+
+```sh
+npx husky
+```
+
 Ensure your code passes TypeScript, ESLint and formatter checks by running the
 following commands:
 
