@@ -1,6 +1,8 @@
-import { VideoPlayer } from "./VideoPlayer.tsx";
+import { VideoPlayer } from "./VideoPlayer";
 import { useRef, useState } from "react";
 import { WebRTCEndpoint } from "@fishjam-dev/ts-client";
+
+/* eslint-disable no-console */
 
 /*
  * Looks like Jellyfish handles track without simulcast properly
@@ -79,12 +81,12 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
 
     const track = mediaStream.getVideoTracks()[0];
 
-    if(videoStreamIdRef.current) {
+    if (videoStreamIdRef.current) {
       console.log("Replacing with camera");
 
       webrtc.replaceTrack(videoStreamIdRef.current, track, undefined, "unmute");
     } else {
-      console.log("Adding track")
+      console.log("Adding track");
 
       videoStreamIdRef.current = await webrtc.addTrack(
         track,
@@ -92,10 +94,10 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
         { goodTrack: "camera" },
         simulcastCheckbox
           ? {
-            enabled: true,
-            activeEncodings: ["l", "m", "h"],
-            disabledEncodings: [],
-          }
+              enabled: true,
+              activeEncodings: ["l", "m", "h"],
+              disabledEncodings: [],
+            }
           : undefined,
       );
     }
@@ -108,8 +110,8 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
 
     console.log("replacing with null", videoStreamIdRef.current);
 
-    if(videoStreamIdRef.current) {
-      webrtc.replaceTrack(videoStreamIdRef.current, null, {goodTrack: "null"}, "mute")
+    if (videoStreamIdRef.current) {
+      webrtc.replaceTrack(videoStreamIdRef.current, null, { goodTrack: "null" }, "mute");
     }
   };
 
@@ -205,7 +207,7 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
           gap: "8px",
           borderStyle: "dashed",
           borderColor: "blue",
-          borderWidth: "2px"
+          borderWidth: "2px",
         }}
       >
         <button onClick={startAndAddCamera}>Start and add camera track</button>

@@ -15,7 +15,6 @@ import { MockComponent } from "./MockComponent.tsx";
 import { VideoPlayerWithDetector } from "./VideoPlayerWithDetector.tsx";
 import { ReplaceTrackWithDummyStream } from "./ReplaceTrackWithDummyStream.tsx";
 
-
 /* eslint-disable no-console */
 
 export type EndpointMetadata = {
@@ -234,7 +233,7 @@ export function App() {
         <div id="connection-status">{connected ? "true" : "false"}</div>
         <hr />
         <MockComponent webrtc={webrtc} />
-        <ReplaceTrackWithDummyStream webrtc={webrtc}/>
+        <ReplaceTrackWithDummyStream webrtc={webrtc} />
         <div style={{ width: "100%" }}>
           {Object.values(remoteTracks).map(
             ({ stream, trackId, endpoint, metadata, rawMetadata, metadataParsingError }) => (
