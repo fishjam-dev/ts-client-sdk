@@ -71,11 +71,6 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
 
   const startAndAddCamera = async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({ video: VIDEO_TRACK_CONSTRAINTS, audio: false });
-    console.log({
-      mediaStream,
-      settings: mediaStream.getVideoTracks()[0].getSettings(),
-      tracks: videoStream?.getVideoTracks(),
-    });
 
     setVideoStream(mediaStream);
 
@@ -84,7 +79,7 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
     if (videoStreamIdRef.current) {
       console.log("Replacing with camera");
 
-      webrtc.replaceTrack(videoStreamIdRef.current, track, undefined, "unmute");
+      webrtc.replaceTrack(videoStreamIdRef.current, track, undefined);
     } else {
       console.log("Adding track");
 
@@ -110,7 +105,7 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
     console.log("replacing with null", videoStreamIdRef.current);
 
     if (videoStreamIdRef.current) {
-      webrtc.replaceTrack(videoStreamIdRef.current, null, { goodTrack: "null" }, "mute");
+      webrtc.replaceTrack(videoStreamIdRef.current, null, { goodTrack: "null" });
     }
   };
 

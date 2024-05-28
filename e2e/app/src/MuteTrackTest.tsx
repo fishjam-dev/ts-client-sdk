@@ -54,8 +54,8 @@ export const MuteTrackTest = ({ webrtc }: Props) => {
     </div>
 
     <div>
-      <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(brain2Mock.stream)}>Add brain</button>
       <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(heart2Mock.stream)}>Add heart</button>
+      <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(brain2Mock.stream)}>Add brain</button>
       <button
         onClick={() => replaceTrack(trackId, heart2Mock.stream, heart2Mock.stream.getVideoTracks()[0])}>
         Replace with heart
@@ -64,7 +64,7 @@ export const MuteTrackTest = ({ webrtc }: Props) => {
         onClick={() => replaceTrack(trackId, brain2Mock.stream, brain2Mock.stream.getVideoTracks()[0])}>
         Replace with brain
       </button>
-      <button onClick={() => replaceTrack(trackId, null, null)}>Replace with null</button>
+      <button onClick={() => replaceTrack(trackId, null, null)}>Mute track</button>
     </div>
 
     <div>

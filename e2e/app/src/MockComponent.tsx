@@ -1,9 +1,8 @@
-import { createStream } from "./mocks.ts";
-import { VideoPlayer } from "./VideoPlayer.tsx";
+import { createStream } from "./mocks";
+import { VideoPlayer } from "./VideoPlayer";
 import { useRef, useState } from "react";
-import { EndpointMetadata, TrackMetadata } from "./App.tsx";
+import { EndpointMetadata, TrackMetadata } from "./App";
 import { BandwidthLimit, SimulcastConfig, WebRTCEndpoint } from "@fishjam-dev/ts-client";
-import { MuteTrackTest } from "./MuteTrackTest";
 
 export const brainMock = createStream("🧠", "white", "low", 24);
 export const brain2Mock = createStream("🤯", "#00ff00", "low", 24);

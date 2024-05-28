@@ -11,9 +11,9 @@ import {
 } from "@fishjam-dev/ts-client";
 import { PeerMessage } from "./protos/fishjam/peer_notifications";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { MockComponent } from "./MockComponent.tsx";
-import { VideoPlayerWithDetector } from "./VideoPlayerWithDetector.tsx";
-import { ReplaceTrackWithDummyStream } from "./ReplaceTrackWithDummyStream.tsx";
+import { MockComponent } from "./MockComponent";
+import { VideoPlayerWithDetector } from "./VideoPlayerWithDetector";
+import { ReplaceTrackWithDummyStream } from "./ReplaceTrackWithDummyStream";
 import { MuteTrackTest } from "./MuteTrackTest";
 
 /* eslint-disable no-console */
