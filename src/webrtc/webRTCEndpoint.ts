@@ -1182,12 +1182,6 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
 
     const trackContext = this.localTrackIdToTrack.get(trackId)!;
 
-    console.log({ trackId, newTrack, newTrackMetadata, trackContext });
-    console.log({
-      sendersCount: this.connection?.getSenders()?.length,
-      senders: this.connection?.getSenders(),
-    });
-
     const track = this.trackIdToSth.get(trackId);
     const sender: RTCRtpSender | null = track?.sender ?? null;
 
@@ -1730,23 +1724,10 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
       this.connection.restartIce();
     }
 
-    // this.localTrackIdToSender = this.connection!.getSenders()
-    //   .filter(sender => sender.track)
-    //   .reduce((acc, sender) => {
-    //     acc[sender!.track!.id] = sender;
-    //     return acc;
-    //   }, {} as Record<string, RTCRtpSender>);
-
     this.trackIdToSth.forEach((sth) => {
       if (sth.localTrackId) {
         sth.sender = this.findSender(sth.localTrackId);
       }
-    });
-
-    console.log({
-      sendersCount: this.connection?.getSenders()?.length,
-      senders: this.connection?.getSenders(),
-      trackIdToSth: this.trackIdToSth,
     });
 
     this.addTransceiversIfNeeded(offerData);
