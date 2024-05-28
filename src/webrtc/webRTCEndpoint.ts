@@ -986,11 +986,6 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
 
     this.localTrackIdToTrack.set(trackId, trackContext);
 
-    const trackContextNew = this.localTrackIdToTrack.get(trackId)!;
-
-    console.log(`trackContextNew1: ${trackContextNew}`);
-    console.log(trackContextNew);
-
     if (this.connection) {
       this.addTrackToConnection(trackContext);
 
