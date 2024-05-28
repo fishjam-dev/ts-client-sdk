@@ -24,7 +24,7 @@ export const MockComponent = ({ webrtc }: Props) => {
     const stream = heartMock.stream;
     const track = stream.getVideoTracks()[0];
 
-    heartId.current = webrtc.addTrack(track, stream, JSON.parse(trackMetadataInput));
+    heartId.current = webrtc.addTrack(track, JSON.parse(trackMetadataInput));
   };
 
   const removeHeart = async () => {
@@ -65,7 +65,7 @@ export const MockComponent = ({ webrtc }: Props) => {
     const simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [], disabledEncodings: [] };
     const maxBandwidth: BandwidthLimit = 0;
 
-    brainId.current = webrtc.addTrack(track, stream, JSON.parse(trackMetadataInput), simulcastConfig, maxBandwidth);
+    brainId.current = webrtc.addTrack(track, JSON.parse(trackMetadataInput), simulcastConfig, maxBandwidth);
   };
 
   const addBoth = () => {
@@ -108,8 +108,6 @@ export const MockComponent = ({ webrtc }: Props) => {
           <span data-replace-status={replaceStatus}>{replaceStatus}</span>
         </div>
       </div>
-
-      <MuteTrackTest />
 
       <div>
         <VideoPlayer stream={brainMock.stream} />

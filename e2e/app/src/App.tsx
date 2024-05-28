@@ -182,7 +182,7 @@ async function addScreenshareTrack(): Promise<string> {
   const simulcastConfig: SimulcastConfig = { enabled: false, activeEncodings: [], disabledEncodings: [] };
   const maxBandwidth: BandwidthLimit = 0;
 
-  return webrtc.addTrack(track, stream, trackMetadata, simulcastConfig, maxBandwidth);
+  return webrtc.addTrack(track, trackMetadata, simulcastConfig, maxBandwidth);
 }
 
 export function App() {
@@ -234,9 +234,11 @@ export function App() {
         </div>
         <div id="connection-status">{connected ? "true" : "false"}</div>
         <hr />
+
         <MockComponent webrtc={webrtc} />
         <ReplaceTrackWithDummyStream webrtc={webrtc} />
         <MuteTrackTest webrtc={webrtc}/>
+
         <div style={{ width: "100%" }}>
           {Object.values(remoteTracks).map(
             ({ stream, trackId, endpoint, metadata, rawMetadata, metadataParsingError }) => (
@@ -248,7 +250,7 @@ export function App() {
                 <br />
                 Error: <code className="metadata-parsing-error">{metadataParsingError}</code>
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                  <VideoPlayerWithDetector id={endpoint.id} stream={stream ?? undefined} />
+                  <VideoPlayerWithDetector id={endpoint.id} stream={stream ?? undefined} webrtc={webrtc} />
                 </div>
                 <div data-name="stream-id">{stream?.id}</div>
                 <div>

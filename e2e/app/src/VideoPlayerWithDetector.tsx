@@ -1,9 +1,11 @@
+import { WebRTCEndpoint } from "@fishjam-dev/ts-client";
 import { useEffect, useRef, useState } from "react";
 import { getPixel, Pixel } from "./mocks.ts";
 
 type Props = {
   stream?: MediaStream;
   id?: string;
+  webrtc: WebRTCEndpoint
 };
 
 const rgbToText = (pixel: Pixel): string => {
@@ -17,17 +19,51 @@ const rgbToText = (pixel: Pixel): string => {
   return "unknown";
 };
 
-export const VideoPlayerWithDetector = ({ stream, id }: Props) => {
+const getGroupedStats = (stats: RTCStatsReport, type: string): Record<string, any> => {
+  const result: Record<string, any> = {};
+
+  stats.forEach((report) => {
+    if(report.type === type) {
+      result[report.id] = report
+    }
+  });
+
+  return result
+};
+
+export const VideoPlayerWithDetector = ({ stream, id, webrtc }: Props) => {
   const videoElementRef = useRef<HTMLVideoElement>(null);
   const [color, setColor] = useState<string>("");
+  const [decodedFrames, setDecodedFrames] = useState<string>("");
 
   useEffect(() => {
     if (!videoElementRef.current) return;
     videoElementRef.current.srcObject = stream || null;
   }, [stream]);
 
+  const getDecodedFrames = async () => {
+    const connection = webrtc["connection"];
+    if (!connection) return 0;
+
+    const inbound = getGroupedStats(await connection.getStats(), "inbound-rtp");
+
+    const track = stream?.getVideoTracks()?.[0];
+    return Object.values(inbound).find((report) => report.trackIdentifier === track?.id)
+      ?.framesDecoded ?? 0;
+  };
+
   useEffect(() => {
-    const id = setInterval(() => {
+    const id = setInterval(async () => {
+      setDecodedFrames(await getDecodedFrames());
+    }, 100);
+
+    return () => {
+      clearInterval(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(async () => {
       const videoElement = videoElementRef.current;
       if (!videoElement || videoElement.videoWidth === 0) return;
 
@@ -51,6 +87,7 @@ export const VideoPlayerWithDetector = ({ stream, id }: Props) => {
   return (
     <div>
       <div data-color-name={color}>{color}</div>
+      <div>Decoded frames: <span data-decoded-frames={decodedFrames}>{decodedFrames}</span></div>
       <video id={id} style={{ maxHeight: "90px" }} autoPlay playsInline controls={false} muted ref={videoElementRef} />
     </div>
   );

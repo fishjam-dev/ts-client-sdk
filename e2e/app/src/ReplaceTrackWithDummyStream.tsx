@@ -90,7 +90,6 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
 
       videoStreamIdRef.current = await webrtc.addTrack(
         track,
-        mediaStream,
         { goodTrack: "camera" },
         simulcastCheckbox
           ? {
@@ -137,7 +136,6 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
 
     videoStreamIdRef.current = await webrtc.addTrack(
       track,
-      videoStream,
       { source: "camera" },
       simulcastCheckbox
         ? {
