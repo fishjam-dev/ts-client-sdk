@@ -3,11 +3,12 @@ import { VideoPlayer } from "./VideoPlayer.tsx";
 import { useRef, useState } from "react";
 import { EndpointMetadata, TrackMetadata } from "./App.tsx";
 import { BandwidthLimit, SimulcastConfig, WebRTCEndpoint } from "@fishjam-dev/ts-client";
+import { MuteTrackTest } from "./MuteTrackTest";
 
-const brainMock = createStream("🧠", "white", "low", 24);
-const brain2Mock = createStream("🤯", "#00ff00", "low", 24);
-const heartMock = createStream("🫀", "white", "low", 24);
-const heart2Mock = createStream("💝", "#FF0000", "low", 24);
+export const brainMock = createStream("🧠", "white", "low", 24);
+export const brain2Mock = createStream("🤯", "#00ff00", "low", 24);
+export const heartMock = createStream("🫀", "white", "low", 24);
+export const heart2Mock = createStream("💝", "#FF0000", "low", 24);
 
 type Props = {
   webrtc: WebRTCEndpoint<EndpointMetadata, TrackMetadata>;
@@ -107,6 +108,9 @@ export const MockComponent = ({ webrtc }: Props) => {
           <span data-replace-status={replaceStatus}>{replaceStatus}</span>
         </div>
       </div>
+
+      <MuteTrackTest />
+
       <div>
         <VideoPlayer stream={brainMock.stream} />
         <button onClick={addBrain}>Add a brain</button>

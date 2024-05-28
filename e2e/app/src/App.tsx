@@ -7,13 +7,14 @@ import {
   WebRTCEndpointEvents,
   TrackContextEvents,
   BandwidthLimit,
-  SimulcastConfig,
+  SimulcastConfig
 } from "@fishjam-dev/ts-client";
 import { PeerMessage } from "./protos/fishjam/peer_notifications";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { MockComponent } from "./MockComponent.tsx";
 import { VideoPlayerWithDetector } from "./VideoPlayerWithDetector.tsx";
 import { ReplaceTrackWithDummyStream } from "./ReplaceTrackWithDummyStream.tsx";
+import { MuteTrackTest } from "./MuteTrackTest";
 
 /* eslint-disable no-console */
 
@@ -47,7 +48,8 @@ class RemoteStore {
   > = {};
   invalidateCache: boolean = false;
 
-  constructor(private webrtc: WebRTCEndpoint<EndpointMetadata, TrackMetadata>) {}
+  constructor(private webrtc: WebRTCEndpoint<EndpointMetadata, TrackMetadata>) {
+  }
 
   subscribe(callback: () => void) {
     const cb = () => {
@@ -199,7 +201,7 @@ export function App() {
 
   const [remoteEndpoints, remoteTracks] = useSyncExternalStore(
     (callback) => remoteTracksStore.subscribe(callback),
-    () => remoteTracksStore.snapshot(),
+    () => remoteTracksStore.snapshot()
   );
 
   const setEncoding = (trackId: string, encoding: TrackEncoding) => {
@@ -234,6 +236,7 @@ export function App() {
         <hr />
         <MockComponent webrtc={webrtc} />
         <ReplaceTrackWithDummyStream webrtc={webrtc} />
+        <MuteTrackTest webrtc={webrtc}/>
         <div style={{ width: "100%" }}>
           {Object.values(remoteTracks).map(
             ({ stream, trackId, endpoint, metadata, rawMetadata, metadataParsingError }) => (
@@ -254,7 +257,7 @@ export function App() {
                   <button onClick={() => setEncoding(trackId, "h")}>h</button>
                 </div>
               </div>
-            ),
+            )
           )}
         </div>
       </div>
