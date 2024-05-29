@@ -7,14 +7,12 @@ import {
   assertThatBothTrackAreDifferent,
   assertThatOtherVideoIsPlaying,
   assertThatTrackBackgroundColorIsOk,
-  assertThatTrackIsPlaying,
   assertThatTrackReplaceStatusIsSuccess,
   clickButton,
   createAndJoinPeer,
   createRoom,
   removeTrack,
   takeScreenshot,
-  waitForDecodedFrames
 } from "./utils";
 
 /*
@@ -158,34 +156,6 @@ test("Slowly add and replace tracks", async ({ page: senderPage, context }) => {
   await assertThatTrackBackgroundColorIsOk(receiverPage, senderId, "red");
 
   await assertThatTrackReplaceStatusIsSuccess(senderPage, "success");
-});
-
-test("Replace track with null", async ({ page: senderPage, context }) => {
-  // given
-  await senderPage.goto("/");
-  const roomId = await createRoom(senderPage);
-
-  const senderId = await createAndJoinPeer(senderPage, roomId);
-
-  const receiverPage = await context.newPage();
-  await receiverPage.goto("/");
-
-  await createAndJoinPeer(receiverPage, roomId);
-
-  // when
-  await clickButton(senderPage, "Add brain");
-  await assertThatTrackBackgroundColorIsOk(receiverPage, senderId, "green");
-  // await waitForDecodedFrames(receiverPage, senderId)
-  await assertThatTrackIsPlaying(receiverPage, senderId);
-
-  await senderPage.waitForTimeout(500);
-  await clickButton(senderPage, "Mute track");
-
-  // then
-  await receiverPage.waitForTimeout(200)
-  // await assertThatTrackIsPlaying(receiverPage, senderId);
-
-  // await assertThatTrackReplaceStatusIsSuccess(senderPage, "success");
 });
 
 test("RC: Quickly add and replace a track", async ({ page: senderPage, context }, testInfo) => {

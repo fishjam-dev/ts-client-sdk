@@ -227,7 +227,6 @@ export const assertThatTrackIsPlaying = async (page: Page, otherClientId: string
         await page.waitForTimeout(300);
         const decodedFrames2 = await locator.getAttribute(DECODED_FRAMES) ?? "unknown";
 
-        console.log({ decodedFrames, decodedFrames2 });
         return Number.parseInt(decodedFrames2) - Number.parseInt(decodedFrames);
       }
     ).toBeGreaterThan(0)
@@ -243,7 +242,6 @@ export const assertThatTrackStopped = async (page: Page, otherClientId: string) 
         await page.waitForTimeout(300);
         const decodedFrames2 = await locator.getAttribute(DECODED_FRAMES) ?? "unknown";
 
-        console.log({ decodedFrames, decodedFrames2 });
         return Number.parseInt(decodedFrames2) - Number.parseInt(decodedFrames);
       }
     ).toBe(0)

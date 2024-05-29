@@ -54,11 +54,8 @@ export const VideoPlayerWithDetector = ({ stream, id, webrtc }: Props) => {
 
   useEffect(() => {
     const id = setInterval(async () => {
-      const decodedFrames1 = await getDecodedFrames();
-      console.log({ decodedFrames1 });
-
-      setDecodedFrames(decodedFrames1);
-    }, 1000);
+      setDecodedFrames(await getDecodedFrames());
+    }, 50);
 
     return () => {
       clearInterval(id);
