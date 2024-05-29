@@ -236,7 +236,7 @@ export function App() {
         <hr />
 
         <MockComponent webrtc={webrtc} />
-        <ReplaceTrackWithDummyStream webrtc={webrtc} />
+        {/*<ReplaceTrackWithDummyStream webrtc={webrtc} />*/}
         <MuteTrackTest webrtc={webrtc}/>
 
         <div style={{ width: "100%" }}>

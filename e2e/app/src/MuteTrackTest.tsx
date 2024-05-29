@@ -9,23 +9,28 @@ type Props = {
   webrtc: WebRTCEndpoint;
 };
 
-
-// todo
-//  - add track status to client: muted / active - X
 export const MuteTrackTest = ({ webrtc }: Props) => {
   const [currentStream, setCurrentStream] = useState<MediaStream | null>();
+  const [currentTrack, setCurrentTrack] = useState<MediaStreamTrack | null>();
   const [trackId, setTrackId] = useState<string | null>(null);
 
   useEffect(() => {
-    const handler: WebRTCEndpointEvents<EndpointMetadata, TrackMetadata>["localTrackAdded"] = (event) => {
+    const localTrackAdded: WebRTCEndpointEvents<EndpointMetadata, TrackMetadata>["localTrackAdded"] = (event) => {
       setCurrentStream(event.stream);
+      setCurrentTrack(event.track);
       setTrackId(event.trackId);
     };
 
-    webrtc.on("localTrackAdded", handler);
+    const localTrackReplaced: WebRTCEndpointEvents<EndpointMetadata, TrackMetadata>["localTrackReplaced"] = (event) => {
+      setCurrentTrack(event.track);
+    };
+
+    webrtc.on("localTrackAdded", localTrackAdded);
+    webrtc.on("localTrackReplaced", localTrackReplaced);
 
     return () => {
-      webrtc.removeListener("localTrackAdded", handler);
+      webrtc.removeListener("localTrackAdded", localTrackAdded);
+      webrtc.removeListener("localTrackReplaced", localTrackReplaced);
     };
   }, []);
 
@@ -48,11 +53,17 @@ export const MuteTrackTest = ({ webrtc }: Props) => {
   };
 
 
-  return <div style={{ display: "flex", flexDirection: "column" }}>
+  return <div style={{
+    display: "flex",
+    flexDirection: "column",
+    padding: "8px",
+    borderStyle: "dotted",
+    borderWidth: "1px",
+    borderColor: "black"
+  }}>
     <div>
-      <div>trackId: {trackId}</div>
+      <span>track: {currentTrack?.id ?? "null"}</span>
     </div>
-
     <div>
       <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(heart2Mock.stream)}>Add heart</button>
       <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(brain2Mock.stream)}>Add brain</button>
