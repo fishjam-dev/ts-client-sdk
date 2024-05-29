@@ -5,7 +5,7 @@ import { getPixel, Pixel } from "./mocks";
 type Props = {
   stream?: MediaStream;
   id?: string;
-  webrtc: WebRTCEndpoint
+  webrtc: WebRTCEndpoint;
 };
 
 const rgbToText = (pixel: Pixel): string => {
@@ -87,7 +87,9 @@ export const VideoPlayerWithDetector = ({ stream, id, webrtc }: Props) => {
   return (
     <div>
       <div data-color-name={color}>{color}</div>
-      <div>Decoded frames: <span data-decoded-frames={decodedFrames}>{decodedFrames}</span></div>
+      <div>
+        Decoded frames: <span data-decoded-frames={decodedFrames}>{decodedFrames}</span>
+      </div>
       <video id={id} style={{ maxHeight: "90px" }} autoPlay playsInline controls={false} muted ref={videoElementRef} />
     </div>
   );

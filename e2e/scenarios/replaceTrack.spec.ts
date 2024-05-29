@@ -8,7 +8,6 @@ import {
   createRoom,
 } from "./utils";
 
-
 test("Replace track with null", async ({ page: senderPage, context }) => {
   // given
   await senderPage.goto("/");

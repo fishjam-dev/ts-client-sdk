@@ -42,7 +42,7 @@ export const MuteTrackTest = ({ webrtc }: Props) => {
     await webrtc.addTrack(
       track,
       { goodTrack: "camera" },
-      { enabled: true, activeEncodings: ["l", "m", "h"], disabledEncodings: [] }
+      { enabled: true, activeEncodings: ["l", "m", "h"], disabledEncodings: [] },
     );
   };
 
@@ -52,34 +52,37 @@ export const MuteTrackTest = ({ webrtc }: Props) => {
     await webrtc.replaceTrack(trackId, track);
   };
 
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        padding: "8px",
+        borderStyle: "dotted",
+        borderWidth: "1px",
+        borderColor: "black",
+      }}
+    >
+      <div>
+        <span>track: {currentTrack?.id ?? "null"}</span>
+      </div>
+      <div>
+        <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(heart2Mock.stream)}>
+          Add heart
+        </button>
+        <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(brain2Mock.stream)}>
+          Add brain
+        </button>
+        <button onClick={() => replaceTrack(trackId, heart2Mock.stream, heart2Mock.stream.getVideoTracks()[0])}>
+          Replace with heart
+        </button>
+        <button onClick={() => replaceTrack(trackId, brain2Mock.stream, brain2Mock.stream.getVideoTracks()[0])}>
+          Replace with brain
+        </button>
+        <button onClick={() => replaceTrack(trackId, null, null)}>Mute track</button>
+      </div>
 
-  return <div style={{
-    display: "flex",
-    flexDirection: "column",
-    padding: "8px",
-    borderStyle: "dotted",
-    borderWidth: "1px",
-    borderColor: "black"
-  }}>
-    <div>
-      <span>track: {currentTrack?.id ?? "null"}</span>
+      <div>{currentStream && <VideoPlayer stream={currentStream} />}</div>
     </div>
-    <div>
-      <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(heart2Mock.stream)}>Add heart</button>
-      <button disabled={!!currentStream || !!trackId} onClick={() => addTrack(brain2Mock.stream)}>Add brain</button>
-      <button
-        onClick={() => replaceTrack(trackId, heart2Mock.stream, heart2Mock.stream.getVideoTracks()[0])}>
-        Replace with heart
-      </button>
-      <button
-        onClick={() => replaceTrack(trackId, brain2Mock.stream, brain2Mock.stream.getVideoTracks()[0])}>
-        Replace with brain
-      </button>
-      <button onClick={() => replaceTrack(trackId, null, null)}>Mute track</button>
-    </div>
-
-    <div>
-      {currentStream && <VideoPlayer stream={currentStream} />}
-    </div>
-  </div>;
+  );
 };

@@ -20,17 +20,17 @@ export const VIDEO_TRACK_CONSTRAINTS: MediaTrackConstraints = {
   width: {
     max: 1280,
     ideal: 1280,
-    min: 640
+    min: 640,
   },
   height: {
     max: 720,
     ideal: 720,
-    min: 320
+    min: 320,
   },
   frameRate: {
     max: 30,
-    ideal: 24
-  }
+    ideal: 24,
+  },
 };
 
 type Props = {
@@ -39,7 +39,7 @@ type Props = {
 
 const createDummyStream = (
   width: number = 1280,
-  height: number = 720
+  height: number = 720,
 ): {
   stream: MediaStream;
   track: MediaStreamTrack;
@@ -114,7 +114,7 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
     console.log({
       mediaStream,
       settings: mediaStream.getVideoTracks()[0].getSettings(),
-      tracks: videoStream?.getVideoTracks()
+      tracks: videoStream?.getVideoTracks(),
     });
     setVideoStream(mediaStream);
   };
@@ -134,11 +134,11 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
       { source: "camera" },
       simulcastCheckbox
         ? {
-          enabled: true,
-          activeEncodings: ["l", "m", "h"],
-          disabledEncodings: []
-        }
-        : undefined
+            enabled: true,
+            activeEncodings: ["l", "m", "h"],
+            disabledEncodings: [],
+          }
+        : undefined,
     );
   };
 
@@ -200,7 +200,7 @@ export const ReplaceTrackWithDummyStream = ({ webrtc }: Props) => {
           gap: "8px",
           borderStyle: "dashed",
           borderColor: "blue",
-          borderWidth: "2px"
+          borderWidth: "2px",
         }}
       >
         <button onClick={startAndAddCamera}>Start and add camera track</button>
