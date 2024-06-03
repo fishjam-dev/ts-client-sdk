@@ -89,7 +89,7 @@ export const VideoPlayerWithDetector = ({ stream, id, webrtc }: Props) => {
     <div>
       <div data-color-name={color}>{color}</div>
       <div>
-        Decoded frames:{' '}
+        Decoded frames:
         <span data-decoded-frames={decodedFrames}>{decodedFrames}</span>
       </div>
       <video

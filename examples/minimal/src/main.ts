@@ -81,6 +81,6 @@ async function startScreenSharing() {
   screenStream
     .getTracks()
     .forEach((track) =>
-      client.addTrack(track, screenStream, { type: 'screen' }),
+      client.addTrack(track, { type: 'screen' }),
     );
 }

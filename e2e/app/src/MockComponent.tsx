@@ -33,7 +33,6 @@ export const MockComponent = ({ webrtc }: Props) => {
 
     heartId.current = webrtc.addTrack(
       track,
-      stream,
       JSON.parse(trackMetadataInput),
     );
   };
@@ -90,7 +89,6 @@ export const MockComponent = ({ webrtc }: Props) => {
 
     brainId.current = webrtc.addTrack(
       track,
-      stream,
       JSON.parse(trackMetadataInput),
       simulcastConfig,
       maxBandwidth,

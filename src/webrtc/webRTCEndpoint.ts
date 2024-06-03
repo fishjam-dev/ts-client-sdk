@@ -455,12 +455,11 @@ export class WebRTCEndpoint<
     rawMetadata: undefined,
     tracks: new Map(),
   };
-  // todo this is remote trackId
   private localTrackIdToTrack: Map<
     RemoteTrackId,
     TrackContextImpl<EndpointMetadata, TrackMetadata>
   > = new Map();
-  private trackIdToSth: Map<
+  private trackIdToSender: Map<
     RemoteTrackId,
     {
       remoteTrackId: RemoteTrackId;
@@ -1132,7 +1131,7 @@ export class WebRTCEndpoint<
         );
     }
 
-    this.trackIdToSth.set(trackId, {
+    this.trackIdToSender.set(trackId, {
       remoteTrackId: trackId,
       localTrackId: track.id,
       sender: null,
@@ -1355,7 +1354,7 @@ export class WebRTCEndpoint<
 
     const trackContext = this.localTrackIdToTrack.get(trackId)!;
 
-    const track = this.trackIdToSth.get(trackId);
+    const track = this.trackIdToSender.get(trackId);
     const sender: RTCRtpSender | null = track?.sender ?? null;
 
     if (!track) throw Error(`There is no track with id: ${trackId}`);
@@ -1968,7 +1967,7 @@ export class WebRTCEndpoint<
       this.connection.restartIce();
     }
 
-    this.trackIdToSth.forEach((sth) => {
+    this.trackIdToSender.forEach((sth) => {
       if (sth.localTrackId) {
         sth.sender = this.findSender(sth.localTrackId);
       }

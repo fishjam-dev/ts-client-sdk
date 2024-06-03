@@ -1,7 +1,6 @@
 import { WebRTCEndpoint } from '../../src';
 import {
   createConnectedEventWithOneEndpoint,
-  stream,
   mockTrack,
 } from '../fixtures';
 import { mockRTCPeerConnection } from '../mocks';
@@ -31,7 +30,7 @@ it('Adding track invokes renegotiation', () =>
     });
 
     // When
-    webRTCEndpoint.addTrack(mockTrack, stream);
+    webRTCEndpoint.addTrack(mockTrack);
   }));
 
 it('Adding track updates internal state', () => {
@@ -44,7 +43,7 @@ it('Adding track updates internal state', () => {
   );
 
   // When
-  webRTCEndpoint.addTrack(mockTrack, stream);
+  webRTCEndpoint.addTrack(mockTrack);
 
   // Then
   const localTrackIdToTrack = webRTCEndpoint['localTrackIdToTrack'];
@@ -61,7 +60,7 @@ it('Adding track before being accepted by the server throws error', async () => 
 
   // When
   await expect(() =>
-    webRTCEndpoint.addTrack(mockTrack, stream),
+    webRTCEndpoint.addTrack(mockTrack),
   ).rejects.toThrow('Cannot add tracks before being accepted by the server');
 });
 
@@ -77,7 +76,7 @@ it('Adding track with invalid metadata throws error', async () => {
 
   // When
   await expect(() =>
-    webRTCEndpoint.addTrack(mockTrack, stream, {
+    webRTCEndpoint.addTrack(mockTrack, {
       validMetadata: false,
     } as unknown as TrackMetadata),
   ).rejects.toThrow('Invalid');

@@ -9,10 +9,10 @@ import {
   BandwidthLimit,
   SimulcastConfig,
 } from '@fishjam-dev/ts-client';
-import { PeerMessage } from './protos/fishjam/peer_notifications';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { MockComponent } from './MockComponent';
 import { VideoPlayerWithDetector } from './VideoPlayerWithDetector';
+import { PeerMessage } from "../../../src/protos/fishjam/peer_notifications";
 
 /* eslint-disable no-console */
 
@@ -219,7 +219,6 @@ async function addScreenshareTrack(): Promise<string> {
 
   return webrtc.addTrack(
     track,
-    stream,
     trackMetadata,
     simulcastConfig,
     maxBandwidth,
@@ -323,6 +322,7 @@ export function App() {
                   <VideoPlayerWithDetector
                     id={endpoint.id}
                     stream={stream ?? undefined}
+                    webrtc={webrtc}
                   />
                 </div>
                 <div data-name="stream-id">{stream?.id}</div>
