@@ -175,6 +175,10 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
   localTrackReplaced: (
     event: Parameters<WebRTCEndpointEvents<PeerMetadata, TrackMetadata>["localTrackReplaced"]>[0],
   ) => void;
+  localTrackMuted: (event: Parameters<WebRTCEndpointEvents<PeerMetadata, TrackMetadata>["localTrackMuted"]>[0]) => void;
+  localTrackUnmuted: (
+    event: Parameters<WebRTCEndpointEvents<PeerMetadata, TrackMetadata>["localTrackUnmuted"]>[0],
+  ) => void;
   localTrackBandwidthSet: (
     event: Parameters<WebRTCEndpointEvents<PeerMetadata, TrackMetadata>["localTrackBandwidthSet"]>[0],
   ) => void;
@@ -557,6 +561,12 @@ export class FishjamClient<PeerMetadata, TrackMetadata> extends (EventEmitter as
     this.webrtc?.on("localTrackReplaced", (event) => {
       this.emit("localTrackReplaced", event);
     });
+    this.webrtc?.on("localTrackMuted", (event) => {
+      this.emit("localTrackMuted", event);
+    });
+    this.webrtc?.on("localTrackUnmuted", (event) => {
+      this.emit("localTrackUnmuted", event);
+    });
     this.webrtc?.on("localTrackBandwidthSet", (event) => {
       this.emit("localTrackBandwidthSet", event);
     });
@@ -734,7 +744,7 @@ export class FishjamClient<PeerMetadata, TrackMetadata> extends (EventEmitter as
    */
   public async replaceTrack(
     trackId: string,
-    newTrack: MediaStreamTrack,
+    newTrack: MediaStreamTrack | null,
     newTrackMetadata?: TrackMetadata,
   ): Promise<void> {
     if (!this.webrtc) throw this.handleWebRTCNotInitialized();

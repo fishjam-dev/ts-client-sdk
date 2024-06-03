@@ -15,7 +15,7 @@ export const createAndJoinPeer = async (page: Page, roomId: string): Promise<str
     try {
       const {
         peer: { id: peerId },
-        token: peerToken
+        token: peerToken,
       } = (await peerRequest.json()).data;
 
       await test.step("Join room", async () => {
@@ -34,14 +34,14 @@ export const joinRoom = async (
   page: Page,
   roomId: string,
   metadata?: any,
-  waitForConnection: boolean = true
+  waitForConnection: boolean = true,
 ): Promise<string> =>
   test.step("Join room", async () => {
     const peerRequest = await createPeer(page, roomId);
     try {
       const {
         peer: { id: peerId },
-        token: peerToken
+        token: peerToken,
       } = (await peerRequest.json()).data;
 
       await page.getByPlaceholder("token").fill(peerToken);
@@ -67,7 +67,7 @@ export const joinRoomAndAddScreenShare = async (page: Page, roomId: string): Pro
     try {
       const {
         peer: { id: peerId },
-        token: peerToken
+        token: peerToken,
       } = (await peerRequest.json()).data;
 
       await test.step("Join room", async () => {
@@ -95,7 +95,7 @@ export const throwIfRemoteTracksAreNotPresent = async (page: Page, otherClientId
 export const assertThatRemoteTracksAreVisible = async (page: Page, otherClientIds: string[]) => {
   await test.step("Assert that remote tracks are visible", async () => {
     const responses = await Promise.allSettled(
-      otherClientIds.map((peerId) => page.locator(`css=video[data-peer-id="${peerId}"]`))
+      otherClientIds.map((peerId) => page.locator(`css=video[data-peer-id="${peerId}"]`)),
     );
     const isAnyRejected = responses.some((e) => e.status === "rejected");
     expect(isAnyRejected).toBe(false);
@@ -135,7 +135,7 @@ export const takeScreenshot = async (page: Page, testInfo: TestInfo, name?: stri
 export const createRoom = async (page: Page, maxPeers?: number) =>
   await test.step("Create room", async () => {
     const data = {
-      ...(maxPeers ? { maxPeers } : {})
+      ...(maxPeers ? { maxPeers } : {}),
     };
 
     const roomRequest = await page.request.post("http://localhost:5002/room", { data });
@@ -148,9 +148,9 @@ export const createPeer = async (page: Page, roomId: string, enableSimulcast: bo
       data: {
         type: "webrtc",
         options: {
-          enableSimulcast
-        }
-      }
+          enableSimulcast,
+        },
+      },
     });
   });
 
@@ -169,7 +169,7 @@ export const addAndReplaceTrack = async (page: Page) =>
     await page
       .getByRole("button", {
         name: "Add and replace a heart",
-        exact: true
+        exact: true,
       })
       .click());
 
@@ -178,7 +178,7 @@ export const addAndRemoveTrack = async (page: Page) =>
     await page
       .getByRole("button", {
         name: "Add and remove a heart",
-        exact: true
+        exact: true,
       })
       .click());
 
@@ -187,7 +187,7 @@ export const addBothMockTracks = async (page: Page) =>
     await page
       .getByRole("button", {
         name: "Add both",
-        exact: true
+        exact: true,
       })
       .click());
 
@@ -200,7 +200,7 @@ export const assertThatTrackBackgroundColorIsOk = async (page: Page, otherClient
     page.locator(`xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`);
 
     return expectWithLongerTimeout(
-      page.locator(`xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`)
+      page.locator(`xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`),
     ).toBeVisible();
   });
 
@@ -218,15 +218,11 @@ const getDecodedFrameDifference = async (page: Page, otherClientId: string) => {
 
 export const assertThatTrackIsPlaying = async (page: Page, otherClientId: string) =>
   await test.step(`Assert that track is playing`, () =>
-    expectWithLongerTimeout
-      .poll(() => getDecodedFrameDifference(page, otherClientId))
-      .toBeGreaterThan(0));
+    expectWithLongerTimeout.poll(() => getDecodedFrameDifference(page, otherClientId)).toBeGreaterThan(0));
 
 export const assertThatTrackStopped = async (page: Page, otherClientId: string) =>
   await test.step(`Assert that track stopped`, () =>
-    expectWithLongerTimeout
-      .poll(() => getDecodedFrameDifference(page, otherClientId))
-      .toBe(0));
+    expectWithLongerTimeout.poll(() => getDecodedFrameDifference(page, otherClientId)).toBe(0));
 
 export const assertThatTrackReplaceStatusIsSuccess = async (page: Page, replaceStatus: string) =>
   await test.step(`Assert that track background color is ${replaceStatus}`, async () =>

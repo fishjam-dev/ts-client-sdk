@@ -355,6 +355,10 @@ export interface WebRTCEndpointEvents<EndpointMetadata, TrackMetadata> {
 
   localTrackReplaced: (event: { trackId: string; track: MediaStreamTrack | null; metadata?: TrackMetadata }) => void;
 
+  localTrackMuted: (event: { trackId: string }) => void;
+
+  localTrackUnmuted: (event: { trackId: string }) => void;
+
   localTrackBandwidthSet: (event: { trackId: string; bandwidth: BandwidthLimit }) => void;
 
   localTrackEncodingBandwidthSet: (event: { trackId: string; rid: string; bandwidth: BandwidthLimit }) => void;
@@ -1190,28 +1194,23 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
     if (!sender) throw Error("There is no RTCRtpSender for this track id!");
 
     this.ongoingTrackReplacement = true;
-    console.log({ name: "1", trackContext, trackCount: trackContext.stream?.getTracks().length });
 
     trackContext.stream?.getTracks().forEach((track) => {
       trackContext.stream?.removeTrack(track);
     });
 
-    console.log({ name: "2", trackContext, trackCount: trackContext.stream?.getTracks().length });
-
     if (newTrack) {
       trackContext.stream?.addTrack(newTrack);
     }
 
-    console.log({ name: "3", trackContext, trackCount: trackContext.stream?.getTracks().length });
-
     if (trackContext.track && !newTrack) {
       const mediaEvent = generateMediaEvent("muteTrack", { trackId: trackId });
       this.sendMediaEvent(mediaEvent);
-      console.log("sent mute event");
+      this.emit("localTrackMuted", { trackId: trackId });
     } else if (!trackContext.track && newTrack) {
       const mediaEvent = generateMediaEvent("unmuteTrack", { trackId: trackId });
       this.sendMediaEvent(mediaEvent);
-      console.log("sent unmute event");
+      this.emit("localTrackUnmuted", { trackId: trackId });
     }
 
     trackContext.track = newTrack;
@@ -1691,12 +1690,13 @@ export class WebRTCEndpoint<EndpointMetadata = any, TrackMetadata = any> extends
   private getTrackBitrates = (trackId: string) => {
     const trackContext = this.localTrackIdToTrack.get(trackId);
     if (!trackContext) throw "Track with id ${trackId} not present in 'remoteTrackIdToTrack'";
-    const kind = trackContext.track!.kind as "audio" | "video";
+    const kind = trackContext.track?.kind as "audio" | "video" | undefined;
     const sender = this.findSender(trackContext.track!.id);
     const encodings = sender.getParameters().encodings;
 
-    if (encodings.length == 1 && !encodings[0].rid) return encodings[0].maxBitrate || defaultBitrates[kind];
-    else if (kind == "audio") throw "Audio track cannot have multiple encodings";
+    if (encodings.length === 1 && !encodings[0].rid) {
+      return encodings[0].maxBitrate || (kind ? defaultBitrates[kind] : 0);
+    } else if (kind == "audio") throw "Audio track cannot have multiple encodings";
 
     const bitrates = {} as any;
 
