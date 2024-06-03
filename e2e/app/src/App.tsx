@@ -9,12 +9,11 @@ import {
   BandwidthLimit,
   SimulcastConfig,
 } from "@fishjam-dev/ts-client";
-import { PeerMessage } from "./protos/fishjam/peer_notifications";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { MockComponent } from "./MockComponent";
 import { VideoPlayerWithDetector } from "./VideoPlayerWithDetector";
-import { ReplaceTrackWithDummyStream } from "./ReplaceTrackWithDummyStream";
 import { MuteTrackTest } from "./MuteTrackTest";
+import { PeerMessage } from "../../../src/protos/fishjam/peer_notifications";
 
 /* eslint-disable no-console */
 
@@ -235,7 +234,6 @@ export function App() {
         <hr />
 
         <MockComponent webrtc={webrtc} />
-        {/*<ReplaceTrackWithDummyStream webrtc={webrtc} />*/}
         <MuteTrackTest webrtc={webrtc} />
 
         <div style={{ width: "100%" }}>
