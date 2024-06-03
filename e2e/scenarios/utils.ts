@@ -257,34 +257,56 @@ export const assertThatAllTracksAreReady = async (
       page.locator(`div[data-endpoint-id="${otherClientId}"]`),
     ).toHaveCount(tracks));
 
-export const assertThatTrackBackgroundColorIsOk = async (page: Page, otherClientId: string, color: string) =>
+export const assertThatTrackBackgroundColorIsOk = async (
+  page: Page,
+  otherClientId: string,
+  color: string,
+) =>
   await test.step(`Assert that track background color is ${color}`, () => {
-    page.locator(`xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`);
+    page.locator(
+      `xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`,
+    );
 
     return expectWithLongerTimeout(
-      page.locator(`xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`),
+      page.locator(
+        `xpath=//div[@data-endpoint-id="${otherClientId}"]//div[@data-color-name="${color}"]`,
+      ),
     ).toBeVisible();
   });
 
-const DECODED_FRAMES = "data-decoded-frames";
+const DECODED_FRAMES = 'data-decoded-frames';
 
 const getDecodedFrameDifference = async (page: Page, otherClientId: string) => {
-  const locator = page.locator(`xpath=//div[@data-endpoint-id="${otherClientId}"]//span[@${DECODED_FRAMES}]`);
+  const locator = page.locator(
+    `xpath=//div[@data-endpoint-id="${otherClientId}"]//span[@${DECODED_FRAMES}]`,
+  );
 
-  const decodedFrames = (await locator.getAttribute(DECODED_FRAMES)) ?? "unknown";
+  const decodedFrames =
+    (await locator.getAttribute(DECODED_FRAMES)) ?? 'unknown';
   await page.waitForTimeout(300);
-  const decodedFrames2 = (await locator.getAttribute(DECODED_FRAMES)) ?? "unknown";
+  const decodedFrames2 =
+    (await locator.getAttribute(DECODED_FRAMES)) ?? 'unknown';
 
   return Number.parseInt(decodedFrames2) - Number.parseInt(decodedFrames);
 };
 
-export const assertThatTrackIsPlaying = async (page: Page, otherClientId: string) =>
+export const assertThatTrackIsPlaying = async (
+  page: Page,
+  otherClientId: string,
+) =>
   await test.step(`Assert that track is playing`, () =>
-    expectWithLongerTimeout.poll(() => getDecodedFrameDifference(page, otherClientId)).toBeGreaterThan(0));
+    expectWithLongerTimeout
+      .poll(() => getDecodedFrameDifference(page, otherClientId))
+      .toBeGreaterThan(0));
 
-export const assertThatTrackStopped = async (page: Page, otherClientId: string) =>
+export const assertThatTrackStopped = async (
+  page: Page,
+  otherClientId: string,
+) =>
   await test.step(`Assert that track stopped`, () =>
-    expectWithLongerTimeout.poll(() => getDecodedFrameDifference(page, otherClientId)).toBe(0));
+    expectWithLongerTimeout
+      .poll(() => getDecodedFrameDifference(page, otherClientId))
+      .toBe(0));
 
 export const assertThatTrackReplaceStatusIsSuccess = async (
   page: Page,

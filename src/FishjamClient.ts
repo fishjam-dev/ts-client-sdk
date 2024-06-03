@@ -194,9 +194,15 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
       WebRTCEndpointEvents<PeerMetadata, TrackMetadata>['localTrackReplaced']
     >[0],
   ) => void;
-  localTrackMuted: (event: Parameters<WebRTCEndpointEvents<PeerMetadata, TrackMetadata>["localTrackMuted"]>[0]) => void;
+  localTrackMuted: (
+    event: Parameters<
+      WebRTCEndpointEvents<PeerMetadata, TrackMetadata>['localTrackMuted']
+    >[0],
+  ) => void;
   localTrackUnmuted: (
-    event: Parameters<WebRTCEndpointEvents<PeerMetadata, TrackMetadata>["localTrackUnmuted"]>[0],
+    event: Parameters<
+      WebRTCEndpointEvents<PeerMetadata, TrackMetadata>['localTrackUnmuted']
+    >[0],
   ) => void;
   localTrackBandwidthSet: (
     event: Parameters<

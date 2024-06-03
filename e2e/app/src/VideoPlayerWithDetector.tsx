@@ -18,11 +18,13 @@ const rgbToText = (pixel: Pixel): string => {
   return 'unknown';
 };
 
-const getTrackIdentifierToInboundRtp = (stats: RTCStatsReport): Record<string, any> => {
+const getTrackIdentifierToInboundRtp = (
+  stats: RTCStatsReport,
+): Record<string, any> => {
   const result: Record<string, any> = {};
 
   stats.forEach((report) => {
-    if (report.type === "inbound-rtp") {
+    if (report.type === 'inbound-rtp') {
       result[report.trackIdentifier] = report;
     }
   });
@@ -32,8 +34,8 @@ const getTrackIdentifierToInboundRtp = (stats: RTCStatsReport): Record<string, a
 
 export const VideoPlayerWithDetector = ({ stream, id, webrtc }: Props) => {
   const videoElementRef = useRef<HTMLVideoElement>(null);
-  const [color, setColor] = useState<string>("");
-  const [decodedFrames, setDecodedFrames] = useState<string>("");
+  const [color, setColor] = useState<string>('');
+  const [decodedFrames, setDecodedFrames] = useState<string>('');
 
   useEffect(() => {
     if (!videoElementRef.current) return;
@@ -41,12 +43,12 @@ export const VideoPlayerWithDetector = ({ stream, id, webrtc }: Props) => {
   }, [stream]);
 
   const getDecodedFrames = async () => {
-    const connection = webrtc["connection"];
+    const connection = webrtc['connection'];
     if (!connection) return 0;
 
     const inbound = getTrackIdentifierToInboundRtp(await connection.getStats());
 
-    const trackId = stream?.getVideoTracks()?.[0]?.id ?? "";
+    const trackId = stream?.getVideoTracks()?.[0]?.id ?? '';
 
     return inbound[trackId]?.framesDecoded ?? 0;
   };
@@ -87,7 +89,8 @@ export const VideoPlayerWithDetector = ({ stream, id, webrtc }: Props) => {
     <div>
       <div data-color-name={color}>{color}</div>
       <div>
-        Decoded frames: <span data-decoded-frames={decodedFrames}>{decodedFrames}</span>
+        Decoded frames:{' '}
+        <span data-decoded-frames={decodedFrames}>{decodedFrames}</span>
       </div>
       <video
         id={id}

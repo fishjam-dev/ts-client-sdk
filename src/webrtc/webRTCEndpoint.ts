@@ -386,7 +386,11 @@ export interface WebRTCEndpointEvents<EndpointMetadata, TrackMetadata> {
 
   localTrackRemoved: (event: { trackId: string }) => void;
 
-  localTrackReplaced: (event: { trackId: string; track: MediaStreamTrack | null; metadata?: TrackMetadata }) => void;
+  localTrackReplaced: (event: {
+    trackId: string;
+    track: MediaStreamTrack | null;
+    metadata?: TrackMetadata;
+  }) => void;
 
   localTrackMuted: (event: { trackId: string }) => void;
 
@@ -452,7 +456,10 @@ export class WebRTCEndpoint<
     tracks: new Map(),
   };
   // todo this is remote trackId
-  private localTrackIdToTrack: Map<RemoteTrackId, TrackContextImpl<EndpointMetadata, TrackMetadata>> = new Map();
+  private localTrackIdToTrack: Map<
+    RemoteTrackId,
+    TrackContextImpl<EndpointMetadata, TrackMetadata>
+  > = new Map();
   private trackIdToSth: Map<
     RemoteTrackId,
     {
@@ -1125,8 +1132,12 @@ export class WebRTCEndpoint<
         );
     }
 
-    this.trackIdToSth.set(trackId, { remoteTrackId: trackId, localTrackId: track.id, sender: null });
-    const mediaEvent = generateCustomEvent({ type: "renegotiateTracks" });
+    this.trackIdToSth.set(trackId, {
+      remoteTrackId: trackId,
+      localTrackId: track.id,
+      sender: null,
+    });
+    const mediaEvent = generateCustomEvent({ type: 'renegotiateTracks' });
     this.sendMediaEvent(mediaEvent);
   }
 
@@ -1348,7 +1359,7 @@ export class WebRTCEndpoint<
     const sender: RTCRtpSender | null = track?.sender ?? null;
 
     if (!track) throw Error(`There is no track with id: ${trackId}`);
-    if (!sender) throw Error("There is no RTCRtpSender for this track id!");
+    if (!sender) throw Error('There is no RTCRtpSender for this track id!');
 
     this.ongoingTrackReplacement = true;
 
@@ -1361,13 +1372,15 @@ export class WebRTCEndpoint<
     }
 
     if (trackContext.track && !newTrack) {
-      const mediaEvent = generateMediaEvent("muteTrack", { trackId: trackId });
+      const mediaEvent = generateMediaEvent('muteTrack', { trackId: trackId });
       this.sendMediaEvent(mediaEvent);
-      this.emit("localTrackMuted", { trackId: trackId });
+      this.emit('localTrackMuted', { trackId: trackId });
     } else if (!trackContext.track && newTrack) {
-      const mediaEvent = generateMediaEvent("unmuteTrack", { trackId: trackId });
+      const mediaEvent = generateMediaEvent('unmuteTrack', {
+        trackId: trackId,
+      });
       this.sendMediaEvent(mediaEvent);
-      this.emit("localTrackUnmuted", { trackId: trackId });
+      this.emit('localTrackUnmuted', { trackId: trackId });
     }
 
     trackContext.track = newTrack;
