@@ -12,7 +12,7 @@ import {
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { MockComponent } from './MockComponent';
 import { VideoPlayerWithDetector } from './VideoPlayerWithDetector';
-import { PeerMessage } from "../../../src/protos/fishjam/peer_notifications";
+import { PeerMessage } from '../../../src/protos/fishjam/peer_notifications';
 
 /* eslint-disable no-console */
 
@@ -217,12 +217,7 @@ async function addScreenshareTrack(): Promise<string> {
   };
   const maxBandwidth: BandwidthLimit = 0;
 
-  return webrtc.addTrack(
-    track,
-    trackMetadata,
-    simulcastConfig,
-    maxBandwidth,
-  );
+  return webrtc.addTrack(track, trackMetadata, simulcastConfig, maxBandwidth);
 }
 
 export function App() {

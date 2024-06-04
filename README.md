@@ -111,9 +111,7 @@ async function startScreenSharing(webrtc: WebRTCEndpoint) {
   // Add local MediaStream to webrtc
   screenStream
     .getTracks()
-    .forEach((track) =>
-      webrtc.addTrack(track, { type: 'screen' }),
-    );
+    .forEach((track) => webrtc.addTrack(track, { type: 'screen' }));
 }
 ```
 

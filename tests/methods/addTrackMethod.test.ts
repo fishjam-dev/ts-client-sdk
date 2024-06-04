@@ -1,8 +1,5 @@
 import { WebRTCEndpoint } from '../../src';
-import {
-  createConnectedEventWithOneEndpoint,
-  mockTrack,
-} from '../fixtures';
+import { createConnectedEventWithOneEndpoint, mockTrack } from '../fixtures';
 import { mockRTCPeerConnection } from '../mocks';
 import { deserializeMediaEvent } from '../../src/webrtc/mediaEvent';
 import { expect, it } from 'vitest';
@@ -59,9 +56,9 @@ it('Adding track before being accepted by the server throws error', async () => 
   const webRTCEndpoint = new WebRTCEndpoint();
 
   // When
-  await expect(() =>
-    webRTCEndpoint.addTrack(mockTrack),
-  ).rejects.toThrow('Cannot add tracks before being accepted by the server');
+  await expect(() => webRTCEndpoint.addTrack(mockTrack)).rejects.toThrow(
+    'Cannot add tracks before being accepted by the server',
+  );
 });
 
 it('Adding track with invalid metadata throws error', async () => {
