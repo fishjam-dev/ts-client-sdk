@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getPixel, Pixel } from './mocks';
+import { WebRTCEndpoint } from "@fishjam-dev/ts-client";
 
 type Props = {
   stream?: MediaStream;

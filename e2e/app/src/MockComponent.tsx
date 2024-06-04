@@ -7,11 +7,12 @@ import {
   SimulcastConfig,
   WebRTCEndpoint,
 } from '@fishjam-dev/ts-client';
+import { MuteTrackTest } from "./MuteTrackTest";
 
-const brainMock = createStream('🧠', 'white', 'low', 24);
-const brain2Mock = createStream('🤯', '#00ff00', 'low', 24);
-const heartMock = createStream('🫀', 'white', 'low', 24);
-const heart2Mock = createStream('💝', '#FF0000', 'low', 24);
+export const brainMock = createStream('🧠', 'white', 'low', 24);
+export const brain2Mock = createStream('🤯', '#00ff00', 'low', 24);
+export const heartMock = createStream('🫀', 'white', 'low', 24);
+export const heart2Mock = createStream('💝', '#FF0000', 'low', 24);
 
 type Props = {
   webrtc: WebRTCEndpoint<EndpointMetadata, TrackMetadata>;
@@ -148,6 +149,8 @@ export const MockComponent = ({ webrtc }: Props) => {
       <button onClick={addBoth}>Add both</button>
       <button onClick={addAndReplaceHeart}>Add and replace a heart</button>
       <button onClick={addAndRemoveHeart}>Add and remove a heart</button>
+
+      <MuteTrackTest webrtc={webrtc}/>
     </div>
   );
 };
