@@ -541,7 +541,7 @@ export class WebRTCEndpoint<
    * webrtcChannel.on("mediaEvent", (event) => webrtc.receiveMediaEvent(event.data));
    * ```
    */
-  public receiveMediaEvent = (mediaEvent: SerializedMediaEvent) => {
+  public async receiveMediaEvent(mediaEvent: SerializedMediaEvent) {
     const deserializedMediaEvent = deserializeMediaEvent(mediaEvent);
     switch (deserializedMediaEvent.type) {
       case 'connected': {
@@ -594,9 +594,9 @@ export class WebRTCEndpoint<
       }
       default:
         if (this.localEndpoint.id != null)
-          this.handleMediaEvent(deserializedMediaEvent);
+          await this.handleMediaEvent(deserializedMediaEvent);
     }
-  };
+  }
 
   /**
    * Retrieves statistics related to the RTCPeerConnection.
@@ -892,7 +892,7 @@ export class WebRTCEndpoint<
         break;
       }
       case 'custom':
-        this.handleMediaEvent(deserializedMediaEvent.data as MediaEvent);
+        await this.handleMediaEvent(deserializedMediaEvent.data as MediaEvent);
         break;
 
       case 'error':
