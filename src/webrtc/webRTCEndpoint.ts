@@ -541,7 +541,7 @@ export class WebRTCEndpoint<
    * webrtcChannel.on("mediaEvent", (event) => webrtc.receiveMediaEvent(event.data));
    * ```
    */
-  public async receiveMediaEvent(mediaEvent: SerializedMediaEvent) {
+  public receiveMediaEvent = (mediaEvent: SerializedMediaEvent) => {
     const deserializedMediaEvent = deserializeMediaEvent(mediaEvent);
     switch (deserializedMediaEvent.type) {
       case 'connected': {
@@ -594,9 +594,9 @@ export class WebRTCEndpoint<
       }
       default:
         if (this.localEndpoint.id != null)
-          await this.handleMediaEvent(deserializedMediaEvent);
+          this.handleMediaEvent(deserializedMediaEvent);
     }
-  }
+  };
 
   /**
    * Retrieves statistics related to the RTCPeerConnection.
@@ -646,7 +646,7 @@ export class WebRTCEndpoint<
     return this.bandwidthEstimation;
   }
 
-  private handleMediaEvent = async (deserializedMediaEvent: MediaEvent) => {
+  private handleMediaEvent = (deserializedMediaEvent: MediaEvent) => {
     let endpoint: Endpoint<EndpointMetadata, TrackMetadata>;
     let data;
     switch (deserializedMediaEvent.type) {
@@ -729,7 +729,7 @@ export class WebRTCEndpoint<
           }
         }
 
-        await this.onAnswer(deserializedMediaEvent.data);
+        this.onAnswer(deserializedMediaEvent.data);
 
         this.ongoingRenegotiation = false;
         this.processNextCommand();
@@ -892,7 +892,7 @@ export class WebRTCEndpoint<
         break;
       }
       case 'custom':
-        await this.handleMediaEvent(deserializedMediaEvent.data as MediaEvent);
+        this.handleMediaEvent(deserializedMediaEvent.data as MediaEvent);
         break;
 
       case 'error':
@@ -974,7 +974,7 @@ export class WebRTCEndpoint<
    *  .forEach((track) => webrtc.addTrack(track, localStream));
    * ```
    */
-  public async addTrack(
+  public addTrack(
     track: MediaStreamTrack,
     trackMetadata?: TrackMetadata,
     simulcastConfig: SimulcastConfig = {
@@ -1008,16 +1008,18 @@ export class WebRTCEndpoint<
     } catch (error) {
       resolutionNotifier.reject(error);
     }
-    await resolutionNotifier.promise;
-    this.emit('localTrackAdded', {
-      trackId,
-      track,
-      stream,
-      trackMetadata: metadata,
-      simulcastConfig,
-      maxBandwidth,
+
+    return resolutionNotifier.promise.then(() => {
+      this.emit('localTrackAdded', {
+        trackId,
+        track,
+        stream,
+        trackMetadata: metadata,
+        simulcastConfig,
+        maxBandwidth,
+      });
+      return trackId;
     });
-    return trackId;
   }
 
   private pushCommand(command: Command<TrackMetadata>) {

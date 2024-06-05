@@ -147,7 +147,5 @@ it(`Updating track with invalid endpoint id throws error`, () => {
 
   expect(() => webRTCEndpoint.receiveMediaEvent(JSON.stringify(trackUpdated)))
     // Then
-    .rejects.toThrow(
-      `Endpoint with id: ${notExistingEndpointId} doesn't exist`,
-    );
+    .toThrow(`Endpoint with id: ${notExistingEndpointId} doesn't exist`);
 });

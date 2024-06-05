@@ -53,7 +53,7 @@ it('Changing track encoding when endpoint exist but track does not exist', () =>
     webRTCEndpoint.receiveMediaEvent(JSON.stringify(encodingUpdatedEvent)),
   )
     // todo change this error in production code
-    .rejects.toThrow("Cannot set properties of undefined (setting 'encoding')");
+    .toThrow("Cannot set properties of undefined (setting 'encoding')");
 });
 
 it('Changing track encoding when endpoint does not exist but track exist in other endpoint', () => {

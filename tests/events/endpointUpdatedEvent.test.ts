@@ -93,7 +93,7 @@ it('Update endpoint that not exist', () => {
     ),
   )
     // todo change this error in production code
-    .rejects.toThrow("Cannot set properties of undefined (setting 'metadata')");
+    .toThrow("Cannot set properties of undefined (setting 'metadata')");
 });
 
 it('Parse metadata on endpoint update', () => {
