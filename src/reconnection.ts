@@ -61,14 +61,18 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     this.connect = connect;
     this.reconnectConfig = createReconnectConfig(config);
 
-    this.client.on('socketError', () => {
-      this.reconnect();
+    this.client.on('socketError', (event) => {
+      this.reconnect(event);
+    });
+
+    this.client.on('connectionError', (error) => {
+      this.reconnect(error);
     });
 
     this.client.on('socketClose', (event) => {
       if (isAuthError(event.reason)) return;
 
-      this.reconnect();
+      this.reconnect(event);
     });
 
     this.client.on('authSuccess', () => {
@@ -76,7 +80,22 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     });
 
     this.client.on('joined', () => {
+      console.log('Reconnect joined listener');
       this.handleReconnect();
+    });
+
+
+    const onOnline = () => {
+
+    }
+
+    console.log('Adding listeners');
+    window.addEventListener('online', () => {
+      console.log('Online :D');
+    });
+
+    window.addEventListener('offline', () => {
+      console.log('Offline :(');
     });
   }
 
@@ -91,12 +110,15 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     return this.lastLocalEndpoint?.metadata;
   }
 
-  private reconnect() {
+  private reconnect(reason: any) {
+    console.log({ name: 'reconnect attempt', reason });
+
     if (this.reconnectTimeoutId) return;
 
     if (this.reconnectAttempt >= this.reconnectConfig.maxAttempts) {
       if (!this.reconnectFailedNotificationSend) {
         this.reconnectFailedNotificationSend = true;
+        // todo send notification
       }
       return;
     }
