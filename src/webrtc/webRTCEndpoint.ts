@@ -1351,13 +1351,15 @@ export class WebRTCEndpoint<
     });
   }
 
-  private replaceTrackHandler(command: ReplaceTackCommand<TrackMetadata>) {
+  private async replaceTrackHandler(
+    command: ReplaceTackCommand<TrackMetadata>,
+  ) {
     const { trackId, newTrack, newTrackMetadata } = command;
 
     const trackContext = this.localTrackIdToTrack.get(trackId)!;
 
     const track = this.trackIdToSender.get(trackId);
-    const sender: RTCRtpSender | null = track?.sender ?? null;
+    const sender = track?.sender ?? null;
 
     if (!track) throw Error(`There is no track with id: ${trackId}`);
     if (!sender) throw Error('There is no RTCRtpSender for this track id!');
@@ -1388,20 +1390,20 @@ export class WebRTCEndpoint<
 
     track.localTrackId = newTrack?.id ?? null;
 
-    sender
-      .replaceTrack(newTrack)
-      .then(() => {
-        trackContext.track = newTrack;
+    try {
+      await sender.replaceTrack(newTrack);
+      trackContext.track = newTrack;
 
-        if (newTrackMetadata) {
-          this.updateTrackMetadata(trackId, newTrackMetadata);
-        }
-      })
-      .finally(() => {
-        this.resolvePreviousCommand();
-        this.ongoingTrackReplacement = false;
-        this.processNextCommand();
-      });
+      if (newTrackMetadata) {
+        this.updateTrackMetadata(trackId, newTrackMetadata);
+      }
+    } catch (error) {
+      // ignore
+    } finally {
+      this.resolvePreviousCommand();
+      this.ongoingTrackReplacement = false;
+      this.processNextCommand();
+    }
   }
 
   /**
