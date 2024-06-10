@@ -351,7 +351,6 @@ export class FishjamClient<
   private readonly peerMetadataParser: MetadataParser<PeerMetadata>;
   private readonly trackMetadataParser: MetadataParser<TrackMetadata>;
 
-
   constructor(config?: CreateConfig<PeerMetadata, TrackMetadata>) {
     super();
     this.peerMetadataParser =
@@ -1082,6 +1081,6 @@ export class FishjamClient<
   }
 
   public cleanup() {
-    this.reconnectManager.cleanup()
+    this.reconnectManager.cleanup();
   }
 }
