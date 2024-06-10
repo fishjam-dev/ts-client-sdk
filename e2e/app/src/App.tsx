@@ -9,7 +9,7 @@ import {
   BandwidthLimit,
   SimulcastConfig,
 } from '@fishjam-dev/ts-client';
-import { PeerMessage } from "@fishjam-dev/ts-client/protos";
+import { PeerMessage } from '@fishjam-dev/ts-client/protos';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { MockComponent } from './MockComponent';
 import { VideoPlayerWithDetector } from './VideoPlayerWithDetector';

@@ -12,7 +12,7 @@ import {
 } from './webrtc';
 import TypedEmitter from 'typed-emitter';
 import { EventEmitter } from 'events';
-import { PeerMessage } from './protos/fishjam/peer_notifications';
+import { PeerMessage } from './protos';
 import { ReconnectConfig, ReconnectManager } from './reconnection';
 import { AuthErrorReason, isAuthError } from './auth';
 
