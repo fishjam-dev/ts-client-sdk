@@ -38,7 +38,7 @@ export const MuteTrackTest = ({ webrtc }: Props) => {
       webrtc.removeListener('localTrackAdded', localTrackAdded);
       webrtc.removeListener('localTrackReplaced', localTrackReplaced);
     };
-  }, []);
+  }, [webrtc]);
 
   const addTrack = async (stream: MediaStream) => {
     const track = stream.getVideoTracks()[0];
