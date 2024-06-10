@@ -2021,19 +2021,6 @@ export class WebRTCEndpoint<
   };
 
   private onConnectionStateChange = (event: Event) => {
-    // @ts-ignore
-    console.log({
-      name: 'onConnectionStateChange',
-      // @ts-ignore
-      connectionState: event?.target?.connectionState,
-      // @ts-ignore
-      iceConnectionState: event?.target?.iceConnectionState,
-      // @ts-ignore
-      iceGatheringState: event?.target?.iceGatheringState,
-      // @ts-ignore
-      signalingState: event?.target?.signalingState,
-    });
-
     switch (this.connection?.connectionState) {
       case 'connected':
         this.processNextCommand();
@@ -2048,22 +2035,12 @@ export class WebRTCEndpoint<
   };
 
   private onIceConnectionStateChange = (event: Event) => {
-    // @ts-ignore
-    console.log({
-      name: 'onIceConnectionStateChange',
-      // @ts-ignore
-      connectionState: event?.target?.connectionState,
-      // @ts-ignore
-      iceConnectionState: event?.target?.iceConnectionState,
-      // @ts-ignore
-      iceGatheringState: event?.target?.iceGatheringState,
-      // @ts-ignore
-      signalingState: event?.target?.signalingState,
-    });
-
     switch (this.connection?.iceConnectionState) {
       case 'disconnected':
         console.warn('ICE connection: disconnected');
+        // Requesting renegotiation on ICE connection state failed fixes RTCPeerConnection
+        // when the user changes their WiFi network.
+        this.sendMediaEvent(generateCustomEvent({ type: 'renegotiateTracks' }));
         break;
       case 'failed':
         this.emit('connectionError', {
@@ -2078,18 +2055,6 @@ export class WebRTCEndpoint<
   };
 
   private onIceGatheringStateChange = (_event: any) => {
-    // @ts-ignore
-    console.log({
-      name: 'onIceGatheringStateChange',
-      // @ts-ignore
-      connectionState: event?.target?.connectionState,
-      // @ts-ignore
-      iceConnectionState: event?.target?.iceConnectionState,
-      // @ts-ignore
-      iceGatheringState: event?.target?.iceGatheringState,
-      // @ts-ignore
-      signalingState: event?.target?.signalingState,
-    });
     switch (this.connection?.iceGatheringState) {
       case 'complete':
         this.processNextCommand();
@@ -2098,19 +2063,6 @@ export class WebRTCEndpoint<
   };
 
   private onSignalingStateChange = (_event: any) => {
-    // @ts-ignore
-    console.log({
-      name: 'onSignalingStateChange',
-      // @ts-ignore
-      connectionState: event?.target?.connectionState,
-      // @ts-ignore
-      iceConnectionState: event?.target?.iceConnectionState,
-      // @ts-ignore
-      iceGatheringState: event?.target?.iceGatheringState,
-      // @ts-ignore
-      signalingState: event?.target?.signalingState,
-    });
-
     switch (this.connection?.signalingState) {
       case 'stable':
         this.processNextCommand();

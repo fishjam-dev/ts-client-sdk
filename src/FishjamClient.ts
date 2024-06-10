@@ -351,6 +351,7 @@ export class FishjamClient<
   private readonly peerMetadataParser: MetadataParser<PeerMetadata>;
   private readonly trackMetadataParser: MetadataParser<TrackMetadata>;
 
+
   constructor(config?: CreateConfig<PeerMetadata, TrackMetadata>) {
     super();
     this.peerMetadataParser =
@@ -388,7 +389,7 @@ export class FishjamClient<
   }
 
   private initConnection(peerMetadata: PeerMetadata): void {
-    console.log('Init connection');
+    // console.log('Init connection');
     if (this.status === 'initialized') {
       this.disconnect();
     }
@@ -1064,7 +1065,7 @@ export class FishjamClient<
    * ```
    */
   public disconnect() {
-    console.log('Cleaning up');
+    // console.log('Cleaning up');
 
     try {
       this.webrtc?.removeAllListeners();
@@ -1081,5 +1082,9 @@ export class FishjamClient<
     this.websocket = null;
     this.webrtc = null;
     this.emit('disconnected');
+  }
+
+  public cleanup() {
+    this.reconnectManager.cleanup()
   }
 }
