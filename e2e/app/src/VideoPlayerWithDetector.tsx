@@ -65,7 +65,7 @@ export const VideoPlayerWithDetector = ({ stream, id, webrtc }: Props) => {
   }, [stream]);
 
   useEffect(() => {
-    const id = setInterval(async () => {
+    const id = setInterval(() => {
       const videoElement = videoElementRef.current;
       if (!videoElement || videoElement.videoWidth === 0) return;
 

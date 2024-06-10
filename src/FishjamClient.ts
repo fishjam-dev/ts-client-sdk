@@ -389,7 +389,6 @@ export class FishjamClient<
   }
 
   private initConnection(peerMetadata: PeerMetadata): void {
-    // console.log('Init connection');
     if (this.status === 'initialized') {
       this.disconnect();
     }
@@ -1065,8 +1064,6 @@ export class FishjamClient<
    * ```
    */
   public disconnect() {
-    // console.log('Cleaning up');
-
     try {
       this.webrtc?.removeAllListeners();
       this.webrtc?.disconnect();
