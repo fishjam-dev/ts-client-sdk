@@ -166,6 +166,11 @@ export type TrackNegotiationStatus = 'awaiting' | 'offered' | 'done';
  */
 export type TrackEncoding = 'l' | 'm' | 'h';
 
+const trackEncodings = ['l', 'm', 'h'] as const;
+
+export const isTrackEncoding = (encoding: string): encoding is TrackEncoding =>
+  trackEncodings.includes(encoding as TrackEncoding);
+
 /**
  * Events emitted by the {@link WebRTCEndpoint} instance.
  */

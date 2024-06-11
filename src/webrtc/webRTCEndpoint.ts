@@ -9,11 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import EventEmitter from 'events';
 import TypedEmitter from 'typed-emitter';
-import {
-  defaultBitrates,
-  defaultSimulcastBitrates,
-  simulcastTransceiverConfig,
-} from './const';
+import { simulcastTransceiverConfig } from './const';
 import {
   AddTrackCommand,
   Command,
@@ -33,10 +29,10 @@ import {
   TrackEncoding,
   WebRTCEndpointEvents,
 } from './types';
-import { TrackContextImpl, EndpointInternal } from './internal';
+import { EndpointInternal, TrackContextImpl } from './internal';
 import { handleVadNotification } from './voiceActivityDetection';
 import { applyBandwidthLimitation } from './bandwidth';
-import { Bitrates } from './bitrate';
+import { getTrackBitrates, getTrackIdToTrackBitrates } from "./bitrate";
 
 /**
  * Main class that is responsible for connecting to the RTC Engine, sending and receiving media.
@@ -164,7 +160,9 @@ export class WebRTCEndpoint<
           TrackMetadata
         >[] = endpoints.map((endpoint) => {
           const tracks = this.mapMediaEventTracksToTrackContextImpl(
-            new Map<string, any>(Object.entries(endpoint.tracks)),
+            new Map<string, TrackContext<EndpointMetadata, TrackMetadata>>(
+              Object.entries(endpoint.tracks),
+            ),
             endpoint,
           );
 
@@ -989,7 +987,11 @@ export class WebRTCEndpoint<
           type: 'trackVariantBitrates',
           data: {
             trackId: trackId,
-            variantBitrates: this.getTrackBitrates(trackId),
+            variantBitrates: getTrackBitrates(
+              this.connection,
+              this.localTrackIdToTrack,
+              trackId,
+            ),
           },
         });
         this.sendMediaEvent(mediaEvent);
@@ -1043,7 +1045,11 @@ export class WebRTCEndpoint<
           type: 'trackVariantBitrates',
           data: {
             trackId: trackId,
-            variantBitrates: this.getTrackBitrates(trackId),
+            variantBitrates: getTrackBitrates(
+              this.connection,
+              this.localTrackIdToTrack,
+              trackId,
+            ),
           },
         });
         this.sendMediaEvent(mediaEvent);
@@ -1424,7 +1430,7 @@ export class WebRTCEndpoint<
         data: {
           sdpOffer: offer,
           trackIdToTrackMetadata: this.getTrackIdToMetadata(),
-          trackIdToTrackBitrates: this.getTrackIdToTrackBitrates(),
+          trackIdToTrackBitrates: getTrackIdToTrackBitrates(this.connection, this.localTrackIdToTrack, this.localEndpoint.tracks),
           midToTrackId: this.getMidToTrackId(),
         },
       });
@@ -1446,44 +1452,6 @@ export class WebRTCEndpoint<
       },
     );
     return trackIdToMetadata;
-  };
-
-  private getTrackBitrates = (trackId: string): Bitrates => {
-    const trackContext = this.localTrackIdToTrack.get(trackId);
-    if (!trackContext)
-      throw "Track with id ${trackId} not present in 'localTrackIdToTrack'";
-
-    const kind = trackContext.track?.kind as 'audio' | 'video' | undefined;
-    const sender = this.findSender(trackContext.track!.id);
-    const encodings = sender.getParameters().encodings;
-
-    if (encodings.length == 1 && !encodings[0].rid)
-      return encodings[0].maxBitrate || (kind ? defaultBitrates[kind] : 0);
-    else if (kind == 'audio')
-      throw 'Audio track cannot have multiple encodings';
-
-    const bitrates: Record<string, number> = {};
-
-    encodings
-      .filter((encoding) => encoding.rid)
-      .forEach((encoding) => {
-        const rid = encoding.rid! as TrackEncoding;
-        bitrates[rid] = encoding.maxBitrate || defaultSimulcastBitrates[rid];
-      });
-
-    return bitrates;
-  };
-
-  private getTrackIdToTrackBitrates = (): Record<string, Bitrates> => {
-    const trackIdToTrackBitrates: Record<string, Bitrates> = {};
-
-    Array.from(this.localEndpoint.tracks.entries()).forEach(
-      ([trackId, _trackEntry]) => {
-        trackIdToTrackBitrates[trackId] = this.getTrackBitrates(trackId);
-      },
-    );
-
-    return trackIdToTrackBitrates;
   };
 
   private checkIfTrackBelongToEndpoint = (
