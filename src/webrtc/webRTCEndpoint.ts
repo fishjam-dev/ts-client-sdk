@@ -36,6 +36,7 @@ import {
 import { TrackContextImpl, EndpointInternal } from './internal';
 import { handleVadNotification } from './voiceActivityDetection';
 import { applyBandwidthLimitation } from './bandwidth';
+import { Bitrates } from './bitrate';
 
 /**
  * Main class that is responsible for connecting to the RTC Engine, sending and receiving media.
@@ -1447,10 +1448,11 @@ export class WebRTCEndpoint<
     return trackIdToMetadata;
   };
 
-  private getTrackBitrates = (trackId: string) => {
+  private getTrackBitrates = (trackId: string): Bitrates => {
     const trackContext = this.localTrackIdToTrack.get(trackId);
     if (!trackContext)
       throw "Track with id ${trackId} not present in 'localTrackIdToTrack'";
+
     const kind = trackContext.track?.kind as 'audio' | 'video' | undefined;
     const sender = this.findSender(trackContext.track!.id);
     const encodings = sender.getParameters().encodings;
@@ -1460,7 +1462,7 @@ export class WebRTCEndpoint<
     else if (kind == 'audio')
       throw 'Audio track cannot have multiple encodings';
 
-    const bitrates = {} as any;
+    const bitrates: Record<string, number> = {};
 
     encodings
       .filter((encoding) => encoding.rid)
@@ -1472,8 +1474,8 @@ export class WebRTCEndpoint<
     return bitrates;
   };
 
-  private getTrackIdToTrackBitrates = () => {
-    const trackIdToTrackBitrates = {} as any;
+  private getTrackIdToTrackBitrates = (): Record<string, Bitrates> => {
+    const trackIdToTrackBitrates: Record<string, Bitrates> = {};
 
     Array.from(this.localEndpoint.tracks.entries()).forEach(
       ([trackId, _trackEntry]) => {
