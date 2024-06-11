@@ -24,7 +24,6 @@ import { Deferred } from './deferred';
 import {
   BandwidthLimit,
   Config,
-  isVadStatus,
   LocalTrackId,
   MetadataParser,
   RemoteTrackId,
@@ -36,6 +35,7 @@ import {
   WebRTCEndpointEvents,
 } from './types';
 import { TrackContextImpl, EndpointInternal } from './internal';
+import { handleVadNotification } from './voiceActivityDetection';
 
 /**
  * Main class that is responsible for connecting to the RTC Engine, sending and receiving media.
@@ -515,15 +515,7 @@ export class WebRTCEndpoint<
         break;
 
       case 'vadNotification': {
-        const trackId = deserializedMediaEvent.data.trackId;
-        const ctx = this.trackIdToTrack.get(trackId)!;
-        const vadStatus = deserializedMediaEvent.data.status;
-        if (isVadStatus(vadStatus)) {
-          ctx.vadStatus = vadStatus;
-          ctx.emit('voiceActivityChanged', ctx);
-        } else {
-          console.warn('Received unknown vad status: ', vadStatus);
-        }
+        handleVadNotification(deserializedMediaEvent, this.trackIdToTrack);
         break;
       }
 

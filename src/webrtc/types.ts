@@ -15,12 +15,6 @@ export type RemoteTrackId = string;
  */
 export type VadStatus = 'speech' | 'silence';
 
-const vadStatuses = ['speech', 'silence'] as const;
-
-export const isVadStatus = (status: string): status is VadStatus => {
-  return vadStatuses.includes(status as VadStatus);
-};
-
 /**
  * Type describing maximal bandwidth that can be used, in kbps. 0 is interpreted as unlimited bandwidth.
  */
