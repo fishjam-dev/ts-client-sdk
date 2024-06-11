@@ -27,7 +27,6 @@ import {
   LocalTrackId,
   MetadataParser,
   RemoteTrackId,
-  SimulcastBandwidthLimit,
   SimulcastConfig,
   TrackBandwidthLimit,
   TrackContext,
@@ -36,6 +35,7 @@ import {
 } from './types';
 import { TrackContextImpl, EndpointInternal } from './internal';
 import { handleVadNotification } from './voiceActivityDetection';
+import { applyBandwidthLimitation } from './bandwidth';
 
 /**
  * Main class that is responsible for connecting to the RTC Engine, sending and receiving media.
@@ -811,71 +811,12 @@ export class WebRTCEndpoint<
     }
 
     if (trackContext.maxBandwidth && transceiverConfig.sendEncodings)
-      this.applyBandwidthLimitation(
+      applyBandwidthLimitation(
         transceiverConfig.sendEncodings,
         trackContext.maxBandwidth,
       );
 
     return transceiverConfig;
-  }
-
-  private applyBandwidthLimitation(
-    encodings: RTCRtpEncodingParameters[],
-    max_bandwidth: TrackBandwidthLimit,
-  ) {
-    if (typeof max_bandwidth === 'number') {
-      // non-simulcast limitation
-      this.splitBandwidth(encodings, (max_bandwidth as number) * 1024);
-    } else {
-      // simulcast bandwidth limit
-      encodings
-        .filter((encoding) => encoding.rid)
-        .forEach((encoding) => {
-          const limit =
-            (max_bandwidth as SimulcastBandwidthLimit).get(
-              encoding.rid! as TrackEncoding,
-            ) || 0;
-
-          if (limit > 0) {
-            encoding.maxBitrate = limit * 1024;
-          } else delete encoding.maxBitrate;
-        });
-    }
-  }
-
-  private splitBandwidth(
-    encodings: RTCRtpEncodingParameters[],
-    bandwidth: number,
-  ) {
-    if (bandwidth === 0) {
-      encodings.forEach((encoding) => delete encoding.maxBitrate);
-      return;
-    }
-
-    if (encodings.length == 0) {
-      // This most likely is a race condition. Log an error and prevent catastrophic failure
-      console.error(
-        "Attempted to limit bandwidth of the track that doesn't have any encodings",
-      );
-      return;
-    }
-
-    // We are solving the following equation:
-    // x + (k0/k1)^2 * x + (k0/k2)^2 * x + ... + (k0/kn)^2 * x = bandwidth
-    // where x is the bitrate for the first encoding, kn are scaleResolutionDownBy factors
-    // square is dictated by the fact that k0/kn is a scale factor, but we are interested in the total number of pixels in the image
-    const firstScaleDownBy = encodings![0].scaleResolutionDownBy || 1;
-    const bitrate_parts = encodings.reduce(
-      (acc, value) =>
-        acc + (firstScaleDownBy / (value.scaleResolutionDownBy || 1)) ** 2,
-      0,
-    );
-    const x = bandwidth / bitrate_parts;
-
-    encodings.forEach((value) => {
-      value.maxBitrate =
-        x * (firstScaleDownBy / (value.scaleResolutionDownBy || 1)) ** 2;
-    });
   }
 
   /**
@@ -1037,7 +978,7 @@ export class WebRTCEndpoint<
     if (parameters.encodings.length === 0) {
       parameters.encodings = [{}];
     } else {
-      this.applyBandwidthLimitation(parameters.encodings, bandwidth);
+      applyBandwidthLimitation(parameters.encodings, bandwidth);
     }
 
     return sender
