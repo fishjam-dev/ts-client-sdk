@@ -24,6 +24,7 @@ import { Deferred } from './deferred';
 import {
   BandwidthLimit,
   Config,
+  isVadStatus,
   LocalTrackId,
   MetadataParser,
   RemoteTrackId,
@@ -32,7 +33,6 @@ import {
   TrackBandwidthLimit,
   TrackContext,
   TrackEncoding,
-  vadStatuses,
   WebRTCEndpointEvents,
 } from './types';
 import { TrackContextImpl, EndpointInternal } from './internal';
@@ -518,7 +518,7 @@ export class WebRTCEndpoint<
         const trackId = deserializedMediaEvent.data.trackId;
         const ctx = this.trackIdToTrack.get(trackId)!;
         const vadStatus = deserializedMediaEvent.data.status;
-        if (vadStatuses.includes(vadStatus)) {
+        if (isVadStatus(vadStatus)) {
           ctx.vadStatus = vadStatus;
           ctx.emit('voiceActivityChanged', ctx);
         } else {
