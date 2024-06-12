@@ -62,23 +62,23 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     this.connect = connect;
     this.reconnectConfig = createReconnectConfig(config);
 
-    const socketError: MessageEvents<
+    const onSocketError: MessageEvents<
       PeerMetadata,
       TrackMetadata
     >['socketError'] = () => {
       this.reconnect();
     };
-    this.client.on('socketError', socketError);
+    this.client.on('socketError', onSocketError);
 
-    const connectionError: MessageEvents<
+    const onConnectionError: MessageEvents<
       PeerMetadata,
       TrackMetadata
     >['connectionError'] = () => {
       this.reconnect();
     };
-    this.client.on('connectionError', connectionError);
+    this.client.on('connectionError', onConnectionError);
 
-    const socketClose: MessageEvents<
+    const onSocketClose: MessageEvents<
       PeerMetadata,
       TrackMetadata
     >['socketClose'] = (event) => {
@@ -86,27 +86,30 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
       this.reconnect();
     };
-    this.client.on('socketClose', socketClose);
+    this.client.on('socketClose', onSocketClose);
 
-    const authSuccess: MessageEvents<
+    const onAuthSuccess: MessageEvents<
       PeerMetadata,
       TrackMetadata
     >['authSuccess'] = () => {
       this.reset(this.initialMetadata!);
     };
-    this.client.on('authSuccess', authSuccess);
+    this.client.on('authSuccess', onAuthSuccess);
 
-    const joined: MessageEvents<PeerMetadata, TrackMetadata>['joined'] = () => {
+    const onJoined: MessageEvents<
+      PeerMetadata,
+      TrackMetadata
+    >['joined'] = () => {
       this.handleReconnect();
     };
-    this.client.on('joined', joined);
+    this.client.on('joined', onJoined);
 
     this.removeEventListeners = () => {
-      this.client.off('socketError', socketError);
-      this.client.off('connectionError', connectionError);
-      this.client.off('socketClose', socketClose);
-      this.client.off('authSuccess', authSuccess);
-      this.client.off('joined', joined);
+      this.client.off('socketError', onSocketError);
+      this.client.off('connectionError', onConnectionError);
+      this.client.off('socketClose', onSocketClose);
+      this.client.off('authSuccess', onAuthSuccess);
+      this.client.off('joined', onJoined);
     };
   }
 

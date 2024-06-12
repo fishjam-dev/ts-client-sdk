@@ -2046,7 +2046,7 @@ export class WebRTCEndpoint<
         break;
       case 'failed':
         this.emit('connectionError', {
-          message: 'Ice connection failed',
+          message: 'ICE connection failed',
           event,
         });
         break;
