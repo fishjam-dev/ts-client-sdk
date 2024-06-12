@@ -1303,8 +1303,8 @@ export class WebRTCEndpoint<
     }
   };
 
-  private getMidToTrackId = () => {
-    const localTrackMidToTrackId = {} as any;
+  private getMidToTrackId = (): Record<string, string> | null => {
+    const localTrackMidToTrackId: Record<string, string> = {};
 
     if (!this.connection) return null;
     this.connection.getTransceivers().forEach((transceiver) => {
@@ -1446,8 +1446,11 @@ export class WebRTCEndpoint<
     }
   }
 
-  private getTrackIdToMetadata = () => {
-    const trackIdToMetadata = {} as any;
+  private getTrackIdToMetadata = (): Record<
+    string,
+    TrackMetadata | undefined
+  > => {
+    const trackIdToMetadata: Record<string, TrackMetadata | undefined> = {};
     Array.from(this.localEndpoint.tracks.entries()).forEach(
       ([trackId, { metadata }]) => {
         trackIdToMetadata[trackId] = metadata;
