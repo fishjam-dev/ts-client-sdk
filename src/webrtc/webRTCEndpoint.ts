@@ -32,7 +32,11 @@ import {
 import { EndpointInternal, TrackContextImpl } from './internal';
 import { handleVadNotification } from './voiceActivityDetection';
 import { applyBandwidthLimitation } from './bandwidth';
-import { getTrackBitrates, getTrackIdToTrackBitrates } from "./bitrate";
+import {
+  createTrackVariantBitratesEvent,
+  getTrackBitrates,
+  getTrackIdToTrackBitrates,
+} from './bitrate';
 
 /**
  * Main class that is responsible for connecting to the RTC Engine, sending and receiving media.
@@ -983,17 +987,11 @@ export class WebRTCEndpoint<
     return sender
       .setParameters(parameters)
       .then(() => {
-        const mediaEvent = generateCustomEvent({
-          type: 'trackVariantBitrates',
-          data: {
-            trackId: trackId,
-            variantBitrates: getTrackBitrates(
-              this.connection,
-              this.localTrackIdToTrack,
-              trackId,
-            ),
-          },
-        });
+        const mediaEvent = createTrackVariantBitratesEvent(
+          trackId,
+          this.connection,
+          this.localTrackIdToTrack,
+        );
         this.sendMediaEvent(mediaEvent);
 
         this.emit('localTrackBandwidthSet', {
@@ -1430,7 +1428,11 @@ export class WebRTCEndpoint<
         data: {
           sdpOffer: offer,
           trackIdToTrackMetadata: this.getTrackIdToMetadata(),
-          trackIdToTrackBitrates: getTrackIdToTrackBitrates(this.connection, this.localTrackIdToTrack, this.localEndpoint.tracks),
+          trackIdToTrackBitrates: getTrackIdToTrackBitrates(
+            this.connection,
+            this.localTrackIdToTrack,
+            this.localEndpoint.tracks,
+          ),
           midToTrackId: this.getMidToTrackId(),
         },
       });

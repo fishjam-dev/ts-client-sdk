@@ -6,6 +6,7 @@ import {
 } from './types';
 import { TrackContextImpl } from './internal';
 import { findSender } from './peerConnectionUtils';
+import { generateCustomEvent } from './mediaEvent';
 
 export type Bitrate = number;
 export type Bitrates = Record<TrackEncoding, Bitrate> | Bitrate;
@@ -23,6 +24,30 @@ export const defaultSimulcastBitrates: {
   h: 2_500_000,
   m: 500_000,
   l: 150_000,
+};
+
+export const createTrackVariantBitratesEvent = <
+  EndpointMetadata,
+  TrackMetadata,
+>(
+  trackId: string,
+  connection: RTCPeerConnection | undefined,
+  localTrackIdToTrack: Map<
+    RemoteTrackId,
+    TrackContextImpl<EndpointMetadata, TrackMetadata>
+  >,
+) => {
+  return generateCustomEvent({
+    type: 'trackVariantBitrates',
+    data: {
+      trackId: trackId,
+      variantBitrates: getTrackBitrates(
+        connection,
+        localTrackIdToTrack,
+        trackId,
+      ),
+    },
+  });
 };
 
 export const getTrackIdToTrackBitrates = <EndpointMetadata, TrackMetadata>(
