@@ -615,7 +615,7 @@ export class FishjamClient<
     this.webrtc?.on(
       'trackReady',
       (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-        if (!isPeer(ctx.endpoint)) return;
+        // if (!isPeer(ctx.endpoint)) return;
 
         this.emit('trackReady', ctx);
       },
@@ -623,7 +623,7 @@ export class FishjamClient<
     this.webrtc?.on(
       'trackAdded',
       (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-        if (!isPeer(ctx.endpoint)) return;
+        // if (!isPeer(ctx.endpoint)) return;
 
         this.emit('trackAdded', ctx);
       },
@@ -631,7 +631,7 @@ export class FishjamClient<
     this.webrtc?.on(
       'trackRemoved',
       (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-        if (!isPeer(ctx.endpoint)) return;
+        // if (!isPeer(ctx.endpoint)) return;
 
         this.emit('trackRemoved', ctx);
         ctx.removeAllListeners();
@@ -640,7 +640,7 @@ export class FishjamClient<
     this.webrtc?.on(
       'trackUpdated',
       (ctx: TrackContext<PeerMetadata, TrackMetadata>) => {
-        if (!isPeer(ctx.endpoint)) return;
+        // if (!isPeer(ctx.endpoint)) return;
 
         this.emit('trackUpdated', ctx);
       },
