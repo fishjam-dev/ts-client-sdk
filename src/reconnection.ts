@@ -82,9 +82,9 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
       PeerMetadata,
       TrackMetadata
     >['socketClose'] = (event) => {
-      if (isAuthError(event.reason)) return;
-
-      this.reconnect();
+      // if (isAuthError(event.reason)) return;
+      //
+      // this.reconnect();
     };
     this.client.on('socketClose', onSocketClose);
 
@@ -104,12 +104,26 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     };
     this.client.on('joined', onJoined);
 
+    const onOffline = () => {
+      console.log("offline")
+    }
+
+    const onOnline = () => {
+      console.log("online")
+    }
+
+    window.addEventListener("offline", onOffline);
+    window.addEventListener("online", onOnline);
+
+
     this.removeEventListeners = () => {
       this.client.off('socketError', onSocketError);
       this.client.off('connectionError', onConnectionError);
       this.client.off('socketClose', onSocketClose);
       this.client.off('authSuccess', onAuthSuccess);
       this.client.off('joined', onJoined);
+      window.removeEventListener("offline", onOffline)
+      window.removeEventListener("online", onOnline)
     };
   }
 
@@ -148,6 +162,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
 
+      console.log("Start reconnecting")
       this.connect(this.getLastPeerMetadata() ?? this.initialMetadata!);
     }, timeout);
   }

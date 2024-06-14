@@ -15,6 +15,7 @@ import { EventEmitter } from 'events';
 import { PeerMessage } from './protos';
 import { ReconnectConfig, ReconnectManager } from './reconnection';
 import { AuthErrorReason, isAuthError } from './auth';
+import { Deferred } from './webrtc/deferred';
 
 export type Peer<PeerMetadata, TrackMetadata> = Endpoint<
   PeerMetadata,
@@ -387,10 +388,13 @@ export class FishjamClient<
     this.initConnection(config.peerMetadata);
   }
 
-  private initConnection(peerMetadata: PeerMetadata): void {
+  private async initConnection(peerMetadata: PeerMetadata): Promise<void> {
+    console.log("fn-initConnection")
     if (this.status === 'initialized') {
-      this.disconnect();
+      console.log("fn-initConnection-disconnect")
+      await this.disconnect();
     }
+    console.log("fn-initConnection-after if")
 
     this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
       endpointMetadataParser: this.peerMetadataParser,
@@ -429,7 +433,9 @@ export class FishjamClient<
     };
 
     const socketCloseHandler = (event: CloseEvent) => {
+      console.log("Socket close handler")
       if (isAuthError(event.reason)) {
+        console.log("emit auth error - authError")
         this.emit('authError', event.reason);
       }
 
@@ -1062,7 +1068,8 @@ export class FishjamClient<
    * client.disconnect();
    * ```
    */
-  public disconnect() {
+  public async disconnect() {
+    console.log("fn-disconnect")
     try {
       this.webrtc?.removeAllListeners();
       this.webrtc?.disconnect();
@@ -1073,8 +1080,25 @@ export class FishjamClient<
     this.removeEventListeners?.();
     this.removeEventListeners = null;
     if (this.isOpen(this.websocket || null)) {
+      const closePromise = new Deferred<void>();
+
+      const onClose = () => {
+        console.log("onClose in Resolving close Deferred")
+
+        setTimeout(() => {
+          console.log("Resolve after timeout")
+          closePromise.resolve()
+        }, 1000)
+      }
+      this.websocket?.addEventListener("close", onClose)
+
+      console.log("closing websocket")
       this.websocket?.close();
+
+      await closePromise
+      this.websocket?.removeEventListener("close", onClose)
     }
+    console.log({socket: this.websocket})
     this.websocket = null;
     this.webrtc = null;
     this.emit('disconnected');
