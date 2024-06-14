@@ -514,6 +514,12 @@ export class WebRTCEndpoint<
    * webrtc.connect({displayName: "Bob"});
    * ```
    */
+
+  /*
+   * 1. połączenie websocketa
+   * 2. wysłanie tokena
+   * 3.
+   */
   public connect = (metadata: EndpointMetadata): void => {
     try {
       this.localEndpoint.metadata = this.endpointMetadataParser(metadata);
@@ -1788,6 +1794,13 @@ export class WebRTCEndpoint<
     this.sendMediaEvent(mediaEvent);
     this.emit('disconnectRequested', {});
     this.cleanUp();
+  };
+
+  public emitDisconnectEvent = () => {
+    console.log("Disconnect event")
+    const mediaEvent = generateMediaEvent('disconnect');
+    this.sendMediaEvent(mediaEvent);
+    this.emit('disconnectRequested', {});
   };
 
   /**

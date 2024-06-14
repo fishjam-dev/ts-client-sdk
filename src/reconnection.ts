@@ -84,7 +84,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     >['socketClose'] = (event) => {
       // if (isAuthError(event.reason)) return;
       //
-      // this.reconnect();
+      this.reconnect();
     };
     this.client.on('socketClose', onSocketClose);
 
