@@ -1068,6 +1068,8 @@ export class FishjamClient<
    * client.disconnect();
    * ```
    */
+  // notes:
+  //   waiting for websocket close is a waste of time, it takes ages to be sure that websocket is closed
   public async disconnect() {
     console.log('fn-disconnect');
     try {
@@ -1080,23 +1082,9 @@ export class FishjamClient<
     this.removeEventListeners?.();
     this.removeEventListeners = null;
     if (this.isOpen(this.websocket || null)) {
-      const closePromise = new Deferred<void>();
-
-      const onClose = () => {
-        console.log('onClose in Resolving close Deferred');
-
-        closePromise.resolve();
-      };
-
       this.webrtc?.emitDisconnectEvent();
-
-      this.websocket?.addEventListener('close', onClose);
-
       console.log('closing websocket');
       this.websocket?.close();
-
-      await closePromise.promise;
-      this.websocket?.removeEventListener('close', onClose);
     }
     console.log({ socket: this.websocket });
     this.websocket = null;

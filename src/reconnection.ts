@@ -127,6 +127,10 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     };
   }
 
+  public getOngoingReconnectionStatus() {
+    return this.ongoingReconnection
+  }
+
   public reset(initialMetadata: PeerMetadata) {
     this.initialMetadata = initialMetadata;
     this.reconnectAttempt = 0;
@@ -185,6 +189,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
     this.lastLocalEndpoint = null;
     this.ongoingReconnection = false;
+    console.log("ReconnectManager-Reconnected!")
   }
 
   public cleanup() {
