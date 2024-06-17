@@ -87,7 +87,10 @@ export const getTrackBitrates = <EndpointMetadata, TrackMetadata>(
   const encodings = sender.getParameters().encodings;
 
   if (encodings.length == 1 && !encodings[0].rid)
-    return encodings[0].maxBitrate || (kind ? defaultBitrates[kind] : UNLIMITED_BANDWIDTH);
+    return (
+      encodings[0].maxBitrate ||
+      (kind ? defaultBitrates[kind] : UNLIMITED_BANDWIDTH)
+    );
   else if (kind == 'audio') throw 'Audio track cannot have multiple encodings';
 
   const bitrates: Record<string, Bitrate> = {};
