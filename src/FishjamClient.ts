@@ -564,7 +564,7 @@ export class FishjamClient<
 
     this.webrtc?.on(
       'connected',
-      (
+      async (
         peerId: string,
         endpointsInRoom: Endpoint<PeerMetadata, TrackMetadata>[],
       ) => {
@@ -577,6 +577,8 @@ export class FishjamClient<
           .map(
             (component) => component as Component<PeerMetadata, TrackMetadata>,
           );
+
+        await this.reconnectManager.handleReconnect()
 
         this.emit('joined', peerId, peers, components);
       },
@@ -1038,6 +1040,10 @@ export class FishjamClient<
 
     this.webrtc.updateTrackMetadata(trackId, trackMetadata);
   };
+
+  public isReconnecting() {
+    return this.reconnectManager.getOngoingReconnectionStatus()
+  }
 
   /**
    * Leaves the room. This function should be called when user leaves the room in a clean way e.g. by clicking a
