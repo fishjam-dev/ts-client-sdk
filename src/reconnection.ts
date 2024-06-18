@@ -147,6 +147,8 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     if (this.reconnectAttempt >= this.reconnectConfig.maxAttempts) {
       if (!this.reconnectFailedNotificationSend) {
         this.reconnectFailedNotificationSend = true;
+
+        this.client.emit("reconnectionFailed")
       }
       return;
     }
@@ -165,31 +167,32 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
 
-      console.log('Start reconnecting');
+      // console.log('Start reconnecting');
       this.connect(this.getLastPeerMetadata() ?? this.initialMetadata!);
     }, timeout);
   }
 
   public async handleReconnect() {
     const xxx = Math.random();
-    console.log(`Handle successful reconnect ${xxx}`);
+    console.log(`handleReconnect ${xxx}`);
     if (!this.ongoingReconnection) return;
+    console.log(`Real reconnect handler ${xxx}`);
 
     if (this.lastLocalEndpoint && this.reconnectConfig.addTracksOnReconnect) {
       for await (const element of this.lastLocalEndpoint.tracks) {
         const [_, track] = element;
-        console.log({
-          name: 'Analising track ' + xxx,
-          trackId: track?.track?.id,
-          kind: track.track?.kind,
-        });
+        // console.log({
+        //   name: 'Analising track ' + xxx,
+        //   trackId: track?.track?.id,
+        //   kind: track.track?.kind,
+        // });
         if (!track.track || track.track.readyState !== 'live') return;
 
-        console.log({
-          name: 'Adding track ' + xxx,
-          trackId: track?.track?.id,
-          kind: track.track?.kind,
-        });
+        // console.log({
+        //   name: 'Adding track ' + xxx,
+        //   trackId: track?.track?.id,
+        //   kind: track.track?.kind,
+        // });
 
         await this.client.addTrack(
           track.track,
@@ -197,17 +200,18 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
           track.simulcastConfig,
           track.maxBandwidth,
         );
-        console.log({
-          name: 'Track added' + xxx,
-          trackId: track?.track?.id,
-          kind: track.track?.kind,
-        });
+        // console.log({
+        //   name: 'Track added' + xxx,
+        //   trackId: track?.track?.id,
+        //   kind: track.track?.kind,
+        // });
       }
     }
 
     this.lastLocalEndpoint = null;
     this.ongoingReconnection = false;
     console.log('ReconnectManager-Reconnected!' + xxx);
+    this.client.emit("reconnected")
   }
 
   public cleanup() {

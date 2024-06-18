@@ -75,6 +75,12 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
   /** Emitted when the connection is closed */
   disconnected: () => void;
 
+  /** Emitted when on successful reconnection */
+  reconnected: () => void;
+
+  /** Emitted when the maximum number of reconnection retries has been reached */
+  reconnectionFailed: () => void;
+
   /**
    * Called when peer was accepted.
    */
@@ -389,12 +395,12 @@ export class FishjamClient<
   }
 
   private async initConnection(peerMetadata: PeerMetadata): Promise<void> {
-    console.log('fn-initConnection');
+    // console.log('fn-initConnection');
     if (this.status === 'initialized') {
-      console.log('fn-initConnection-disconnect');
+      // console.log('fn-initConnection-disconnect');
       await this.disconnect();
     }
-    console.log('fn-initConnection-after if');
+    // console.log('fn-initConnection-after if');
 
     this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
       endpointMetadataParser: this.peerMetadataParser,
@@ -1089,10 +1095,10 @@ export class FishjamClient<
     this.removeEventListeners = null;
     if (this.isOpen(this.websocket || null)) {
       this.webrtc?.emitDisconnectEvent();
-      console.log('closing websocket');
+      // console.log('closing websocket');
       this.websocket?.close();
     }
-    console.log({ socket: this.websocket });
+    // console.log({ socket: this.websocket });
     this.websocket = null;
     this.webrtc = null;
     this.emit('disconnected');
