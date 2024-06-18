@@ -8,7 +8,10 @@ const isVadStatus = (status: string): status is VadStatus => {
   return vadStatuses.includes(status as VadStatus);
 };
 
-export const handleVadNotification = <EndpointMetadata, TrackMetadata>(
+export const handleVoiceActivationDetectionNotification = <
+  EndpointMetadata,
+  TrackMetadata,
+>(
   deserializedMediaEvent: MediaEvent,
   trackIdToTrack: Map<
     string,

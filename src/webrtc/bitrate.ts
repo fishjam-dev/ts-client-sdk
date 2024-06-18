@@ -5,12 +5,13 @@ import {
   TrackEncoding,
 } from './types';
 import { TrackContextImpl } from './internal';
-import { findSender } from './peerConnectionUtils';
+import { findSender } from './RTCPeerConnectionUtils';
 import { generateCustomEvent } from './mediaEvent';
 
 export type Bitrate = number;
 export type Bitrates = Record<TrackEncoding, Bitrate> | Bitrate;
 
+// The suggested bitrate values are based on our internal tests.
 export const defaultBitrates = {
   audio: 50_000 as Bitrate,
   video: 2_500_000 as Bitrate,
@@ -18,6 +19,7 @@ export const defaultBitrates = {
 
 export const UNLIMITED_BANDWIDTH: Bitrate = 0 as Bitrate;
 
+// The suggested bitrate values are based on our internal tests.
 export const defaultSimulcastBitrates: {
   [key in TrackEncoding]: BandwidthLimit;
 } = {

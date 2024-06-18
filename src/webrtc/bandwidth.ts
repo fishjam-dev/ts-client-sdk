@@ -6,18 +6,18 @@ import {
 
 export const applyBandwidthLimitation = (
   encodings: RTCRtpEncodingParameters[],
-  max_bandwidth: TrackBandwidthLimit,
+  maxBandwidth: TrackBandwidthLimit,
 ) => {
-  if (typeof max_bandwidth === 'number') {
+  if (typeof maxBandwidth === 'number') {
     // non-simulcast limitation
-    splitBandwidth(encodings, (max_bandwidth as number) * 1024);
+    splitBandwidth(encodings, (maxBandwidth as number) * 1024);
   } else {
     // simulcast bandwidth limit
     encodings
       .filter((encoding) => encoding.rid)
       .forEach((encoding) => {
         const limit =
-          (max_bandwidth as SimulcastBandwidthLimit).get(
+          (maxBandwidth as SimulcastBandwidthLimit).get(
             encoding.rid! as TrackEncoding,
           ) || 0;
 

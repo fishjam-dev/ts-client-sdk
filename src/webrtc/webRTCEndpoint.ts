@@ -29,8 +29,8 @@ import {
   TrackEncoding,
   WebRTCEndpointEvents,
 } from './types';
-import { EndpointInternal, TrackContextImpl } from './internal';
-import { handleVadNotification } from './voiceActivityDetection';
+import { EndpointWithTrackContext, TrackContextImpl } from './internal';
+import { handleVoiceActivationDetectionNotification } from './voiceActivityDetection';
 import { applyBandwidthLimitation } from './bandwidth';
 import {
   createTrackVariantBitratesEvent,
@@ -56,9 +56,12 @@ export class WebRTCEndpoint<
   private connection?: RTCPeerConnection;
   private idToEndpoint: Map<
     string,
-    EndpointInternal<EndpointMetadata, TrackMetadata>
+    EndpointWithTrackContext<EndpointMetadata, TrackMetadata>
   > = new Map();
-  private localEndpoint: EndpointInternal<EndpointMetadata, TrackMetadata> = {
+  private localEndpoint: EndpointWithTrackContext<
+    EndpointMetadata,
+    TrackMetadata
+  > = {
     id: '',
     type: 'webrtc',
     metadata: undefined,
@@ -159,7 +162,7 @@ export class WebRTCEndpoint<
 
         const endpoints: any[] = deserializedMediaEvent.data.otherEndpoints;
 
-        const otherEndpoints: EndpointInternal<
+        const otherEndpoints: EndpointWithTrackContext<
           EndpointMetadata,
           TrackMetadata
         >[] = endpoints.map((endpoint) => {
@@ -178,7 +181,10 @@ export class WebRTCEndpoint<
               rawMetadata: endpoint.metadata,
               metadataParsingError: undefined,
               tracks,
-            } satisfies EndpointInternal<EndpointMetadata, TrackMetadata>;
+            } satisfies EndpointWithTrackContext<
+              EndpointMetadata,
+              TrackMetadata
+            >;
           } catch (error) {
             return {
               id: endpoint.id,
@@ -187,7 +193,10 @@ export class WebRTCEndpoint<
               rawMetadata: endpoint.metadata,
               metadataParsingError: error,
               tracks,
-            } satisfies EndpointInternal<EndpointMetadata, TrackMetadata>;
+            } satisfies EndpointWithTrackContext<
+              EndpointMetadata,
+              TrackMetadata
+            >;
           }
         });
 
@@ -247,12 +256,15 @@ export class WebRTCEndpoint<
    */
   public getRemoteEndpoints(): Record<
     string,
-    EndpointInternal<EndpointMetadata, TrackMetadata>
+    EndpointWithTrackContext<EndpointMetadata, TrackMetadata>
   > {
     return Object.fromEntries(this.idToEndpoint.entries());
   }
 
-  public getLocalEndpoint(): EndpointInternal<EndpointMetadata, TrackMetadata> {
+  public getLocalEndpoint(): EndpointWithTrackContext<
+    EndpointMetadata,
+    TrackMetadata
+  > {
     return this.localEndpoint;
   }
 
@@ -261,7 +273,7 @@ export class WebRTCEndpoint<
   }
 
   private handleMediaEvent = (deserializedMediaEvent: MediaEvent) => {
-    let endpoint: EndpointInternal<EndpointMetadata, TrackMetadata>;
+    let endpoint: EndpointWithTrackContext<EndpointMetadata, TrackMetadata>;
     let data;
     switch (deserializedMediaEvent.type) {
       case 'offerData': {
@@ -518,7 +530,10 @@ export class WebRTCEndpoint<
         break;
 
       case 'vadNotification': {
-        handleVadNotification(deserializedMediaEvent, this.trackIdToTrack);
+        handleVoiceActivationDetectionNotification(
+          deserializedMediaEvent,
+          this.trackIdToTrack,
+        );
         break;
       }
 
@@ -1461,7 +1476,7 @@ export class WebRTCEndpoint<
 
   private checkIfTrackBelongToEndpoint = (
     trackId: string,
-    endpoint: EndpointInternal<EndpointMetadata, TrackMetadata>,
+    endpoint: EndpointWithTrackContext<EndpointMetadata, TrackMetadata>,
   ) =>
     Array.from(endpoint.tracks.keys()).some((track) =>
       trackId.startsWith(track),
@@ -1637,7 +1652,7 @@ export class WebRTCEndpoint<
   };
 
   private addEndpoint = (
-    endpoint: EndpointInternal<EndpointMetadata, TrackMetadata>,
+    endpoint: EndpointWithTrackContext<EndpointMetadata, TrackMetadata>,
   ): void => {
     // #TODO remove this line after fixing deserialization
     if (Object.prototype.hasOwnProperty.call(endpoint, 'trackIdToMetadata'))
@@ -1648,7 +1663,7 @@ export class WebRTCEndpoint<
   };
 
   private eraseEndpoint = (
-    endpoint: EndpointInternal<EndpointMetadata, TrackMetadata>,
+    endpoint: EndpointWithTrackContext<EndpointMetadata, TrackMetadata>,
   ): void => {
     const tracksId = Array.from(endpoint.tracks.keys());
     tracksId.forEach((trackId) => this.trackIdToTrack.delete(trackId));
@@ -1673,7 +1688,7 @@ export class WebRTCEndpoint<
 
   private mapMediaEventTracksToTrackContextImpl = (
     tracks: Map<string, any>,
-    endpoint: EndpointInternal<EndpointMetadata, TrackMetadata>,
+    endpoint: EndpointWithTrackContext<EndpointMetadata, TrackMetadata>,
   ): Map<string, TrackContextImpl<EndpointMetadata, TrackMetadata>> => {
     const mappedTracks: Array<
       [string, TrackContextImpl<EndpointMetadata, TrackMetadata>]

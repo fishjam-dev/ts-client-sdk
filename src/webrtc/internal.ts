@@ -59,7 +59,7 @@ export class TrackContextImpl<EndpointMetadata, ParsedMetadata>
   }
 }
 
-export type EndpointInternal<EndpointMetadata, TrackMetadata> = Omit<
+export type EndpointWithTrackContext<EndpointMetadata, TrackMetadata> = Omit<
   Endpoint<EndpointMetadata, TrackMetadata>,
   'tracks'
 > & {
