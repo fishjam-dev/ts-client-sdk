@@ -49,6 +49,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   private reconnectTimeoutId: NodeJS.Timeout | null = null;
   private reconnectFailedNotificationSend: boolean = false;
   private ongoingReconnection: boolean = false;
+  private reconnectionStartedNotificationSend: boolean = false;
   private lastLocalEndpoint: Endpoint<PeerMetadata, TrackMetadata> | null =
     null;
   private removeEventListeners: () => void = () => {};
@@ -96,21 +97,16 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     };
     this.client.on('authSuccess', onAuthSuccess);
 
-    const onJoined: MessageEvents<
-      PeerMetadata,
-      TrackMetadata
-    >['joined'] = () => {
-      this.handleReconnect();
-    };
-    this.client.on('joined', onJoined);
-
     this.removeEventListeners = () => {
       this.client.off('socketError', onSocketError);
       this.client.off('connectionError', onConnectionError);
       this.client.off('socketClose', onSocketClose);
       this.client.off('authSuccess', onAuthSuccess);
-      this.client.off('joined', onJoined);
     };
+  }
+
+  public getOngoingReconnectionStatus() {
+    return this.ongoingReconnection;
   }
 
   public reset(initialMetadata: PeerMetadata) {
@@ -130,12 +126,20 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     if (this.reconnectAttempt >= this.reconnectConfig.maxAttempts) {
       if (!this.reconnectFailedNotificationSend) {
         this.reconnectFailedNotificationSend = true;
+
+        this.client.emit('reconnectionFailed');
       }
       return;
     }
 
     if (!this.ongoingReconnection) {
       this.ongoingReconnection = true;
+
+      if (!this.reconnectionStartedNotificationSend) {
+        this.reconnectionStartedNotificationSend = true;
+        this.client.emit('reconnectionStarted');
+      }
+
       this.lastLocalEndpoint = this.client.getLocalEndpoint() || null;
     }
 
@@ -152,11 +156,12 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     }, timeout);
   }
 
-  private handleReconnect() {
+  public async handleReconnect() {
     if (!this.ongoingReconnection) return;
 
     if (this.lastLocalEndpoint && this.reconnectConfig.addTracksOnReconnect) {
-      this.lastLocalEndpoint.tracks.forEach(async (track) => {
+      for await (const element of this.lastLocalEndpoint.tracks) {
+        const [_, track] = element;
         if (!track.track || track.track.readyState !== 'live') return;
 
         await this.client.addTrack(
@@ -165,11 +170,14 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
           track.simulcastConfig,
           track.maxBandwidth,
         );
-      });
+      }
     }
 
     this.lastLocalEndpoint = null;
     this.ongoingReconnection = false;
+    this.reconnectionStartedNotificationSend = false;
+
+    this.client.emit('reconnected');
   }
 
   public cleanup() {

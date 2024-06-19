@@ -15,6 +15,7 @@ import { EventEmitter } from 'events';
 import { PeerMessage } from './protos';
 import { ReconnectConfig, ReconnectManager } from './reconnection';
 import { AuthErrorReason, isAuthError } from './auth';
+import { Deferred } from './webrtc/deferred';
 
 export type Peer<PeerMetadata, TrackMetadata> = Endpoint<
   PeerMetadata,
@@ -73,6 +74,15 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
 
   /** Emitted when the connection is closed */
   disconnected: () => void;
+
+  /** Emitted when the process of reconnection starts */
+  reconnectionStarted: () => void;
+
+  /** Emitted when on successful reconnection */
+  reconnected: () => void;
+
+  /** Emitted when the maximum number of reconnection retries has been reached */
+  reconnectionFailed: () => void;
 
   /**
    * Called when peer was accepted.
@@ -387,9 +397,9 @@ export class FishjamClient<
     this.initConnection(config.peerMetadata);
   }
 
-  private initConnection(peerMetadata: PeerMetadata): void {
+  private async initConnection(peerMetadata: PeerMetadata): Promise<void> {
     if (this.status === 'initialized') {
-      this.disconnect();
+      await this.disconnect();
     }
 
     this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
@@ -558,7 +568,7 @@ export class FishjamClient<
 
     this.webrtc?.on(
       'connected',
-      (
+      async (
         peerId: string,
         endpointsInRoom: Endpoint<PeerMetadata, TrackMetadata>[],
       ) => {
@@ -571,6 +581,8 @@ export class FishjamClient<
           .map(
             (component) => component as Component<PeerMetadata, TrackMetadata>,
           );
+
+        await this.reconnectManager.handleReconnect()
 
         this.emit('joined', peerId, peers, components);
       },
@@ -1032,6 +1044,10 @@ export class FishjamClient<
 
     this.webrtc.updateTrackMetadata(trackId, trackMetadata);
   };
+
+  public isReconnecting() {
+    return this.reconnectManager.getOngoingReconnectionStatus()
+  }
 
   /**
    * Leaves the room. This function should be called when user leaves the room in a clean way e.g. by clicking a
