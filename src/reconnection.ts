@@ -2,6 +2,8 @@ import { Endpoint } from './webrtc';
 import { FishjamClient, MessageEvents } from './FishjamClient';
 import { isAuthError } from './auth';
 
+export type ReconnectionStatus = 'reconnecting' | 'idle' | 'error';
+
 export type ReconnectConfig = {
   /*
    + default: 3
@@ -47,7 +49,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
   private reconnectAttempt: number = 0;
   private reconnectTimeoutId: NodeJS.Timeout | null = null;
-  private status: 'INITIAL' | 'RECONNECTING' | 'FAILED' = 'INITIAL';
+  private status: ReconnectionStatus = 'idle';
   private lastLocalEndpoint: Endpoint<PeerMetadata, TrackMetadata> | null =
     null;
   private removeEventListeners: () => void = () => {};
@@ -103,8 +105,8 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     };
   }
 
-  public getOngoingReconnectionStatus(): boolean {
-    return this.status === 'RECONNECTING';
+  public isReconnecting(): boolean {
+    return this.status === 'reconnecting';
   }
 
   public reset(initialMetadata: PeerMetadata) {
@@ -122,16 +124,16 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     if (this.reconnectTimeoutId) return;
 
     if (this.reconnectAttempt >= this.reconnectConfig.maxAttempts) {
-      if (this.status === 'RECONNECTING') {
-        this.status = 'FAILED';
+      if (this.status === 'reconnecting') {
+        this.status = 'error';
 
-        this.client.emit('reconnectionFailed');
+        this.client.emit('reconnectionRetriesLimitReached');
       }
       return;
     }
 
-    if (this.status !== 'RECONNECTING') {
-      this.status = 'RECONNECTING';
+    if (this.status !== 'reconnecting') {
+      this.status = 'reconnecting';
 
       this.client.emit('reconnectionStarted');
 
@@ -152,7 +154,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   }
 
   public async handleReconnect() {
-    if (this.status !== 'RECONNECTING') return;
+    if (this.status !== 'reconnecting') return;
 
     if (this.lastLocalEndpoint && this.reconnectConfig.addTracksOnReconnect) {
       for await (const element of this.lastLocalEndpoint.tracks) {
@@ -169,7 +171,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     }
 
     this.lastLocalEndpoint = null;
-    this.status = 'INITIAL';
+    this.status = 'idle';
 
     this.client.emit('reconnected');
   }

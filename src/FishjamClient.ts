@@ -82,7 +82,7 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
   reconnected: () => void;
 
   /** Emitted when the maximum number of reconnection retries is reached */
-  reconnectionFailed: () => void;
+  reconnectionRetriesLimitReached: () => void;
 
   /**
    * Called when peer was accepted.
@@ -399,7 +399,7 @@ export class FishjamClient<
 
   private async initConnection(peerMetadata: PeerMetadata): Promise<void> {
     if (this.status === 'initialized') {
-      await this.disconnect();
+      this.disconnect();
     }
 
     this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
@@ -1046,7 +1046,7 @@ export class FishjamClient<
   };
 
   public isReconnecting() {
-    return this.reconnectManager.getOngoingReconnectionStatus();
+    return this.reconnectManager.isReconnecting();
   }
 
   /**
