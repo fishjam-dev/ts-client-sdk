@@ -582,7 +582,7 @@ export class FishjamClient<
             (component) => component as Component<PeerMetadata, TrackMetadata>,
           );
 
-        await this.reconnectManager.handleReconnect()
+        await this.reconnectManager.handleReconnect();
 
         this.emit('joined', peerId, peers, components);
       },
@@ -1046,7 +1046,7 @@ export class FishjamClient<
   };
 
   public isReconnecting() {
-    return this.reconnectManager.getOngoingReconnectionStatus()
+    return this.reconnectManager.getOngoingReconnectionStatus();
   }
 
   /**
