@@ -78,10 +78,10 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
   /** Emitted when the process of reconnection starts */
   reconnectionStarted: () => void;
 
-  /** Emitted when on successful reconnection */
+  /** Emitted on successful reconnection */
   reconnected: () => void;
 
-  /** Emitted when the maximum number of reconnection retries has been reached */
+  /** Emitted when the maximum number of reconnection retries is reached */
   reconnectionFailed: () => void;
 
   /**

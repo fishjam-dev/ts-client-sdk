@@ -47,9 +47,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
   private reconnectAttempt: number = 0;
   private reconnectTimeoutId: NodeJS.Timeout | null = null;
-  private reconnectFailedNotificationSend: boolean = false;
-  private ongoingReconnection: boolean = false;
-  private reconnectionStartedNotificationSend: boolean = false;
+  private status: 'INITIAL' | 'RECONNECTING' | 'FAILED' = 'INITIAL';
   private lastLocalEndpoint: Endpoint<PeerMetadata, TrackMetadata> | null =
     null;
   private removeEventListeners: () => void = () => {};
@@ -105,8 +103,8 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     };
   }
 
-  public getOngoingReconnectionStatus() {
-    return this.ongoingReconnection;
+  public getOngoingReconnectionStatus(): boolean {
+    return this.status === 'RECONNECTING';
   }
 
   public reset(initialMetadata: PeerMetadata) {
@@ -124,21 +122,18 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     if (this.reconnectTimeoutId) return;
 
     if (this.reconnectAttempt >= this.reconnectConfig.maxAttempts) {
-      if (!this.reconnectFailedNotificationSend) {
-        this.reconnectFailedNotificationSend = true;
+      if (this.status === 'RECONNECTING') {
+        this.status = 'FAILED';
 
         this.client.emit('reconnectionFailed');
       }
       return;
     }
 
-    if (!this.ongoingReconnection) {
-      this.ongoingReconnection = true;
+    if (this.status !== 'RECONNECTING') {
+      this.status = 'RECONNECTING';
 
-      if (!this.reconnectionStartedNotificationSend) {
-        this.reconnectionStartedNotificationSend = true;
-        this.client.emit('reconnectionStarted');
-      }
+      this.client.emit('reconnectionStarted');
 
       this.lastLocalEndpoint = this.client.getLocalEndpoint() || null;
     }
@@ -157,7 +152,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   }
 
   public async handleReconnect() {
-    if (!this.ongoingReconnection) return;
+    if (this.status !== 'RECONNECTING') return;
 
     if (this.lastLocalEndpoint && this.reconnectConfig.addTracksOnReconnect) {
       for await (const element of this.lastLocalEndpoint.tracks) {
@@ -174,8 +169,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     }
 
     this.lastLocalEndpoint = null;
-    this.ongoingReconnection = false;
-    this.reconnectionStartedNotificationSend = false;
+    this.status = 'INITIAL';
 
     this.client.emit('reconnected');
   }
