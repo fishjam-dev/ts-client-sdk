@@ -1343,14 +1343,10 @@ export class WebRTCEndpoint<
    * that endpoint was removed in {@link WebRTCEndpointEvents.endpointRemoved},
    */
   public disconnect = () => {
-    this.emitDisconnectEvent()
-    this.cleanUp();
-  };
-
-  public emitDisconnectEvent = () => {
     const mediaEvent = generateMediaEvent('disconnect');
     this.sendMediaEvent(mediaEvent);
     this.emit('disconnectRequested', {});
+    this.cleanUp();
   };
 
   /**

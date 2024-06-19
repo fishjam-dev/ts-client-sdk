@@ -1078,7 +1078,7 @@ export class FishjamClient<
    * client.disconnect();
    * ```
    */
-  public async disconnect() {
+  public disconnect() {
     try {
       this.webrtc?.removeAllListeners();
       this.webrtc?.disconnect();
@@ -1089,7 +1089,6 @@ export class FishjamClient<
     this.removeEventListeners?.();
     this.removeEventListeners = null;
     if (this.isOpen(this.websocket || null)) {
-      this.webrtc?.emitDisconnectEvent();
       this.websocket?.close();
     }
     this.websocket = null;
