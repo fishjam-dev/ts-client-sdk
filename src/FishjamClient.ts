@@ -75,6 +75,9 @@ export interface MessageEvents<PeerMetadata, TrackMetadata> {
   /** Emitted when the connection is closed */
   disconnected: () => void;
 
+  /** Emitted when the process of reconnection starts */
+  reconnectionStarted: () => void;
+
   /** Emitted when on successful reconnection */
   reconnected: () => void;
 
@@ -395,12 +398,9 @@ export class FishjamClient<
   }
 
   private async initConnection(peerMetadata: PeerMetadata): Promise<void> {
-    // console.log('fn-initConnection');
     if (this.status === 'initialized') {
-      // console.log('fn-initConnection-disconnect');
       await this.disconnect();
     }
-    // console.log('fn-initConnection-after if');
 
     this.webrtc = new WebRTCEndpoint<PeerMetadata, TrackMetadata>({
       endpointMetadataParser: this.peerMetadataParser,
@@ -439,9 +439,7 @@ export class FishjamClient<
     };
 
     const socketCloseHandler = (event: CloseEvent) => {
-      console.log('Socket close handler');
       if (isAuthError(event.reason)) {
-        console.log('emit auth error - authError');
         this.emit('authError', event.reason);
       }
 
@@ -1080,10 +1078,7 @@ export class FishjamClient<
    * client.disconnect();
    * ```
    */
-  // notes:
-  //   waiting for websocket close is a waste of time, it takes ages to be sure that websocket is closed
   public async disconnect() {
-    console.log('fn-disconnect');
     try {
       this.webrtc?.removeAllListeners();
       this.webrtc?.disconnect();
@@ -1095,10 +1090,8 @@ export class FishjamClient<
     this.removeEventListeners = null;
     if (this.isOpen(this.websocket || null)) {
       this.webrtc?.emitDisconnectEvent();
-      // console.log('closing websocket');
       this.websocket?.close();
     }
-    // console.log({ socket: this.websocket });
     this.websocket = null;
     this.webrtc = null;
     this.emit('disconnected');

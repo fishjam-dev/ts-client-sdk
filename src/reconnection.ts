@@ -49,6 +49,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   private reconnectTimeoutId: NodeJS.Timeout | null = null;
   private reconnectFailedNotificationSend: boolean = false;
   private ongoingReconnection: boolean = false;
+  private reconnectionStartedNotificationSend: boolean = false;
   private lastLocalEndpoint: Endpoint<PeerMetadata, TrackMetadata> | null =
     null;
   private removeEventListeners: () => void = () => {};
@@ -82,8 +83,8 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
       PeerMetadata,
       TrackMetadata
     >['socketClose'] = (event) => {
-      // if (isAuthError(event.reason)) return;
-      //
+      if (isAuthError(event.reason)) return;
+
       this.reconnect();
     };
     this.client.on('socketClose', onSocketClose);
@@ -96,33 +97,11 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     };
     this.client.on('authSuccess', onAuthSuccess);
 
-    // const onJoined: MessageEvents<
-    //   PeerMetadata,
-    //   TrackMetadata
-    // >['joined'] = async () => {
-    //   await this.handleReconnect();
-    // };
-    // this.client.on('joined', onJoined);
-
-    const onOffline = () => {
-      console.log('offline');
-    };
-
-    const onOnline = () => {
-      console.log('online');
-    };
-
-    window.addEventListener('offline', onOffline);
-    window.addEventListener('online', onOnline);
-
     this.removeEventListeners = () => {
       this.client.off('socketError', onSocketError);
       this.client.off('connectionError', onConnectionError);
       this.client.off('socketClose', onSocketClose);
       this.client.off('authSuccess', onAuthSuccess);
-      // this.client.off('joined', onJoined);
-      window.removeEventListener('offline', onOffline);
-      window.removeEventListener('online', onOnline);
     };
   }
 
@@ -148,13 +127,19 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
       if (!this.reconnectFailedNotificationSend) {
         this.reconnectFailedNotificationSend = true;
 
-        this.client.emit("reconnectionFailed")
+        this.client.emit('reconnectionFailed');
       }
       return;
     }
 
     if (!this.ongoingReconnection) {
       this.ongoingReconnection = true;
+
+      if (!this.reconnectionStartedNotificationSend) {
+        this.reconnectionStartedNotificationSend = true;
+        this.client.emit('reconnectionStarted');
+      }
+
       this.lastLocalEndpoint = this.client.getLocalEndpoint() || null;
     }
 
@@ -167,32 +152,17 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
 
-      // console.log('Start reconnecting');
       this.connect(this.getLastPeerMetadata() ?? this.initialMetadata!);
     }, timeout);
   }
 
   public async handleReconnect() {
-    const xxx = Math.random();
-    console.log(`handleReconnect ${xxx}`);
     if (!this.ongoingReconnection) return;
-    console.log(`Real reconnect handler ${xxx}`);
 
     if (this.lastLocalEndpoint && this.reconnectConfig.addTracksOnReconnect) {
       for await (const element of this.lastLocalEndpoint.tracks) {
         const [_, track] = element;
-        // console.log({
-        //   name: 'Analising track ' + xxx,
-        //   trackId: track?.track?.id,
-        //   kind: track.track?.kind,
-        // });
         if (!track.track || track.track.readyState !== 'live') return;
-
-        // console.log({
-        //   name: 'Adding track ' + xxx,
-        //   trackId: track?.track?.id,
-        //   kind: track.track?.kind,
-        // });
 
         await this.client.addTrack(
           track.track,
@@ -200,18 +170,14 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
           track.simulcastConfig,
           track.maxBandwidth,
         );
-        // console.log({
-        //   name: 'Track added' + xxx,
-        //   trackId: track?.track?.id,
-        //   kind: track.track?.kind,
-        // });
       }
     }
 
     this.lastLocalEndpoint = null;
     this.ongoingReconnection = false;
-    console.log('ReconnectManager-Reconnected!' + xxx);
-    this.client.emit("reconnected")
+    this.reconnectionStartedNotificationSend = false;
+
+    this.client.emit('reconnected');
   }
 
   public cleanup() {

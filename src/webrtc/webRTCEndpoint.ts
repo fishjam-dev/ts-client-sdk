@@ -997,8 +997,6 @@ export class WebRTCEndpoint<
     },
     maxBandwidth: TrackBandwidthLimit = 0,
   ): Promise<string> {
-    // console.log({ name: 'Add track', track, trackMetadata });
-    // console.trace();
     const resolutionNotifier = new Deferred<void>();
     const trackId = this.getTrackId(uuidv4());
     const stream = new MediaStream();
@@ -1077,9 +1075,7 @@ export class WebRTCEndpoint<
   }
 
   private resolvePreviousCommand() {
-    // console.log('resolvePreviousCommand');
     if (this.commandResolutionNotifier) {
-      // console.log('resolving command!');
       this.commandResolutionNotifier.resolve();
       this.commandResolutionNotifier = null;
     }
@@ -1094,13 +1090,9 @@ export class WebRTCEndpoint<
       trackMetadata,
       trackId,
     } = addTrackCommand;
-    // console.log({ name: 'Add track handler', track, trackMetadata });
-
     const isUsedTrack = this.connection
       ?.getSenders()
       .some((val) => val.track === track);
-
-    // console.log({ prevTrackID: track.id });
 
     let error;
     if (isUsedTrack) {
@@ -1804,7 +1796,6 @@ export class WebRTCEndpoint<
   };
 
   public emitDisconnectEvent = () => {
-    // console.log('Disconnect event');
     const mediaEvent = generateMediaEvent('disconnect');
     this.sendMediaEvent(mediaEvent);
     this.emit('disconnectRequested', {});
@@ -1930,12 +1921,6 @@ export class WebRTCEndpoint<
 
   private getTrackBitrates = (trackId: string) => {
     const trackContext = this.localTrackIdToTrack.get(trackId);
-    // console.log({
-    //   name: 'getTrackBitrates',
-    //   trackId,
-    //   trackContext,
-    //   track: trackContext?.track?.kind,
-    // });
 
     if (!trackContext)
       throw "Track with id ${trackId} not present in 'localTrackIdToTrack'";
