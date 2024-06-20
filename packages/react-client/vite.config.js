@@ -6,11 +6,11 @@ import pkg from "./package.json";
 
 export default defineConfig({
   build: {
-    target: "es2018",
+    target: "es2022",
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      name: "ts-client",
-      fileName: "ts-client",
+      name: "react-client",
+      fileName: "react-client",
     },
     // rollupOptions: {
     //   external: Object.keys(pkg.dependencies || {}),

@@ -22,7 +22,7 @@
       "require": "./dist/ts-client.umd.cjs"
     }
   },
-  "types": "./dist/src/index.d.ts",
+  "types": "./dist/ts-client.d.ts",
   "scripts": {
     "build": "tsc && vite build",
     "build:check": "tsc --noEmit",
