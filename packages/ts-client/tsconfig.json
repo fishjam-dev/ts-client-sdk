@@ -11,11 +11,12 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "declaration": true,
+    "declarationMap": true,
 
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
 
-    "outDir": "dist"
+    "outDir": "dist/"
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["./src/**/*"]
 }
