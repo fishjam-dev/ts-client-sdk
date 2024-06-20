@@ -141,7 +141,8 @@ client.on('authSuccess', () => {
   toastSuccess('Auth success');
 });
 
-client.on('authError', () => {
+client.on('authError', (e) => {
+  console.log({ e });
   toastAlert('Auth error');
 });
 
@@ -248,31 +249,35 @@ client.on('trackReady', (ctx) => {
   const peerId = ctx.endpoint.id;
   const peerComponent = document.querySelector(`div[data-peer-id="${peerId}"`)!;
 
-  const videoPlayerTemplate = document.querySelector<HTMLTemplateElement>(
-    '#remote-peer-template-video',
+  const playerTemplate = document.querySelector<HTMLTemplateElement>(
+    '#remote-peer-template',
   );
-  if (!videoPlayerTemplate) throw new Error('Remote video template not found');
+  if (!playerTemplate) throw new Error('Remote video template not found');
 
-  const videoWrapper = <DocumentFragment>(
-    videoPlayerTemplate.content.cloneNode(true)
+  const playerWrapper = <DocumentFragment>(
+    playerTemplate.content.cloneNode(true)
   );
 
   const tracksContainer: HTMLDivElement | null =
-    videoWrapper.querySelector<HTMLDivElement>(`.remote-track-container`);
+    playerWrapper.querySelector<HTMLDivElement>(`.remote-track-container`);
   if (!tracksContainer) throw new Error('Remote track container not found');
 
   tracksContainer.dataset.trackId = ctx.trackId;
 
   const videoPlayer: HTMLVideoElement | null =
-    videoWrapper.querySelector<HTMLVideoElement>(`video`);
+    playerWrapper.querySelector<HTMLVideoElement>(`video`);
   if (!videoPlayer) throw new Error('Video element not found');
+
+  const audioPlayer: HTMLAudioElement | null =
+    playerWrapper.querySelector<HTMLAudioElement>(`audio`);
+  if (!audioPlayer) throw new Error('Audio element not found');
 
   const container = peerComponent.querySelector('.remote-videos');
 
   if (!container) throw new Error('Remote videos container not found!');
 
   const simulcastContainer: HTMLDivElement | null =
-    videoWrapper.querySelector<HTMLDivElement>(`.simulcast-enabled`);
+    playerWrapper.querySelector<HTMLDivElement>(`.simulcast-enabled`);
   if (!simulcastContainer) throw new Error('Simulcast container not found');
 
   simulcastContainer.innerHTML = (
@@ -280,7 +285,7 @@ client.on('trackReady', (ctx) => {
   ).toString();
 
   const simulcastRadios: HTMLDivElement | null =
-    videoWrapper.querySelector<HTMLDivElement>(`.simulcast-radios`);
+    playerWrapper.querySelector<HTMLDivElement>(`.simulcast-radios`);
   if (!simulcastRadios) throw new Error('Simulcast radios not found');
 
   if (!ctx?.simulcastConfig?.enabled) {
@@ -288,24 +293,29 @@ client.on('trackReady', (ctx) => {
   }
 
   ENCODINGS.forEach((encoding) => {
-    setupSimulcastCheckbox(videoWrapper, ctx.trackId, encoding);
+    setupSimulcastCheckbox(playerWrapper, ctx.trackId, encoding);
   });
 
-  const rawMetadata = videoWrapper.querySelector('.remote-track-raw-metadata');
+  const rawMetadata = playerWrapper.querySelector('.remote-track-raw-metadata');
   if (!rawMetadata) throw new Error('Raw metadata component not found');
   rawMetadata.innerHTML = JSON.stringify(ctx.rawMetadata, undefined, 2);
 
-  const parsedMetadata = videoWrapper.querySelector(
+  const parsedMetadata = playerWrapper.querySelector(
     '.remote-track-parsed-metadata',
   );
   if (!parsedMetadata) throw new Error('Parsed metadata component not found');
   parsedMetadata.innerHTML = JSON.stringify(ctx.metadata, undefined, 2);
 
-  container.appendChild(videoWrapper);
+  container.appendChild(playerWrapper);
 
   videoPlayer.srcObject = ctx.stream;
   videoPlayer.onloadedmetadata = () => {
     videoPlayer.play();
+  };
+
+  audioPlayer.srcObject = ctx.stream;
+  audioPlayer.onloadedmetadata = () => {
+    audioPlayer.play();
   };
 });
 
