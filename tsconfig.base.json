@@ -21,25 +21,3 @@
     "incremental": true
   }
 }
-
-// {
-//  "compilerOptions": {
-//    "lib": ["dom", "dom.iterable", "es2022"], XX
-//    "module": "esnext",
-//    "moduleResolution": "bundler",
-//    "target": "es2022",
-//    "jsx": "react-jsx",
-//
-//    "strict": true,
-//    "incremental": true,
-//    "skipLibCheck": true,
-//    "esModuleInterop": true,
-//    "declaration": true,
-//
-//    "forceConsistentCasingInFileNames": true,
-//    "noFallthroughCasesInSwitch": true,
-//
-//    "outDir": "dist"
-//  },
-//  "include": ["src/**/*", "tests/**/*"]
-//}
