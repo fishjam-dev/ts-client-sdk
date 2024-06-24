@@ -52,13 +52,14 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   private status: ReconnectionStatus = 'idle';
   private lastLocalEndpoint: Endpoint<PeerMetadata, TrackMetadata> | null =
     null;
-  private removeEventListeners: () => void = () => { };
+  private removeEventListeners: () => void = () => {};
 
   constructor(
     client: FishjamClient<PeerMetadata, TrackMetadata>,
     connect: (metadata: PeerMetadata) => void,
     config?: ReconnectConfig | boolean,
   ) {
+    console.log('Reconnect Manager created');
     this.client = client;
     this.connect = connect;
     this.reconnectConfig = createReconnectConfig(config);
@@ -67,7 +68,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
       PeerMetadata,
       TrackMetadata
     >['socketError'] = () => {
-      console.log("Reconnect because of socketError")
+      console.log('Reconnect because of socketError');
       this.reconnect();
     };
     this.client.on('socketError', onSocketError);
@@ -76,7 +77,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
       PeerMetadata,
       TrackMetadata
     >['connectionError'] = () => {
-      console.log("Reconnect because of connectionError")
+      console.log('Reconnect because of connectionError');
       this.reconnect();
     };
     this.client.on('connectionError', onConnectionError);
@@ -85,7 +86,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
       PeerMetadata,
       TrackMetadata
     >['socketClose'] = (event) => {
-      console.log("Reconnect because of socketClose")
+      console.log('Reconnect because of socketClose');
       if (isAuthError(event.reason)) return;
 
       this.reconnect();
@@ -124,15 +125,16 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   }
 
   private reconnect() {
-    console.log(`Start reconnect attempt ${this.reconnectAttempt}`)
+    console.log(`Start reconnect attempt ${this.reconnectAttempt}`);
     if (this.reconnectTimeoutId) {
-      console.log(`Not reconnect because ${this.reconnectTimeoutId}`)
+      console.log(`Not reconnect because ${this.reconnectTimeoutId}`);
       return;
     }
 
     if (this.reconnectAttempt >= this.reconnectConfig.maxAttempts) {
+      console.log(`No reconnect because reached retries limit`);
       if (this.status === 'reconnecting') {
-        console.log(`No reconnect because reached retries limit`)
+        console.log('sending reconnectionRetriesLimitReached event');
         this.status = 'error';
 
         this.client.emit('reconnectionRetriesLimitReached');
@@ -142,6 +144,8 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
     if (this.status !== 'reconnecting') {
       this.status = 'reconnecting';
+
+      console.log('sending reconnectionStarted event');
 
       this.client.emit('reconnectionStarted');
 
@@ -154,9 +158,10 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
     this.reconnectAttempt += 1;
 
-    console.log(`Waiting timeout before reconnect is ${timeout}`)
+    console.log(`Waiting timeout before reconnect is ${timeout}`);
 
     this.reconnectTimeoutId = setTimeout(() => {
+      console.log(`setTimeout invoked`);
       this.reconnectTimeoutId = null;
 
       this.connect(this.getLastPeerMetadata() ?? this.initialMetadata!);
@@ -164,12 +169,12 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
   }
 
   public async handleReconnect() {
-    console.log(`Current reconnction status: ${this.status}`)
+    console.log(`Current reconnction status: ${this.status}`);
     if (this.status !== 'reconnecting') return;
 
-    console.log(`Reconnect config: ${this.reconnectConfig}`)
+    console.log(`Reconnect config: ${this.reconnectConfig}`);
     if (this.lastLocalEndpoint && this.reconnectConfig.addTracksOnReconnect) {
-      console.log("In handleReconnect is adding trackd")
+      console.log('In handleReconnect is adding trackd');
       for await (const element of this.lastLocalEndpoint.tracks) {
         const [_, track] = element;
         if (!track.track || track.track.readyState !== 'live') return;
@@ -191,7 +196,7 @@ export class ReconnectManager<PeerMetadata, TrackMetadata> {
 
   public cleanup() {
     this.removeEventListeners();
-    this.removeEventListeners = () => { };
+    this.removeEventListeners = () => {};
   }
 }
 

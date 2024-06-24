@@ -399,6 +399,7 @@ export class FishjamClient<
 
   private async initConnection(peerMetadata: PeerMetadata): Promise<void> {
     if (this.status === 'initialized') {
+      console.log("this.status === 'initialized', disconnecting");
       this.disconnect();
     }
 
@@ -428,6 +429,8 @@ export class FishjamClient<
     this.websocket.binaryType = 'arraybuffer';
 
     const socketOpenHandler = (event: Event) => {
+      console.log({ name: 'socketOpenHandler', event });
+
       this.emit('socketOpen', event);
 
       const message = PeerMessage.encode({ authRequest: { token } }).finish();
@@ -435,11 +438,17 @@ export class FishjamClient<
     };
 
     const socketErrorHandler = (event: Event) => {
+      console.log({ name: 'socketErrorHandler', event });
+
       this.emit('socketError', event);
     };
 
     const socketCloseHandler = (event: CloseEvent) => {
+      console.log({ name: 'socketCloseHandler', event });
+
       if (isAuthError(event.reason)) {
+        console.log({ name: 'isAuthError', event });
+
         this.emit('authError', event.reason);
       }
 
@@ -452,17 +461,28 @@ export class FishjamClient<
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const messageHandler = (event: MessageEvent<any>) => {
+      console.log({ name: 'messageHandler', event });
+
       const uint8Array = new Uint8Array(event.data);
       try {
         const data = PeerMessage.decode(uint8Array);
+        console.log({ data });
+
         if (data.authenticated !== undefined) {
+          console.log('%c' + 'authSuccess', 'color:green');
           this.emit('authSuccess');
 
           this.webrtc?.connect(peerMetadata);
         } else if (data.authRequest !== undefined) {
+          console.log('%c' + 'unexpected control', 'color:orange');
+
           console.warn('Received unexpected control message: authRequest');
         } else if (data.mediaEvent !== undefined) {
+          console.log('%c' + 'normal message', 'color:gray');
+
           this.webrtc?.receiveMediaEvent(data.mediaEvent.data);
+        } else {
+          console.log('%c' + 'unknown message', 'color:red');
         }
       } catch (e) {
         console.warn(`Received invalid control message, error: ${e}`);
