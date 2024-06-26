@@ -14,7 +14,7 @@ export type { AuthErrorReason } from './auth.js';
 export { isAuthError, AUTH_ERROR_REASONS } from './auth.js';
 
 export { FishjamClient } from './FishjamClient';
-
+export { PeerMessage } from './protos/fishjam/peer_notifications';
 export type {
   TrackBandwidthLimit,
   SimulcastBandwidthLimit,
