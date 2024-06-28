@@ -16,6 +16,8 @@ import { PeerMessage } from './protos';
 import { ReconnectConfig, ReconnectManager } from './reconnection';
 import { AuthErrorReason, isAuthError } from './auth';
 import { Deferred } from './webrtc/deferred';
+import { faro } from '@grafana/faro-web-sdk';
+
 
 export type Peer<PeerMetadata, TrackMetadata> = Endpoint<
   PeerMetadata,
@@ -391,6 +393,7 @@ export class FishjamClient<
    * @param {ConnectConfig} config - Configuration object for the client
    */
   connect(config: ConnectConfig<PeerMetadata>): void {
+    faro.api.pushLog(['Connection initialized', { config: config, label: 'connecting' }])
     this.reconnectManager.reset(config.peerMetadata);
     this.connectConfig = config;
 
